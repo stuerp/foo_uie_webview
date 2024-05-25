@@ -1,0 +1,66 @@
+'<html>
+<head>
+<meta charset="UTF-8">
+<style>
+html
+{
+    margin: 0;
+    padding: 0;
+}
+body
+{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0 auto; 
+    padding: 0;
+    font: 90% Calibri, Sans-serif;
+    line-height: 1.2;
+    color: #555753; 
+	background: #e0e0e0 url("http://foo_vis_text.local/Background.png") no-repeat bottom right; 
+}
+p
+{ 
+    margin-top: 0; 
+    text-align: center;
+    display: inline;
+}
+.track
+{
+    font: 1.75em Cambria;
+    color: crimson;
+}
+.value
+{
+    font-weight: 800;
+}
+</style>
+</head>
+<body>
+<p>'[%album%[: %subtitle%][ - %album artist%]]'<br/>'
+['('[%album recorded%/]%album released%]')''<br/>'
+%publisher%[' ('%album country%')']'<br/>'
+%album genre%'<br/>'
+'<span class="track">'%title%[' ['%remix%']']'<br/>'
+[%artist%]'</span><br/>'
+[%date%]'<br/>'
+[%tracknumber%[/%totaltracks%]]'<br/>'
+%genre%[/%subgenre%]'<br/>'
+'<span class="value">'[%playback_time%[/%length%]]'</span><br/>'
+%codec_long%[, $info(codec_profile)], $caps($info(encoding)), %samplerate%Hz, %bitrate% kbps[, $info(bitspersample) bit], $caps(%channels%)[, $caps($info(channel_mode))]'<br/>'
+'<br/>'
+Composer:'<span class="value">'[ %composer%]'</span><br/>'
+Lyricist:'<span class="value">'[ %lyricist%]'</span><br/>'
+Composed:'<span class="value">'[ %composed%]'</span><br/>'
+Conductor:'<span class="value">'[ %conductor%]'</span><br/>'
+Orchestra:'<span class="value">'[ %orchestra%]'</span><br/>'
+Arranger:'<span class="value">'[ %arranger%]'</span><br/>'
+Country:'<span class="value">'[ %country%]'</span><br/>'
+Language:'<span class="value">'[ %language%]'</span><br/>'
+Original Album:'<span class="value">'[ %original album%]'</span><br/>'
+Medium:'<span class="value">'[ %medium%]'</span><br/>'
+Comment:'<span class="value">'[ %comment%]'</span><br/>'
+["$info(midi_player)"][, $info(midi_active_voices) voices '(peak ' $info(midi_peak_voices)')'][, extra percussion channel $info(midi_extra_percussion_channel)]'<br/>'
+'</body>
+</html>'

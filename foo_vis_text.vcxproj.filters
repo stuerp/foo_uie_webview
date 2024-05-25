@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Resources.h" />
+    <ClInclude Include="CUIElement.h" />
+    <ClInclude Include="DUIElement.h" />
+    <ClInclude Include="UIElement.h" />
+    <ClInclude Include="FileWatcher.h" />
+    <ClInclude Include="Exceptions.h" />
+    <ClInclude Include="Encoding.h" />
+    <ClInclude Include="Preferences.h" />
+    <ClInclude Include="PreferencesLayout.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="Component.cpp" />
+    <ClCompile Include="CUIElement.cpp" />
+    <ClCompile Include="DUIElement.cpp" />
+    <ClCompile Include="UIElement.cpp" />
+    <ClCompile Include="WebView.cpp" />
+    <ClCompile Include="FileWatcher.cpp" />
+    <ClCompile Include="Exceptions.cpp" />
+    <ClCompile Include="Encoding.cpp" />
+    <ClCompile Include="Preferences.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resources.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
+    <None Include="Build-FB2KComponent.ps1" />
+    <None Include=".gitattributes" />
+    <None Include=".gitignore" />
+    <None Include="README.md" />
+    <None Include="packages.config" />
+    <None Include="Template.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="LICENSE.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+  </ItemGroup>
+</Project>
