@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.h (2024.05.25) P. Stuer **/
+/** $VER: UIElement.h (2024.05.26) P. Stuer **/
 
 #pragma once
 
@@ -21,6 +21,8 @@ extern cfg_string FilePathCfg;
 #include <wil/com.h>
 
 #include "WebView2.h"
+
+#include "HostObjectImpl.h"
 
 using namespace Microsoft::WRL;
 
@@ -77,6 +79,8 @@ private:
     void OnSize(UINT nType, CSize size) noexcept;
     void OnTimer(UINT_PTR timerId) noexcept;
     LRESULT OnTemplateFileChanged(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+    LRESULT OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+    LRESULT OnAsync(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 
     BEGIN_MSG_MAP_EX(UIElement)
         MSG_WM_CREATE(OnCreate)
@@ -85,13 +89,53 @@ private:
 
         MSG_WM_TIMER(OnTimer)
         MESSAGE_HANDLER_EX(UM_FILE_CHANGED, OnTemplateFileChanged)
+
+        MESSAGE_HANDLER_EX(UM_WEB_VIEW_READY, OnWebViewReady)
+        MESSAGE_HANDLER_EX(UM_ASYNC, OnAsync)
     END_MSG_MAP()
+
+    #pragma endregion
+
+public:
+    #pragma region HostObject
+
+    ICoreWebView2Controller * GetWebViewController()
+    {
+        return _Controller.get();
+    }
+
+    ICoreWebView2 * GetWebView()
+    {
+        return _WebView.get();
+    }
+
+    static const UINT UM_WEB_VIEW_READY = WM_USER;
+    static const UINT UM_ASYNC = WM_USER + 1;
+
+    void RunAsync(std::function<void()> callback) noexcept
+    {
+        auto * Task = new std::function<void()>(std::move(callback));
+
+        PostMessage(UM_ASYNC, reinterpret_cast<WPARAM>(Task), 0);
+    }
+
+    void AsyncMessageBox(std::wstring message, std::wstring title)
+    {
+        RunAsync
+        (
+            [this, message = std::move(message), title = std::move(title)]
+            {
+                MessageBox(message.c_str(), title.c_str(), MB_OK);
+            }
+        );
+    }
 
     #pragma endregion
 
 private:
     void CreateWebView(HWND hWnd) noexcept;
     void UpdateWebView() noexcept;
+    void DeleteWebView() noexcept;
 
     bool FormatText(const std::string & text, pfc::string & formattedText) noexcept;
     std::string ReadTemplate(const std::wstring & filePath) noexcept;
@@ -119,15 +163,20 @@ private:
     }
 
 private:
+    fb2k::CCoreDarkModeHooks _DarkMode;
+
     pfc::string8 _ProfilePath;
     std::wstring _FilePath;
 
     wil::com_ptr<ICoreWebView2Controller> _Controller;
     wil::com_ptr<ICoreWebView2> _WebView;
 
+    EventRegistrationToken _NavigationStartingToken = {};
+    EventRegistrationToken _NavigationCompletedToken = {};
+
+    wil::com_ptr<HostObject> _HostObject;
+
     FileWatcher _FileWatcher;
 
     std::string _TemplateText;
-
-    fb2k::CCoreDarkModeHooks _DarkMode;
 };

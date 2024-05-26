@@ -12,6 +12,8 @@
     <ClInclude Include="Encoding.h" />
     <ClInclude Include="Preferences.h" />
     <ClInclude Include="PreferencesLayout.h" />
+    <ClInclude Include="HostObject\HostObjectImpl.h" />
+    <ClInclude Include="HostObject\HostObject_h.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -24,6 +26,8 @@
     <ClCompile Include="Exceptions.cpp" />
     <ClCompile Include="Encoding.cpp" />
     <ClCompile Include="Preferences.cpp" />
+    <ClCompile Include="HostObject\HostObjectImpl.cpp" />
+    <ClCompile Include="HostObject\HostObject_i.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources.rc" />
@@ -42,5 +46,8 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="HostObject\HostObject.idl" />
   </ItemGroup>
 </Project>

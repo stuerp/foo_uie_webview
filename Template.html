@@ -1,4 +1,5 @@
-'<html>
+<!DOCTYPE html>
+<html>
 <head>
 <meta charset="UTF-8">
 <style>
@@ -18,9 +19,9 @@ body
     font: 90% Calibri, Sans-serif;
     line-height: 1.2;
     color: #555753; 
-	background: #e0e0e0 url("http://foo_vis_text.local/Background.png") no-repeat bottom right; 
+	background-color: #e0e0e0;
 }
-p
+div
 { 
     margin-top: 0; 
     text-align: center;
@@ -31,6 +32,11 @@ p
     font: 1.75em Cambria;
     color: crimson;
 }
+.artist
+{
+    font: 1.00em Cambria;
+    color: crimson;
+}
 .value
 {
     font-weight: 800;
@@ -38,29 +44,64 @@ p
 </style>
 </head>
 <body>
-<p>'[%album%[: %subtitle%][ - %album artist%]]'<br/>'
-['('[%album recorded%/]%album released%]')''<br/>'
-%publisher%[' ('%album country%')']'<br/>'
-%album genre%'<br/>'
-'<span class="track">'%title%[' ['%remix%']']'<br/>'
-[%artist%]'</span><br/>'
-[%date%]'<br/>'
-[%tracknumber%[/%totaltracks%]]'<br/>'
-%genre%[/%subgenre%]'<br/>'
-'<span class="value">'[%playback_time%[/%length%]]'</span><br/>'
-%codec_long%[, $info(codec_profile)], $caps($info(encoding)), %samplerate%Hz, %bitrate% kbps[, $info(bitspersample) bit], $caps(%channels%)[, $caps($info(channel_mode))]'<br/>'
-'<br/>'
-Composer:'<span class="value">'[ %composer%]'</span><br/>'
-Lyricist:'<span class="value">'[ %lyricist%]'</span><br/>'
-Composed:'<span class="value">'[ %composed%]'</span><br/>'
-Conductor:'<span class="value">'[ %conductor%]'</span><br/>'
-Orchestra:'<span class="value">'[ %orchestra%]'</span><br/>'
-Arranger:'<span class="value">'[ %arranger%]'</span><br/>'
-Country:'<span class="value">'[ %country%]'</span><br/>'
-Language:'<span class="value">'[ %language%]'</span><br/>'
-Original Album:'<span class="value">'[ %original album%]'</span><br/>'
-Medium:'<span class="value">'[ %medium%]'</span><br/>'
-Comment:'<span class="value">'[ %comment%]'</span><br/>'
-["$info(midi_player)"][, $info(midi_active_voices) voices '(peak ' $info(midi_peak_voices)')'][, extra percussion channel $info(midi_extra_percussion_channel)]'<br/>'
-'</body>
-</html>'
+<div>
+<span id="Album"></span><br/>
+<span id="AlbumDate"></span><br/>
+<span id="AlbumPublisher"></span><br/>
+<span id="AlbumGenre"></span><br/>
+<span id="TrackTitle" class="track"></span><br/>
+<span id="TrackArtist" class="artist"></span> (<span id="TrackCountry"></span>)<br/>
+<span id="TrackDate"></span><br/>
+<span id="TrackNumber"></span><br/>
+<span id="TrackGenre"></span><br/>
+<span id="TrackTime"></span><br/>
+<span id="TrackInfo"></span><br/>
+<br/>
+Composer: <span id="TrackComposer"></span><br/>
+Lyricist: <span id="TrackLyricist"></span><br/>
+Composed: <span id="TrackComposed"></span><br/>
+Conductor: <span id="TrackConductor"></span><br/>
+Orchestra: <span id="TrackOrchestra"></span><br/>
+Arranger: <span id="TrackArranger"></span><br/>
+Language: <span id="TrackLanguage"></span><br/>
+Original Album: <span id="OriginalAlbum"></span><br/>
+Medium: <span id="Medium"></span><br/>
+Comment: <span id="Comment"></span><br/>
+MIDI: <span id="MIDI"></span><br/>
+</div>
+<script>
+function Refresh()
+{
+    document.getElementById("Album").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%album%[: %subtitle%][ - %album artist%]]");
+    document.getElementById("AlbumDate").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%album recorded%/]%album released%]");
+    document.getElementById("AlbumPublisher").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("%publisher%[' ('%album country%')']");
+    document.getElementById("AlbumGenre").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("%album genre%");
+
+    document.getElementById("TrackTitle").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("%title%[' ['%remix%']']");
+    document.getElementById("TrackArtist").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%artist%]");
+    document.getElementById("TrackDate").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%date%]");
+    document.getElementById("TrackNumber").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%tracknumber%[/%totaltracks%]]");
+    document.getElementById("TrackGenre").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("%genre%[/%subgenre%]");
+
+    document.getElementById("TrackTime").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%playback_time%[/%length%]]");
+
+    document.getElementById("TrackInfo").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("%codec_long%[, $info(codec_profile)], $caps($info(encoding)), %samplerate%Hz, %bitrate% kbps[, $info(bitspersample) bit], $caps(%channels%)[, $caps($info(channel_mode))]");
+
+    document.getElementById("TrackComposer").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[ %composer%]");
+    document.getElementById("TrackLyricist").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[ %lyricist%]");
+    document.getElementById("TrackComposed").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[ %composed%]");
+    document.getElementById("TrackConductor").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[ %conductor%]");
+    document.getElementById("TrackOrchestra").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[ %orchestra%]");
+    document.getElementById("TrackArranger").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[ %arranger%]");
+    document.getElementById("TrackCountry").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%country%]");
+    document.getElementById("TrackLanguage").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[ %language%]");
+    document.getElementById("OriginalAlbum").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[ %original album%]");
+    document.getElementById("Medium").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[ %medium%]");
+    document.getElementById("Comment").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[ %comment%]");
+    document.getElementById("MIDI").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[ $info(midi_player)][, $info(midi_active_voices) voices '(peak ' $info(midi_peak_voices)')'][, extra percussion channel $info(midi_extra_percussion_channel)]");
+
+    return "OK";
+}
+</script>
+</body>
+</html>

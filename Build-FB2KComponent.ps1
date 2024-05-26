@@ -39,15 +39,17 @@ if ($Platform -eq 'x64')
 
     # Create the package directory (including the x64 subdirectory)
     Write-Host "Creating directory `"$PackagePath`"...";
+
     $null = New-Item -Path '../out/' -Name "$TargetName/x64" -ItemType 'directory' -Force;
 
     if (Test-Path -Path "$OutputPath/$TargetFileName")
     {
         Write-Host "Copying $TargetFileName to `"$PackagePath/x64`"...";
-        Copy-Item "$OutputPath/$TargetFileName" -Destination "$PackagePath/x64" -Force -Verbose;
 
+        Copy-Item "$OutputPath/$TargetFileName"    -Destination "$PackagePath/x64" -Force -Verbose;
         Copy-Item "$OutputPath/WebView2Loader.dll" -Destination "$PackagePath/x64" -Force -Verbose;
-        Copy-Item "Template.html" -Destination "$PackagePath/x64" -Force -Verbose;
+        Copy-Item "$OutputPath/$TargetName.tlb"    -Destination "$PackagePath/x64" -Force -Verbose;
+        Copy-Item "Template.html"                  -Destination "$PackagePath/x64" -Force -Verbose;
     }
 
     # install the component in the foobar2000 x64 components directory.
@@ -58,10 +60,14 @@ if ($Platform -eq 'x64')
         $ComponentPath = "$foobar2000Path/profile/user-components-x64";
 
         Write-Host "Creating directory `"$ComponentPath/$TargetName`"...";
+
         $null = New-Item -Path "$ComponentPath" -Name "$TargetName" -ItemType 'directory' -Force;
 
         Write-Host "Installing x64 component in foobar2000 64-bit profile...";
-        Copy-Item "$PackagePath/x64/*.dll" "$ComponentPath/$TargetName" -Force -Verbose;
+
+        Copy-Item "$PackagePath/x64/*.dll"           -Destination "$ComponentPath/$TargetName" -Force -Verbose;
+        Copy-Item "$PackagePath/x64/$TargetName.tlb" -Destination "$ComponentPath/$TargetName" -Force -Verbose;
+        Copy-Item "$PackagePath/x64/Template.html"   -Destination "$ComponentPath/$TargetName" -Force -Verbose;
     }
     else
     {
@@ -74,15 +80,17 @@ elseif ($Platform -eq 'Win32')
 
     # Create the package directory (including the x64 subdirectory)
     Write-Host "Creating directory `"$PackagePath`"...";
+
     $null = New-Item -Path '../out/' -Name "$TargetName/x64" -ItemType 'directory' -Force;
 
     if (Test-Path -Path "$OutputPath/$TargetFileName")
     {
         Write-Host "Copying $TargetFileName to `"$PackagePath`"...";
-        Copy-Item "$OutputPath/$TargetFileName" -Destination "$PackagePath";
 
+        Copy-Item "$OutputPath/$TargetFileName"    -Destination "$PackagePath" -Force -Verbose;
+        Copy-Item "$OutputPath/$TargetName.tlb"    -Destination "$PackagePath" -Force -Verbose;
         Copy-Item "$OutputPath/WebView2Loader.dll" -Destination "$PackagePath" -Force -Verbose;
-        Copy-Item "Template.html" -Destination "$PackagePath" -Force -Verbose;
+        Copy-Item "Template.html"                  -Destination "$PackagePath" -Force -Verbose;
     }
 
     # install the x86 component in the foobar2000 x86 components directory.
@@ -93,10 +101,14 @@ elseif ($Platform -eq 'Win32')
         $ComponentPath = "$foobar2000Path/profile/user-components";
 
         Write-Host "Creating directory `"$ComponentPath/$TargetName`"...";
+
         $null = New-Item -Path "$ComponentPath" -Name "$TargetName" -ItemType 'directory' -Force;
 
         Write-Host "Installing x86 component in foobar2000 32-bit profile...";
-        Copy-Item "$PackagePath/*.dll" "$ComponentPath/$TargetName" -Force -Verbose;
+
+        Copy-Item "$PackagePath/*.dll"           -Destination "$ComponentPath/$TargetName" -Force -Verbose;
+        Copy-Item "$PackagePath/$TargetName.tlb" -Destination "$ComponentPath/$TargetName" -Force -Verbose;
+        Copy-Item "$PackagePath/Template.html"   -Destination "$ComponentPath/$TargetName" -Force -Verbose;
     }
     else
     {

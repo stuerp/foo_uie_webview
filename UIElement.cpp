@@ -2,10 +2,10 @@
 /** $VER: UIElement.cpp (2024.05.25) P. Stuer **/
 
 #include "pch.h"
+
 #include "UIElement.h"
 
 #include <SDK/titleformat.h>
-
 #include <SDK/playlist.h>
 
 #pragma hdrstop
@@ -30,6 +30,14 @@ UIElement::UIElement() : m_bMsgHandled(FALSE)
 /// </summary>
 LRESULT UIElement::OnCreate(LPCREATESTRUCT cs) noexcept
 {
+    _HostObject = Microsoft::WRL::Make<HostObject>
+    (
+        [this](std::function<void(void)> callback)
+        {
+            RunAsync(callback);
+        }
+    );
+
     CreateWebView(m_hWnd);
 
     _TemplateText = ReadTemplate(_FilePath);
@@ -103,6 +111,36 @@ LRESULT UIElement::OnTemplateFileChanged(UINT msg, WPARAM wParam, LPARAM lParam)
     StartTimer();
 
     return 0;
+}
+
+/// <summary>
+/// The WebView is ready.
+/// </summary>
+LRESULT UIElement::OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam) noexcept
+{
+    if (_WebView == nullptr)
+        return false;
+
+    // Navigate to the template content.
+    std::string Text = ReadTemplate(_FilePath);
+
+    (void) _WebView->NavigateToString(pfc::wideFromUTF8(Text.c_str()));
+
+    return true;
+}
+
+/// <summary>
+/// Handles an async method call.
+/// </summary>
+LRESULT UIElement::OnAsync(UINT msg, WPARAM wParam, LPARAM lParam) noexcept
+{
+    auto * task = reinterpret_cast<std::function<void()>*>(wParam);
+
+    (*task)();
+
+    delete task;
+
+    return true;
 }
 
 /// <summary>
@@ -236,6 +274,13 @@ CWndClassInfo & UIElement::GetWndClassInfo()
 /// </summary>
 void UIElement::on_playback_new_track(metadb_handle_ptr track)
 {
+    if (_WebView == nullptr)
+        return;
+
+    HRESULT hResult = _WebView->ExecuteScript(L"Refresh()", nullptr);
+
+    if (!SUCCEEDED(hResult))
+        throw std::exception("on_playback_new_track failed");
 }
 
 /// <summary>
@@ -243,6 +288,13 @@ void UIElement::on_playback_new_track(metadb_handle_ptr track)
 /// </summary>
 void UIElement::on_playback_stop(play_control::t_stop_reason reason)
 {
+    if (_WebView == nullptr)
+        return;
+
+    HRESULT hResult = _WebView->ExecuteScript(L"Refresh()", nullptr);
+
+    if (!SUCCEEDED(hResult))
+        throw std::exception("on_playback_stop failed");
 }
 
 /// <summary>
@@ -250,6 +302,13 @@ void UIElement::on_playback_stop(play_control::t_stop_reason reason)
 /// </summary>
 void UIElement::on_playback_pause(bool)
 {
+    if (_WebView == nullptr)
+        return;
+
+    HRESULT hResult = _WebView->ExecuteScript(L"Refresh()", nullptr);
+
+    if (!SUCCEEDED(hResult))
+        throw std::exception("on_playback_pause failed");
 }
 
 /// <summary>
@@ -257,6 +316,13 @@ void UIElement::on_playback_pause(bool)
 /// </summary>
 void UIElement::on_playback_time(double time)
 {
+    if (_WebView == nullptr)
+        return;
+
+    HRESULT hResult = _WebView->ExecuteScript(L"Refresh()", nullptr);
+
+    if (!SUCCEEDED(hResult))
+        throw std::exception("on_playback_time failed");
 }
 
 #pragma endregion
