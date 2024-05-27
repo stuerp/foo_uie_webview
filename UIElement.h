@@ -7,6 +7,7 @@
 
 #include "Resources.h"
 #include "FileWatcher.h"
+#include "Preferences.h"
 
 #include <SDK/coreDarkMode.h>
 #include <SDK/playback_control.h>
@@ -15,8 +16,6 @@
 
 #include <pfc/string_conv.h>
 #include <pfc/string-conv-lite.h>
-
-extern cfg_string FilePathCfg;
 
 #include <wrl.h>
 #include <wil/com.h>
@@ -44,8 +43,8 @@ public:
 
     static CWndClassInfo & GetWndClassInfo();
 
-    static const UINT UM_WEB_VIEW_READY = WM_USER;
-    static const UINT UM_ASYNC = WM_USER + 1;
+    static const UINT UM_WEB_VIEW_READY = WM_USER + 100;
+    static const UINT UM_ASYNC          = WM_USER + 101;
 
     #pragma endregion
 
@@ -137,28 +136,22 @@ private:
     #pragma endregion
 
 private:
-    void CreateWebView(HWND hWnd) noexcept;
+    void CreateWebView() noexcept;
     void DeleteWebView() noexcept;
 
     void InitializeWebView();
 
+    std::string ReadTemplate(const std::wstring & filePath);
+
+    std::wstring GetTemplateFilePath() const noexcept;
+
     bool FormatText(const std::string & text, pfc::string & formattedText) noexcept;
-    std::string ReadTemplate(const std::wstring & filePath) noexcept;
-
-    std::wstring GetTemplateFilePath() const noexcept
-    {
-        wchar_t FilePath[MAX_PATH];
-
-        if (::ExpandEnvironmentStringsW(pfc::wideFromUTF8(FilePathCfg.c_str()), FilePath, _countof(FilePath)) == 0)
-            ::wcscpy_s(FilePath, _countof(FilePath), pfc::wideFromUTF8(FilePathCfg.c_str()));
-
-        return std::wstring(FilePath);
-    }
 
 private:
     fb2k::CCoreDarkModeHooks _DarkMode;
 
     std::wstring _ProfilePath;
+    std::wstring _UserDataFolderPath;
     std::wstring _FilePath;
 
     wil::com_ptr<ICoreWebView2Controller> _Controller;

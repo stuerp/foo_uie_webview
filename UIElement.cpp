@@ -9,6 +9,7 @@
 
 #include <SDK/titleformat.h>
 #include <SDK/playlist.h>
+#include <SDK/playback_control.h>
 
 #pragma hdrstop
 
@@ -21,6 +22,8 @@ UIElement::UIElement() : m_bMsgHandled(FALSE)
 
     if (::_strnicmp(ProfilePath, "file://", 7) == 0)
         _ProfilePath = UTF8ToWide(ProfilePath.subString(7).c_str());
+
+    _UserDataFolderPath = _ProfilePath.c_str();
 
     _FilePath = GetTemplateFilePath();
 }
@@ -40,7 +43,7 @@ LRESULT UIElement::OnCreate(LPCREATESTRUCT cs)
         }
     );
 
-    CreateWebView(m_hWnd);
+    CreateWebView();
 
     _TemplateText = ReadTemplate(_FilePath);
 
@@ -50,9 +53,7 @@ LRESULT UIElement::OnCreate(LPCREATESTRUCT cs)
     }
     catch (std::exception & e)
     {
-        const char * What = e.what();
-
-        throw ComponentException(::FormatText("Failed to start file system watcher: %s", What));
+        throw ComponentException(::FormatText("Failed to start file system watcher: %s", e.what()));
     }
 
     return 0;
@@ -64,6 +65,8 @@ LRESULT UIElement::OnCreate(LPCREATESTRUCT cs)
 void UIElement::OnDestroy() noexcept
 {
     _FileWatcher.Stop();
+
+    DeleteWebView();
 }
 
 /// <summary>
@@ -171,25 +174,14 @@ bool UIElement::FormatText(const std::string & text, pfc::string & formattedText
 }
 
 /// <summary>
-/// Reads the specified file into a string.
+/// Reads the template text into a string.
 /// </summary>
-std::string UIElement::ReadTemplate(const std::wstring & filePath) noexcept
+std::string UIElement::ReadTemplate(const std::wstring & filePath)
 {
     HANDLE hFile = ::CreateFileW(filePath.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 
     if (hFile == INVALID_HANDLE_VALUE)
-    {
-        DWORD LastError = ::GetLastError();
-
-        std::wstring Text;
-
-        Text.resize(256);
-
-        ::FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, LastError, 0, Text.data(), (DWORD) Text.size(), nullptr);
-        ::OutputDebugStringW(Text.c_str());::OutputDebugStringW(L"\n");
-
-        return std::string();
-    }
+        throw Win32Exception(::FormatText("Failed to open template file \"%s\" for read", ::WideToUTF8(filePath).c_str()));
 
     DWORD Size = ::GetFileSize(hFile, 0);
 
@@ -199,9 +191,18 @@ std::string UIElement::ReadTemplate(const std::wstring & filePath) noexcept
 
     BOOL Success = ::ReadFile(hFile, Data, Size, &BytesRead, 0);
 
+    if (!Success)
+    {
+        DWORD LastError = ::GetLastError();
+
+        ::CloseHandle(hFile);
+
+        throw Win32Exception(LastError, ::FormatText("Failed to read template file \"%s\"", ::WideToUTF8(filePath).c_str()));
+    }
+
     ::CloseHandle(hFile);
 
-    if (!Success || (BytesRead == 0))
+    if (BytesRead == 0)
         return std::string();
 
     Data[BytesRead] = '\0';
@@ -215,6 +216,19 @@ std::string UIElement::ReadTemplate(const std::wstring & filePath) noexcept
     delete[] Data;
 
     return Text;
+}
+
+/// <summary>
+/// Gets the template file path with all environment variables expanded.
+/// </summary>
+std::wstring UIElement::GetTemplateFilePath() const noexcept
+{
+    wchar_t FilePath[MAX_PATH];
+
+    if (::ExpandEnvironmentStringsW(pfc::wideFromUTF8(FilePathCfg.c_str()), FilePath, _countof(FilePath)) == 0)
+        ::wcscpy_s(FilePath, _countof(FilePath), pfc::wideFromUTF8(FilePathCfg.c_str()));
+
+    return std::wstring(FilePath);
 }
 
 /// <summary>
@@ -247,84 +261,175 @@ CWndClassInfo & UIElement::GetWndClassInfo()
 
 #pragma region play_callback_impl_base
 
-void UIElement::on_playback_starting(play_control::t_track_command command, bool paused)
-{
-}
-
 /// <summary>
-/// Playback advanced to new track.
+/// Called when playback is being initialized.
 /// </summary>
-void UIElement::on_playback_new_track(metadb_handle_ptr track)
+void UIElement::on_playback_starting(play_control::t_track_command command, bool paused)
 {
     if (_WebView == nullptr)
         return;
 
-    HRESULT hResult = _WebView->ExecuteScript(L"Refresh()", nullptr);
+    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackStartingCallbackCfg.c_str());
+
+    if (FunctionName.empty())
+        return;
+
+    static const wchar_t * CommandName = L"Unknown";
+
+    if (command == play_control::t_track_command::track_command_play) CommandName = L"Play"; else
+    if (command == play_control::t_track_command::track_command_next) CommandName = L"Next"; else       // Plays the next track from the current playlist according to the current playback order.
+    if (command == play_control::t_track_command::track_command_prev) CommandName = L"Prev"; else       // Plays the previous track from the current playlist according to the current playback order.
+    if (command == play_control::t_track_command::track_command_rand) CommandName = L"Random"; else     // Plays a random track from the current playlist.
+
+    if (command == play_control::t_track_command::track_command_rand) CommandName = L"Set track"; else  // For internal use only, do not use.
+    if (command == play_control::t_track_command::track_command_rand) CommandName = L"Resume";          // For internal use only, do not use.
+
+    HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(\"%s\", %s)", FunctionName.c_str(), CommandName, (paused ? L"true" : L"false")).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
         throw std::exception("on_playback_new_track failed");
 }
 
 /// <summary>
-/// Playback stopped.
+/// Called when playback advances to a new track.
+/// </summary>
+void UIElement::on_playback_new_track(metadb_handle_ptr /*track*/)
+{
+    if (_WebView == nullptr)
+        return;
+
+    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackNewTrackCallbackCfg.c_str());
+
+    if (FunctionName.empty())
+        return;
+
+    HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s()", FunctionName.c_str()).c_str(), nullptr);
+
+    if (!SUCCEEDED(hResult))
+        throw std::exception("on_playback_new_track failed");
+}
+
+/// <summary>
+/// Called when playback stops.
 /// </summary>
 void UIElement::on_playback_stop(play_control::t_stop_reason reason)
 {
     if (_WebView == nullptr)
         return;
 
-    HRESULT hResult = _WebView->ExecuteScript(L"Refresh()", nullptr);
+    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackStopCallbackCfg.c_str());
+
+    if (FunctionName.empty())
+        return;
+
+    static const wchar_t * Reason = L"unknown";
+
+    if (reason == play_control::t_stop_reason::stop_reason_user)                Reason = L"User"; else
+    if (reason == play_control::t_stop_reason::stop_reason_eof)                 Reason = L"EOF"; else
+    if (reason == play_control::t_stop_reason::stop_reason_starting_another)    Reason = L"Starting another"; else
+    if (reason == play_control::t_stop_reason::stop_reason_shutting_down)       Reason = L"Shutting down";
+
+    HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(\"%s\")", FunctionName.c_str(), Reason).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
         throw std::exception("on_playback_stop failed");
 }
 
-void UIElement::on_playback_seek(double time)
-{
-}
-
 /// <summary>
-/// Playback paused/resumed.
+/// Called when the user seeks to a specific time.
 /// </summary>
-void UIElement::on_playback_pause(bool)
+void UIElement::on_playback_seek(double time)
 {
     if (_WebView == nullptr)
         return;
 
-    HRESULT hResult = _WebView->ExecuteScript(L"Refresh()", nullptr);
+    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackSeekCallbackCfg.c_str());
+
+    if (FunctionName.empty())
+        return;
+
+    HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(%f)", FunctionName.c_str(), time).c_str(), nullptr);
+
+    if (!SUCCEEDED(hResult))
+        throw std::exception("on_playback_seek failed");
+}
+
+/// <summary>
+/// Called when playback pauses or resumes.
+/// </summary>
+void UIElement::on_playback_pause(bool paused)
+{
+    if (_WebView == nullptr)
+        return;
+
+    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackPauseCallbackCfg.c_str());
+
+    if (FunctionName.empty())
+        return;
+
+    HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(%s)", FunctionName.c_str(), (paused ? L"true" : L"false")).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
         throw std::exception("on_playback_pause failed");
 }
 
+/// <summary>
+/// Called when the currently played file gets edited.
+/// </summary>
 void UIElement::on_playback_edited(metadb_handle_ptr hTrack)
 {
 }
 
+/// <summary>
+/// Called when dynamic info (VBR bitrate etc) changes.
+/// </summary>
 void UIElement::on_playback_dynamic_info(const file_info & fileInfo)
 {
 }
 
+/// <summary>
+/// Called when the per-track dynamic info (stream track titles etc.) change. Happens less often than on_playback_dynamic_info().
+/// </summary>
 void UIElement::on_playback_dynamic_info_track(const file_info & fileInfo)
 {
 }
 
 /// <summary>
-/// Called every second, for time display.
+/// Called, every second, for time display.
 /// </summary>
 void UIElement::on_playback_time(double time)
 {
     if (_WebView == nullptr)
         return;
 
-    HRESULT hResult = _WebView->ExecuteScript(L"Refresh()", nullptr);
+    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackTimeCallbackCfg.c_str());
+
+    if (FunctionName.empty())
+        return;
+
+    HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(%f)", FunctionName.c_str(), time).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
         throw std::exception("on_playback_time failed");
 }
 
-void UIElement::on_volume_change(float newValue)
+/// <summary>
+/// Called when the user changes the volume.
+/// </summary>
+void UIElement::on_volume_change(float newValue) // in dBFS
 {
+    if (_WebView == nullptr)
+        return;
+
+    const std::wstring FunctionName = ::UTF8ToWide(OnVolumeChangeCallbackCfg.c_str());
+
+    if (FunctionName.empty())
+        return;
+
+    HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(%f)", FunctionName.c_str(), (double) newValue).c_str(), nullptr);
+
+    if (!SUCCEEDED(hResult))
+        throw std::exception("on_volume_change failed");
 }
 
 #pragma endregion

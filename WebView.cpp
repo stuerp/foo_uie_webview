@@ -1,5 +1,5 @@
 
-/** $VER: WebView.cpp (2024.05.26) P. Stuer - Creates the WebView. **/
+/** $VER: WebView.cpp (2024.05.27) P. Stuer - Creates the WebView. **/
 
 #include "pch.h"
 
@@ -7,9 +7,10 @@
 #include <pfc/pathUtils.h>
 
 #include <wrl.h>
+
 #include <wil/com.h>
 
-#include "WebView2.h"
+#include <WebView2.h>
 
 using namespace Microsoft::WRL;
 
@@ -18,21 +19,18 @@ using namespace Microsoft::WRL;
 /// <summary>
 /// Creates the WebView.
 /// </summary>
-void UIElement::CreateWebView(HWND hWnd) noexcept
+void UIElement::CreateWebView() noexcept
 {
-    // Sets the user data folder to the foobar2000 profile folder.
-    std::wstring UserDataFolderPath = _ProfilePath.c_str();
-
-    ::CreateCoreWebView2EnvironmentWithOptions(nullptr, UserDataFolderPath.c_str(), nullptr, Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>
+    ::CreateCoreWebView2EnvironmentWithOptions(nullptr, _UserDataFolderPath.c_str(), nullptr, Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>
     (
-        [hWnd, this](HRESULT hResult, ICoreWebView2Environment * environment) -> HRESULT
+        [this](HRESULT hResult, ICoreWebView2Environment * environment) -> HRESULT
         {
             UNREFERENCED_PARAMETER(hResult);
 
             // Create a CoreWebView2Controller and get the associated CoreWebView2 whose parent is the main window.
-            environment->CreateCoreWebView2Controller(hWnd, Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>
+            environment->CreateCoreWebView2Controller(m_hWnd, Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>
             (
-                [hWnd, this](HRESULT hResult, ICoreWebView2Controller * controller) -> HRESULT
+                [this](HRESULT hResult, ICoreWebView2Controller * controller) -> HRESULT
                 {
                     UNREFERENCED_PARAMETER(hResult);
 
@@ -60,7 +58,7 @@ void UIElement::CreateWebView(HWND hWnd) noexcept
                     {
                         RECT Bounds;
 
-                        ::GetClientRect(hWnd, &Bounds);
+                        ::GetClientRect(m_hWnd, &Bounds);
 
                         _Controller->put_Bounds(Bounds);
                     }
@@ -120,7 +118,7 @@ void UIElement::CreateWebView(HWND hWnd) noexcept
                         ).Get(), &_NavigationCompletedToken);
                     #endif
 
-                        ::PostMessageW(hWnd, UM_WEB_VIEW_READY, 0, 0);
+                        ::PostMessageW(m_hWnd, UM_WEB_VIEW_READY, 0, 0);
                     }
 
                     return S_OK;
@@ -143,5 +141,9 @@ void UIElement::DeleteWebView() noexcept
 
         _WebView->remove_NavigationCompleted(_NavigationCompletedToken);
         _WebView->remove_NavigationStarting(_NavigationStartingToken);
+
+        _WebView = nullptr;
     }
+
+    _Controller = nullptr;
 }

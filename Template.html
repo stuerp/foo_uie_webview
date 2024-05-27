@@ -68,11 +68,26 @@ Original Album: <span id="OriginalAlbum"></span><br/>
 Medium: <span id="Medium"></span><br/>
 Comment: <span id="Comment"></span><br/>
 MIDI: <span id="MIDI"></span><br/>
+<p>
+<strong>Events</strong><br/>
+Starting: <span id="Starting">?</span><br/>
+Paused: <span id="Paused">?</span><br/>
+Stop: <span id="StopReason">?</span><br/>
+Time: <span id="Time">?</span>s<br/>
+Volume: <span id="Volume">?</span>dBFS<br/>
+</p>
 </div>
 <script>
-function Refresh()
+// Called when playback is being initialized.
+function OnPlaybackStarting(command, paused)
 {
-    document.getElementById("Album").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%album%[: %subtitle%][ - %album artist%]]");
+    document.getElementById("Starting").textContent = command + " (" + (paused ? "Paused" : "Playing") + ")";
+}
+
+// Called when playback advances to a new track.
+function OnPlaybackNewTrack()
+{
+    document.getElementById("Album").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%album%[: %subtitle%] - [%album artist%]]");
     document.getElementById("AlbumDate").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%album recorded%/]%album released%]");
     document.getElementById("AlbumPublisher").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("%publisher%[' ('%album country%')']");
     document.getElementById("AlbumGenre").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("%album genre%");
@@ -101,6 +116,38 @@ function Refresh()
     document.getElementById("MIDI").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[ $info(midi_player)][, $info(midi_active_voices) voices '(peak ' $info(midi_peak_voices)')'][, extra percussion channel $info(midi_extra_percussion_channel)]");
 
     return "OK";
+}
+
+// Called when playback stops.
+function OnPlaybackStop(reason)
+{
+    document.getElementById("StopReason").textContent = reason; // "User" / "EOF" / "Starting another" / "Shutting down"
+}
+
+// Called when the user seeks to a specific time.
+function OnPlaybackSeek(time)
+{
+    document.getElementById("Time").textContent = time; // in seconds
+}
+
+// Called when playback pauses or resumes.
+function OnPlaybackPause(paused)
+{
+    document.getElementById("Paused").textContent = paused; // true / false
+}
+
+// Called, every second, for time display.
+function OnPlaybackTime(time)
+{
+    document.getElementById("Time").textContent = time; // in seconds
+
+    document.getElementById("TrackTime").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%playback_time%[/%length%]]");
+}
+
+// Called when the user changes the volume.
+function OnVolumeChange(newValue)
+{
+    document.getElementById("Volume").textContent = newValue; // in dBFS
 }
 </script>
 </body>

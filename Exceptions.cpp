@@ -17,19 +17,22 @@ std::string GetErrorMessage(DWORD errorCode, const std::string & errorMessage) n
 
     Text.resize(256);
 
-    ::FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, errorCode, 0, Text.data(), (DWORD) Text.size(), nullptr);
+    if (::FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, errorCode, 0, Text.data(), (DWORD) Text.size(), nullptr) != 0)
+    {
+        // Remove a trailing "\r\n".
+        char * p = (char *) ::strrstr(Text.c_str(), "\r\n");
 
-    // Remove a trailing "\r\n".
-    char * p = (char *) ::strrstr(Text.c_str(), "\r\n");
+        if (p != nullptr)
+            *p = '\0';
 
-    if (p != nullptr)
-        *p = '\0';
+        // Remove a trailing period ('.').
+        p = (char *) ::strrchr(Text.c_str(), '.');
 
-    // Remove a trailing period ('.').
-    p = (char *) ::strrchr(Text.c_str(), '.');
-
-    if (p != nullptr)
-        *p = '\0';
+        if (p != nullptr)
+            *p = '\0';
+    }
+    else
+        Text = ::FormatText("Failed to get error message for error code (0x%08X)", ::GetLastError());
 
     return FormatText("%s: %s (0x%08X)", errorMessage.c_str(), Text.c_str(), errorCode);
 }

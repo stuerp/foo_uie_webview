@@ -1,5 +1,5 @@
 
-/** $VER: Resources.h (2024.05.25) P. Stuer **/
+/** $VER: Resources.h (2024.05.27) P. Stuer **/
 
 #pragma once
 
@@ -51,10 +51,20 @@
 #define GUID_UI_ELEMENT         {0xdabae3e2, 0xd31d, 0x4faa, { 0x88, 0xae, 0xf1, 0x50, 0xd6, 0x80, 0x33, 0x85}};
 #define STR_WINDOW_CLASS_NAME   "{A1D51583-D8B7-40CF-88EC-B4C0AB194140}"
 
+/** Messages **/
+
+#define UM_FILE_CHANGED         WM_USER + 1
+
 /** Configuration **/
 
 #define IDD_PREFERENCES         101
 
 #define IDC_FILE_PATH           1000
 
-#define UM_FILE_CHANGED         WM_USER + 1
+#define IDC_PLAYBACK_STARTING   1010
+#define IDC_PLAYBACK_NEW_TRACK  1020
+#define IDC_PLAYBACK_STOP       1030
+#define IDC_PLAYBACK_SEEK       1040
+#define IDC_PLAYBACK_PAUSE      1050
+#define IDC_PLAYBACK_TIME       1060
+#define IDC_VOLUME_CHANGE       1070

@@ -1,5 +1,5 @@
 ﻿
-/** $VER: Resources.rc (2024.05.23) P. Stuer **/
+/** $VER: Resources.rc (2024.05.27) P. Stuer **/
 
 #include "Resources.h"
 
@@ -52,4 +52,12 @@ font 8, "Segoe UI", 400, 0, 1
 {
     ltext       "Template File Path", IDC_STATIC,       X_D11, Y_D11 + 2, W_D11, H_D11
     edittext                          IDC_FILE_PATH,    X_D12, Y_D12,     W_D12, H_D12, ES_AUTOHSCROLL
+
+    groupbox "Callbacks", IDC_STATIC, X_D20, Y_D20, W_D20, H_D20, BS_GROUPBOX, WS_EX_TRANSPARENT
+
+        ltext       "Called when playback is being initialized", IDC_STATIC, X_D21, Y_D21 + 2, W_D21, H_D21
+        edittext    IDC_PLAYBACK_STARTING, X_D22, Y_D22, W_D22, H_D22, ES_AUTOHSCROLL
+
+        ltext       "Called when playback advances to a new track", IDC_STATIC, X_D23, Y_D23 + 2, W_D23, H_D23
+        edittext    IDC_PLAYBACK_NEW_TRACK, X_D24, Y_D24, W_D24, H_D24, ES_AUTOHSCROLL
 }
