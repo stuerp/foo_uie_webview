@@ -45,16 +45,7 @@ LRESULT UIElement::OnCreate(LPCREATESTRUCT cs)
 
     CreateWebView();
 
-    _TemplateText = ReadTemplate(_FilePath);
-
-    try
-    {
-        _FileWatcher.Start(m_hWnd, _FilePath);
-    }
-    catch (std::exception & e)
-    {
-        throw ComponentException(::FormatText("Failed to start file system watcher: %s", e.what()));
-    }
+    InitializeFileWatcher();
 
     return 0;
 }
@@ -85,12 +76,10 @@ void UIElement::OnSize(UINT type, CSize size) noexcept
 }
 
 /// <summary>
-/// Handles a change to the template file.
+/// Handles a change to the template. Either the path name or the content changed.
 /// </summary>
-LRESULT UIElement::OnTemplateFileChanged(UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT UIElement::OnTemplateChanged(UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    _TemplateText = ReadTemplate(_FilePath);
-
     InitializeWebView();
 
     return 0;
@@ -101,9 +90,6 @@ LRESULT UIElement::OnTemplateFileChanged(UINT msg, WPARAM wParam, LPARAM lParam)
 /// </summary>
 LRESULT UIElement::OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    if (_WebView == nullptr)
-        return 1;
-
     InitializeWebView();
 
     return 0;
@@ -124,6 +110,23 @@ LRESULT UIElement::OnAsync(UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 }
 
 /// <summary>
+/// Initializes the file watcher.
+/// </summary>
+void UIElement::InitializeFileWatcher()
+{
+    _FileWatcher.Stop();
+
+    try
+    {
+        _FileWatcher.Start(m_hWnd, _FilePath);
+    }
+    catch (std::exception & e)
+    {
+        throw ComponentException(::FormatText("Failed to start file system watcher: %s", e.what()));
+    }
+}
+
+/// <summary>
 /// Initializes the WebView.
 /// </summary>
 void UIElement::InitializeWebView()
@@ -131,13 +134,22 @@ void UIElement::InitializeWebView()
     if (_WebView == nullptr)
         return;
 
-    // Navigate to the template content.
-    std::string Text = ReadTemplate(_FilePath);
+    try
+    {
+        _TemplateText = ReadTemplate(_FilePath);
+    }
+    catch (...)
+    {
+        _TemplateText.clear();
+    }
 
-    HRESULT hResult = _WebView->NavigateToString(UTF8ToWide(Text).c_str());
+    // Navigate to the template content.
+    HRESULT hResult = _WebView->NavigateToString(UTF8ToWide(_TemplateText).c_str());
 
     if (!SUCCEEDED(hResult))
         throw Win32Exception((DWORD) hResult, "Failed to navigate to template content");
+
+    on_playback_new_track(nullptr);
 }
 
 /// <summary>
@@ -266,6 +278,16 @@ CWndClassInfo & UIElement::GetWndClassInfo()
 /// </summary>
 void UIElement::on_playback_starting(play_control::t_track_command command, bool paused)
 {
+    std::wstring FilePath = GetTemplateFilePath();
+
+    if (_FilePath != FilePath)
+    {
+        _FilePath = FilePath;
+
+        InitializeFileWatcher();
+        InitializeWebView();
+    }
+
     if (_WebView == nullptr)
         return;
 

@@ -91,7 +91,7 @@
       <AdditionalDependencies>$(SolutionDir)..\sdk\foobar2000\shared\shared-$(Platform).lib;$(SolutionDir)x64\$(Configuration)\columns_ui_sdk.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(IntDir)$(TargetName).tlb $(OutputPath)
+      <Command>copy "$(IntDir)$(TargetName).tlb" "$(OutputPath)"
 pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(TargetName) $(TargetFileName) $(Platform) $(OutputPath)</Command>
     </PostBuildEvent>
     <PostBuildEvent>
@@ -126,7 +126,7 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
       <AdditionalDependencies>$(SolutionDir)..\sdk\foobar2000\shared\shared-$(Platform).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(IntDir)$(TargetName).tlb $(OutputPath)
+      <Command>copy "$(IntDir)$(TargetName).tlb" "$(OutputPath)"
 pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(TargetName) $(TargetFileName) $(Platform) $(OutputPath)</Command>
     </PostBuildEvent>
     <PostBuildEvent>

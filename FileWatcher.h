@@ -1,5 +1,5 @@
 
-/** $VER: FileWatcher.h (2024.05.25) P. Stuer - Implements a file system watcher. **/
+/** $VER: FileWatcher.h (2024.05.27) P. Stuer - Implements a file system watcher. **/
 
 #pragma once
 
@@ -11,6 +11,8 @@
 class FileWatcher
 {
 public:
+    FileWatcher() : _ThreadParameters(), _hThread() { }
+
     void Start(HWND hWnd, const std::wstring & filePath);
     void Stop() noexcept;
 

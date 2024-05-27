@@ -20,7 +20,7 @@
 #include <wrl.h>
 #include <wil/com.h>
 
-#include "WebView2.h"
+#include <WebView2.h>
 
 #include "HostObjectImpl.h"
 
@@ -118,7 +118,7 @@ private:
     LRESULT OnCreate(LPCREATESTRUCT cs);
     void OnDestroy() noexcept;
     void OnSize(UINT nType, CSize size) noexcept;
-    LRESULT OnTemplateFileChanged(UINT msg, WPARAM wParam, LPARAM lParam);
+    LRESULT OnTemplateChanged(UINT msg, WPARAM wParam, LPARAM lParam);
     LRESULT OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam);
     LRESULT OnAsync(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 
@@ -127,7 +127,7 @@ private:
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_SIZE(OnSize)
 
-        MESSAGE_HANDLER_EX(UM_FILE_CHANGED, OnTemplateFileChanged)
+        MESSAGE_HANDLER_EX(UM_TEMPLATE_CHANGED, OnTemplateChanged)
 
         MESSAGE_HANDLER_EX(UM_WEB_VIEW_READY, OnWebViewReady)
         MESSAGE_HANDLER_EX(UM_ASYNC, OnAsync)
@@ -139,6 +139,7 @@ private:
     void CreateWebView() noexcept;
     void DeleteWebView() noexcept;
 
+    void InitializeFileWatcher();
     void InitializeWebView();
 
     std::string ReadTemplate(const std::wstring & filePath);

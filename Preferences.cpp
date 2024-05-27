@@ -83,11 +83,7 @@ public:
     /// </summary>
     virtual void apply() final
     {
-        pfc::string8 Text;
-
-        ::uGetDlgItemText(m_hWnd, IDC_FILE_PATH, Text);
-
-        FilePathCfg = Text;
+        FilePathCfg = _FilePath;
 
         OnChanged();
     }
@@ -142,8 +138,10 @@ private:
         switch (id)
         {
             case IDC_FILE_PATH:
+            {
                 _FilePath = Text;
                 break;
+            }
 
             default:
                 return;

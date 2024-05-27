@@ -85,7 +85,7 @@ DWORD WINAPI FileWatcher::ThreadProc(LPVOID lParam) noexcept
         for (;;)
         {
             if (::wcsncmp(FileName, fni->FileName, fni->FileNameLength / 2) == 0)
-                ::PostMessageW(Parameters->hWnd, UM_FILE_CHANGED, 0, 0);
+                ::PostMessageW(Parameters->hWnd, UM_TEMPLATE_CHANGED, 0, 0);
 
             if (fni->NextEntryOffset == 0)
                 break;

@@ -3,18 +3,12 @@
 
 #include "pch.h"
 
+#include "UIElement.h"
+
 #include <pfc/string-conv-lite.h>
 #include <pfc/pathUtils.h>
 
-#include <wrl.h>
-
-#include <wil/com.h>
-
-#include <WebView2.h>
-
 using namespace Microsoft::WRL;
-
-#include "UIElement.h"
 
 /// <summary>
 /// Creates the WebView.

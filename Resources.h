@@ -53,7 +53,7 @@
 
 /** Messages **/
 
-#define UM_FILE_CHANGED         WM_USER + 1
+#define UM_TEMPLATE_CHANGED         WM_USER + 1
 
 /** Configuration **/
 

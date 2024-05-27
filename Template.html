@@ -46,15 +46,21 @@ div
 <body>
 <div>
 <span id="Album"></span><br/>
+<span id="AlbumArtist"></span><br/>
 <span id="AlbumDate"></span><br/>
 <span id="AlbumPublisher"></span><br/>
 <span id="AlbumGenre"></span><br/>
+<div>
 <span id="TrackTitle" class="track"></span><br/>
-<span id="TrackArtist" class="artist"></span> (<span id="TrackCountry"></span>)<br/>
+<span class="artist">
+<span id="TrackArtist"></span> (<span id="TrackCountry"></span>)
+</span>
+</div><br/>
 <span id="TrackDate"></span><br/>
 <span id="TrackNumber"></span><br/>
 <span id="TrackGenre"></span><br/>
 <span id="TrackTime"></span><br/>
+<span id="TrackCodec"></span><br/>
 <span id="TrackInfo"></span><br/>
 <br/>
 Composer: <span id="TrackComposer"></span><br/>
@@ -68,7 +74,7 @@ Original Album: <span id="OriginalAlbum"></span><br/>
 Medium: <span id="Medium"></span><br/>
 Comment: <span id="Comment"></span><br/>
 MIDI: <span id="MIDI"></span><br/>
-<p>
+<p style="display: none">
 <strong>Events</strong><br/>
 Starting: <span id="Starting">?</span><br/>
 Paused: <span id="Paused">?</span><br/>
@@ -87,7 +93,8 @@ function OnPlaybackStarting(command, paused)
 // Called when playback advances to a new track.
 function OnPlaybackNewTrack()
 {
-    document.getElementById("Album").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%album%[: %subtitle%] - [%album artist%]]");
+    document.getElementById("Album").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%album%[: %subtitle%]]");
+    document.getElementById("AlbumArtist").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%album artist%]");
     document.getElementById("AlbumDate").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%album recorded%/]%album released%]");
     document.getElementById("AlbumPublisher").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("%publisher%[' ('%album country%')']");
     document.getElementById("AlbumGenre").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("%album genre%");
@@ -100,7 +107,8 @@ function OnPlaybackNewTrack()
 
     document.getElementById("TrackTime").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%playback_time%[/%length%]]");
 
-    document.getElementById("TrackInfo").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("%codec_long%[, $info(codec_profile)], $caps($info(encoding)), %samplerate%Hz, %bitrate% kbps[, $info(bitspersample) bit], $caps(%channels%)[, $caps($info(channel_mode))]");
+    document.getElementById("TrackCodec").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("%codec_long%[, $info(codec_profile)], $caps($info(encoding))");
+    document.getElementById("TrackInfo").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("%samplerate%Hz, %bitrate% kbps[, $info(bitspersample) bit], $caps(%channels%)[, $caps($info(channel_mode))]");
 
     document.getElementById("TrackComposer").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[ %composer%]");
     document.getElementById("TrackLyricist").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[ %lyricist%]");
