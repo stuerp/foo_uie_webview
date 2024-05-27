@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.h (2024.05.26) P. Stuer **/
+/** $VER: UIElement.h (2024.05.27) P. Stuer **/
 
 #pragma once
 
@@ -12,6 +12,7 @@
 #include <SDK/playback_control.h>
 #include <SDK/play_callback.h>
 #include <SDK/cfg_var.h>
+
 #include <pfc/string_conv.h>
 #include <pfc/string-conv-lite.h>
 
@@ -43,61 +44,12 @@ public:
 
     static CWndClassInfo & GetWndClassInfo();
 
-    #pragma endregion
-
-protected:
-    /// <summary>
-    /// Retrieves the GUID of the element.
-    /// </summary>
-    static const GUID & GetGUID() noexcept
-    {
-        static const GUID guid = GUID_UI_ELEMENT;
-
-        return guid;
-    }
-
-private:
-    #pragma region Playback callback methods
-
-    void on_playback_starting(play_control::t_track_command p_command, bool p_paused) { }
-    void on_playback_new_track(metadb_handle_ptr p_track);
-    void on_playback_stop(play_control::t_stop_reason p_reason);
-    void on_playback_seek(double p_time) { }
-    void on_playback_pause(bool p_state);
-    void on_playback_edited(metadb_handle_ptr p_track) { }
-    void on_playback_dynamic_info(const file_info& p_info) { }
-    void on_playback_dynamic_info_track(const file_info& p_info) { }
-    void on_playback_time(double time);
-    void on_volume_change(float p_new_val) { }
+    static const UINT UM_WEB_VIEW_READY = WM_USER;
+    static const UINT UM_ASYNC = WM_USER + 1;
 
     #pragma endregion
 
-    #pragma region CWindowImpl
-
-    LRESULT OnCreate(LPCREATESTRUCT lpCreateStruct) noexcept;
-    void OnDestroy() noexcept;
-    void OnSize(UINT nType, CSize size) noexcept;
-    void OnTimer(UINT_PTR timerId) noexcept;
-    LRESULT OnTemplateFileChanged(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
-    LRESULT OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
-    LRESULT OnAsync(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
-
-    BEGIN_MSG_MAP_EX(UIElement)
-        MSG_WM_CREATE(OnCreate)
-        MSG_WM_DESTROY(OnDestroy)
-        MSG_WM_SIZE(OnSize)
-
-        MSG_WM_TIMER(OnTimer)
-        MESSAGE_HANDLER_EX(UM_FILE_CHANGED, OnTemplateFileChanged)
-
-        MESSAGE_HANDLER_EX(UM_WEB_VIEW_READY, OnWebViewReady)
-        MESSAGE_HANDLER_EX(UM_ASYNC, OnAsync)
-    END_MSG_MAP()
-
-    #pragma endregion
-
-public:
-    #pragma region HostObject
+    #pragma region WebView
 
     ICoreWebView2Controller * GetWebViewController()
     {
@@ -109,8 +61,11 @@ public:
         return _WebView.get();
     }
 
-    static const UINT UM_WEB_VIEW_READY = WM_USER;
-    static const UINT UM_ASYNC = WM_USER + 1;
+    const wchar_t * const _HostName = TEXT(STR_COMPONENT_BASENAME) L".local";
+
+    #pragma endregion
+
+    #pragma region HostObject
 
     void RunAsync(std::function<void()> callback) noexcept
     {
@@ -132,25 +87,63 @@ public:
 
     #pragma endregion
 
+protected:
+    /// <summary>
+    /// Retrieves the GUID of the element.
+    /// </summary>
+    static const GUID & GetGUID() noexcept
+    {
+        static const GUID guid = GUID_UI_ELEMENT;
+
+        return guid;
+    }
+
+private:
+    #pragma region Playback callback methods
+
+    void on_playback_starting(play_control::t_track_command command, bool paused);
+    void on_playback_new_track(metadb_handle_ptr hTrack);
+    void on_playback_stop(play_control::t_stop_reason reason);
+    void on_playback_seek(double time);
+    void on_playback_pause(bool state);
+    void on_playback_edited(metadb_handle_ptr hTrack);
+    void on_playback_dynamic_info(const file_info & fileInfo);
+    void on_playback_dynamic_info_track(const file_info & fileInfo);
+    void on_playback_time(double time);
+    void on_volume_change(float newValue);
+
+    #pragma endregion
+
+    #pragma region CWindowImpl
+
+    LRESULT OnCreate(LPCREATESTRUCT cs);
+    void OnDestroy() noexcept;
+    void OnSize(UINT nType, CSize size) noexcept;
+    LRESULT OnTemplateFileChanged(UINT msg, WPARAM wParam, LPARAM lParam);
+    LRESULT OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam);
+    LRESULT OnAsync(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+
+    BEGIN_MSG_MAP_EX(UIElement)
+        MSG_WM_CREATE(OnCreate)
+        MSG_WM_DESTROY(OnDestroy)
+        MSG_WM_SIZE(OnSize)
+
+        MESSAGE_HANDLER_EX(UM_FILE_CHANGED, OnTemplateFileChanged)
+
+        MESSAGE_HANDLER_EX(UM_WEB_VIEW_READY, OnWebViewReady)
+        MESSAGE_HANDLER_EX(UM_ASYNC, OnAsync)
+    END_MSG_MAP()
+
+    #pragma endregion
+
 private:
     void CreateWebView(HWND hWnd) noexcept;
-    void UpdateWebView() noexcept;
     void DeleteWebView() noexcept;
+
+    void InitializeWebView();
 
     bool FormatText(const std::string & text, pfc::string & formattedText) noexcept;
     std::string ReadTemplate(const std::wstring & filePath) noexcept;
-
-    const UINT_PTR TimerId = 1;
-
-    void StartTimer() noexcept
-    {
-        ::SetTimer(m_hWnd, TimerId, 500, nullptr);
-    }
-
-    void StopTimer() noexcept
-    {
-        ::KillTimer(m_hWnd, TimerId);
-    }
 
     std::wstring GetTemplateFilePath() const noexcept
     {
@@ -165,7 +158,7 @@ private:
 private:
     fb2k::CCoreDarkModeHooks _DarkMode;
 
-    pfc::string8 _ProfilePath;
+    std::wstring _ProfilePath;
     std::wstring _FilePath;
 
     wil::com_ptr<ICoreWebView2Controller> _Controller;

@@ -1,3 +1,6 @@
+
+/** $VER: HostObjectImpl.h (2024.05.27) P. Stuer **/
+
 #pragma once
 
 #include "pch.h"

@@ -3,9 +3,9 @@
 
 #include "pch.h"
 
-#include "Resources.h"
 #include "FileWatcher.h"
 #include "Exceptions.h"
+#include "Resources.h"
 
 #include <pathcch.h>
 #pragma comment(lib, "pathcch")

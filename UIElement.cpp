@@ -1,9 +1,11 @@
 
-/** $VER: UIElement.cpp (2024.05.25) P. Stuer **/
+/** $VER: UIElement.cpp (2024.05.27) P. Stuer **/
 
 #include "pch.h"
 
 #include "UIElement.h"
+#include "Encoding.h"
+#include "Exceptions.h"
 
 #include <SDK/titleformat.h>
 #include <SDK/playlist.h>
@@ -15,10 +17,10 @@
 /// </summary>
 UIElement::UIElement() : m_bMsgHandled(FALSE)
 {
-    _ProfilePath = pfc::io::path::combine(core_api::get_profile_path(), STR_COMPONENT_BASENAME);
+    pfc::string8 ProfilePath = pfc::io::path::combine(core_api::get_profile_path(), STR_COMPONENT_BASENAME);
 
-    if (::_strnicmp(_ProfilePath, "file://", 7) == 0)
-        _ProfilePath = _ProfilePath.subString(7);
+    if (::_strnicmp(ProfilePath, "file://", 7) == 0)
+        _ProfilePath = UTF8ToWide(ProfilePath.subString(7).c_str());
 
     _FilePath = GetTemplateFilePath();
 }
@@ -28,7 +30,7 @@ UIElement::UIElement() : m_bMsgHandled(FALSE)
 /// <summary>
 /// Creates the window.
 /// </summary>
-LRESULT UIElement::OnCreate(LPCREATESTRUCT cs) noexcept
+LRESULT UIElement::OnCreate(LPCREATESTRUCT cs)
 {
     _HostObject = Microsoft::WRL::Make<HostObject>
     (
@@ -48,7 +50,9 @@ LRESULT UIElement::OnCreate(LPCREATESTRUCT cs) noexcept
     }
     catch (std::exception & e)
     {
-        console::printf("Failed to start file system watcher: %s\n", e.what());
+        const char * What = e.what();
+
+        throw ComponentException(::FormatText("Failed to start file system watcher: %s", What));
     }
 
     return 0;
@@ -78,37 +82,13 @@ void UIElement::OnSize(UINT type, CSize size) noexcept
 }
 
 /// <summary>
-/// Handles a timer tick
-/// </summary>
-void UIElement::OnTimer(UINT_PTR timerId) noexcept
-{
-    std::wstring FilePath = GetTemplateFilePath();
-
-    if (_FilePath != FilePath)
-    {
-        _FileWatcher.Stop();
-
-        _FilePath = FilePath;
-
-        _TemplateText = ReadTemplate(_FilePath);
-
-        _FileWatcher.Start(m_hWnd, _FilePath);
-    }
-
-    UpdateWebView();
-}
-
-/// <summary>
 /// Handles a change to the template file.
 /// </summary>
-LRESULT UIElement::OnTemplateFileChanged(UINT msg, WPARAM wParam, LPARAM lParam) noexcept
+LRESULT UIElement::OnTemplateFileChanged(UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    StopTimer();
-
     _TemplateText = ReadTemplate(_FilePath);
-    UpdateWebView();
 
-    StartTimer();
+    InitializeWebView();
 
     return 0;
 }
@@ -116,17 +96,14 @@ LRESULT UIElement::OnTemplateFileChanged(UINT msg, WPARAM wParam, LPARAM lParam)
 /// <summary>
 /// The WebView is ready.
 /// </summary>
-LRESULT UIElement::OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam) noexcept
+LRESULT UIElement::OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam)
 {
     if (_WebView == nullptr)
-        return false;
+        return 1;
 
-    // Navigate to the template content.
-    std::string Text = ReadTemplate(_FilePath);
+    InitializeWebView();
 
-    (void) _WebView->NavigateToString(pfc::wideFromUTF8(Text.c_str()));
-
-    return true;
+    return 0;
 }
 
 /// <summary>
@@ -144,19 +121,20 @@ LRESULT UIElement::OnAsync(UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 }
 
 /// <summary>
-/// Updates the WebView.
+/// Initializes the WebView.
 /// </summary>
-void UIElement::UpdateWebView() noexcept
+void UIElement::InitializeWebView()
 {
     if (_WebView == nullptr)
         return;
 
-    pfc::string FormattedText;
+    // Navigate to the template content.
+    std::string Text = ReadTemplate(_FilePath);
 
-    if (FormatText(_TemplateText, FormattedText))
-        _WebView->NavigateToString(pfc::wideFromUTF8(FormattedText));
-    else
-        _WebView->NavigateToString(L"");
+    HRESULT hResult = _WebView->NavigateToString(UTF8ToWide(Text).c_str());
+
+    if (!SUCCEEDED(hResult))
+        throw Win32Exception((DWORD) hResult, "Failed to navigate to template content");
 }
 
 /// <summary>
@@ -269,6 +247,10 @@ CWndClassInfo & UIElement::GetWndClassInfo()
 
 #pragma region play_callback_impl_base
 
+void UIElement::on_playback_starting(play_control::t_track_command command, bool paused)
+{
+}
+
 /// <summary>
 /// Playback advanced to new track.
 /// </summary>
@@ -297,6 +279,10 @@ void UIElement::on_playback_stop(play_control::t_stop_reason reason)
         throw std::exception("on_playback_stop failed");
 }
 
+void UIElement::on_playback_seek(double time)
+{
+}
+
 /// <summary>
 /// Playback paused/resumed.
 /// </summary>
@@ -311,6 +297,18 @@ void UIElement::on_playback_pause(bool)
         throw std::exception("on_playback_pause failed");
 }
 
+void UIElement::on_playback_edited(metadb_handle_ptr hTrack)
+{
+}
+
+void UIElement::on_playback_dynamic_info(const file_info & fileInfo)
+{
+}
+
+void UIElement::on_playback_dynamic_info_track(const file_info & fileInfo)
+{
+}
+
 /// <summary>
 /// Called every second, for time display.
 /// </summary>
@@ -323,6 +321,10 @@ void UIElement::on_playback_time(double time)
 
     if (!SUCCEEDED(hResult))
         throw std::exception("on_playback_time failed");
+}
+
+void UIElement::on_volume_change(float newValue)
+{
 }
 
 #pragma endregion

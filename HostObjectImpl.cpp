@@ -1,3 +1,6 @@
+
+/** $VER: HostObjectImpl.cpp (2024.05.27) P. Stuer **/
+
 #include "pch.h"
 
 #include "HostObjectImpl.h"

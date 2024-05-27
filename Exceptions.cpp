@@ -1,19 +1,17 @@
 
-/** $VER: Exceptions.cpp (2024.05.13) P. Stuer **/
+/** $VER: Exceptions.cpp (2024.05.27) P. Stuer **/
 
 #include "pch.h"
 
 #include "Exceptions.h"
 #include "Encoding.h"
 
-#include <string.h>
-
-const char * strrstr(const char * __restrict s1, const char *__restrict s2);
+const char * strrstr(const char * __restrict s1, const char *__restrict s2) noexcept;
 
 /// <summary>
 /// Gets the error message of the specified error code.
 /// </summary>
-std::string GetErrorMessage(DWORD errorCode, const std::string & errorMessage)
+std::string GetErrorMessage(DWORD errorCode, const std::string & errorMessage) noexcept
 {
     std::string Text;
 
@@ -39,7 +37,7 @@ std::string GetErrorMessage(DWORD errorCode, const std::string & errorMessage)
 /// <summary>
 /// Returns a pointer to the last occurance of a string.
 /// </summary>
-const char * strrstr(const char * __restrict s1, const char *__restrict s2)
+const char * strrstr(const char * __restrict s1, const char *__restrict s2) noexcept
 {
     const size_t l1 = ::strlen(s1);
     const size_t l2 = ::strlen(s2);

@@ -21,7 +21,7 @@ using namespace Microsoft::WRL;
 void UIElement::CreateWebView(HWND hWnd) noexcept
 {
     // Sets the user data folder to the foobar2000 profile folder.
-    std::wstring UserDataFolderPath = pfc::wideFromUTF8(_ProfilePath).c_str();
+    std::wstring UserDataFolderPath = _ProfilePath.c_str();
 
     ::CreateCoreWebView2EnvironmentWithOptions(nullptr, UserDataFolderPath.c_str(), nullptr, Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>
     (
@@ -69,7 +69,7 @@ void UIElement::CreateWebView(HWND hWnd) noexcept
                     {
                         wil::com_ptr<ICoreWebView2_3> WebView2_3 = _WebView.try_query<ICoreWebView2_3>();
 
-                        hResult = WebView2_3->SetVirtualHostNameToFolderMapping(TEXT(STR_COMPONENT_BASENAME) L".local", pfc::wideFromUTF8(_ProfilePath).c_str(), COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
+                        hResult = WebView2_3->SetVirtualHostNameToFolderMapping(_HostName, _ProfilePath.c_str(), COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
                     }
 
                     {

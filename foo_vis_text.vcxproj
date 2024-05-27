@@ -209,8 +209,8 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
     <ClInclude Include="Exceptions.h" />
     <ClInclude Include="FileWatcher.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="HostObject\HostObjectImpl.h" />
-    <ClInclude Include="HostObject\HostObject_h.h" />
+    <ClInclude Include="HostObjectImpl.h" />
+    <ClInclude Include="HostObject_h.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Preferences.h" />
     <ClInclude Include="PreferencesLayout.h" />
@@ -224,8 +224,8 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
     <ClCompile Include="Encoding.cpp" />
     <ClCompile Include="Exceptions.cpp" />
     <ClCompile Include="FileWatcher.cpp" />
-    <ClCompile Include="HostObject\HostObjectImpl.cpp" />
-    <ClCompile Include="HostObject\HostObject_i.c">
+    <ClCompile Include="HostObjectImpl.cpp" />
+    <ClCompile Include="HostObject_i.c">
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </ForcedIncludeFiles>
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -287,7 +287,7 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
     <Text Include="LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="HostObject\HostObject.idl" />
+    <Midl Include="HostObject.idl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
