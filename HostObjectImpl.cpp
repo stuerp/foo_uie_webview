@@ -140,7 +140,17 @@ STDMETHODIMP HostObject::GetTypeInfoCount(UINT * pctinfo)
     return S_OK;
 }
 
-static bool Anchor = false;
+/// <summary>
+/// Gets the handle of the module that contains the executing code.
+/// </summary>
+inline HMODULE GetCurrentModule() noexcept
+{
+    HMODULE hModule = NULL;
+
+    ::GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCWSTR) GetCurrentModule, &hModule);
+
+    return hModule;
+}
 
 STDMETHODIMP HostObject::GetTypeInfo(UINT iTInfo, LCID lcid, ITypeInfo ** ppTInfo)
 {
@@ -151,9 +161,9 @@ STDMETHODIMP HostObject::GetTypeInfo(UINT iTInfo, LCID lcid, ITypeInfo ** ppTInf
     {
         wchar_t FilePath[MAX_PATH];
 
-        HMODULE hModule = NULL;
+        HMODULE hModule = GetCurrentModule();;
 
-        if (::GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCWSTR) &Anchor, &hModule) == 0)
+        if (hModule == NULL)
             return HRESULT_FROM_WIN32(::GetLastError());
 
         if (::GetModuleFileNameW(hModule, FilePath, _countof(FilePath)) == 0)

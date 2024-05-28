@@ -86,32 +86,6 @@ void UIElement::CreateWebView() noexcept
                             }
                         ).Get(), &_NavigationStartingToken);
 
-                    #ifdef _DEBUG
-                        // Add an event handler to test calling a script function from the host.
-                        _WebView->add_NavigationCompleted(Callback<ICoreWebView2NavigationCompletedEventHandler>
-                        (
-                            [](ICoreWebView2 * webView, ICoreWebView2NavigationCompletedEventArgs * args) -> HRESULT
-                            {
-                                HRESULT hResult = webView->ExecuteScript(L"Refresh()", Callback<ICoreWebView2ExecuteScriptCompletedHandler>
-                                (
-                                    [](HRESULT hResult, PCWSTR result) -> HRESULT
-                                    {
-                                        if (!SUCCEEDED(hResult))
-                                            ::OutputDebugStringW(L"Error");
-                                        else
-                                            ::OutputDebugStringW(result);
-
-                                        ::OutputDebugStringW(L"\n");
-
-                                        return S_OK;
-                                    }
-                                ).Get());
-
-                                return hResult;
-                            }
-                        ).Get(), &_NavigationCompletedToken);
-                    #endif
-
                         ::PostMessageW(m_hWnd, UM_WEB_VIEW_READY, 0, 0);
                     }
 
@@ -133,7 +107,6 @@ void UIElement::DeleteWebView() noexcept
     {
         _WebView->RemoveHostObjectFromScript(TEXT(STR_COMPONENT_BASENAME));
 
-        _WebView->remove_NavigationCompleted(_NavigationCompletedToken);
         _WebView->remove_NavigationStarting(_NavigationStartingToken);
 
         _WebView = nullptr;

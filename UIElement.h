@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.h (2024.05.27) P. Stuer **/
+/** $VER: UIElement.h (2024.05.28) P. Stuer **/
 
 #pragma once
 
@@ -159,7 +159,6 @@ private:
     wil::com_ptr<ICoreWebView2> _WebView;
 
     EventRegistrationToken _NavigationStartingToken = {};
-    EventRegistrationToken _NavigationCompletedToken = {};
 
     wil::com_ptr<HostObject> _HostObject;
 
