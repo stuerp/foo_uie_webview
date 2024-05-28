@@ -65,12 +65,12 @@ public:
 private:
     wil::com_ptr<ITypeLib> _TypeLibrary;
 
-    std::wstring m_propertyValue;
-    std::map<INT, std::wstring> m_propertyValues;
+    std::wstring _PropertyValue;
+    std::map<INT, std::wstring> _PropertyValues;
     wil::com_ptr<IDispatch> _Callback;
-    RunCallbackAsync m_runCallbackAsync;
+    RunCallbackAsync _RunCallbackAsync;
 
-    DATE m_date = 0.;
-    WCHAR m_formattedTime[200] = {};
-    WCHAR m_formattedDate[200] = {};
+    DATE _Date = 0.;
+    WCHAR _FormattedTime[200] = {};
+    WCHAR _FormattedDate[200] = {};
 };

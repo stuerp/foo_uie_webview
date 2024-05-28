@@ -14,6 +14,7 @@
     <ClInclude Include="PreferencesLayout.h" />
     <ClInclude Include="HostObjectImpl.h" />
     <ClInclude Include="HostObject_h.h" />
+    <ClInclude Include="Support.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -28,6 +29,7 @@
     <ClCompile Include="Preferences.cpp" />
     <ClCompile Include="HostObjectImpl.cpp" />
     <ClCompile Include="HostObject_i.c" />
+    <ClCompile Include="Support.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources.rc" />

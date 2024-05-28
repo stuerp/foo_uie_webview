@@ -1,5 +1,5 @@
 
-/** $VER: Preferences.cpp (2024.05.27) P. Stuer **/
+/** $VER: Preferences.cpp (2024.05.28) P. Stuer **/
 
 #include "pch.h"
 
@@ -11,6 +11,7 @@
 #include <helpers/atl-misc.h>
 #include <helpers/DarkMode.h>
 
+#include "UIElement.h"
 #include "Preferences.h"
 #include "Resources.h"
 
@@ -83,7 +84,15 @@ public:
     /// </summary>
     virtual void apply() final
     {
-        FilePathCfg = _FilePath;
+        if (FilePathCfg != _FilePath)
+        {
+            FilePathCfg = _FilePath;
+
+            for (auto && Panel : PanelTracker::instanceList())
+            {
+                Panel->OnTemplateFilePathChanged();
+            }
+        }
 
         OnChanged();
     }

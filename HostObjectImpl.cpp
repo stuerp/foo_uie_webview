@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.cpp (2024.05.27) P. Stuer **/
+/** $VER: HostObjectImpl.cpp (2024.05.28) P. Stuer **/
 
 #include "pch.h"
 
@@ -8,6 +8,7 @@
 #include <pathcch.h>
 #pragma comment(lib, "pathcch")
 
+#include "Support.h"
 #include "Resources.h"
 
 #include <SDK/titleformat.h>
@@ -15,10 +16,16 @@
 
 #include <pfc/string-conv-lite.h>
 
-HostObject::HostObject(HostObject::RunCallbackAsync runCallbackAsync) : m_propertyValue(L"Example Property String Value"), m_runCallbackAsync(runCallbackAsync)
+/// <summary>
+/// Initializes a new instance
+/// </summary>
+HostObject::HostObject(HostObject::RunCallbackAsync runCallbackAsync) : _PropertyValue(L"Example Property String Value"), _RunCallbackAsync(runCallbackAsync)
 {
 }
 
+/// <summary>
+/// Gets the interpreted version of the specified text containing Title Formating.
+/// </summary>
 STDMETHODIMP HostObject::GetFormattedText(BSTR text, BSTR * formattedText)
 {
     static_api_ptr_t<playlist_manager> _PlaylistManager;
@@ -55,51 +62,57 @@ STDMETHODIMP HostObject::GetFormattedText(BSTR text, BSTR * formattedText)
     return S_OK;
 }
 
-STDMETHODIMP HostObject::get_Property(BSTR * stringResult)
+STDMETHODIMP HostObject::get_Property(BSTR * value_)
 {
-    *stringResult = ::SysAllocString(m_propertyValue.c_str());
+    *value_ = ::SysAllocString(_PropertyValue.c_str());
 
     return S_OK;
 }
 
-STDMETHODIMP HostObject::put_Property(BSTR stringValue)
+STDMETHODIMP HostObject::put_Property(BSTR value_)
 {
-    m_propertyValue = stringValue;
+    _PropertyValue = value_;
 
     return S_OK;
 }
 
-STDMETHODIMP HostObject::get_IndexedProperty(INT index, BSTR * stringResult)
+STDMETHODIMP HostObject::get_IndexedProperty(INT index, BSTR * result)
 {
-    std::wstring result(L"[");
-    result = result + std::to_wstring(index) + L"] is " + m_propertyValues[index] + L".";
-    *stringResult = SysAllocString(result.c_str());
+    std::wstring Result(L"[");
+
+    Result = Result + std::to_wstring(index) + L"] is " + _PropertyValues[index] + L".";
+
+    *result = ::SysAllocString(Result.c_str());
+
     return S_OK;
 }
 
-STDMETHODIMP HostObject::put_IndexedProperty(INT index, BSTR stringValue)
+STDMETHODIMP HostObject::put_IndexedProperty(INT index, BSTR value_)
 {
-    m_propertyValues[index] = stringValue;
+    _PropertyValues[index] = value_;
+
     return S_OK;
 }
 
-STDMETHODIMP HostObject::get_DateProperty(DATE * dateResult)
+STDMETHODIMP HostObject::get_DateProperty(DATE * value_)
 {
-    *dateResult = m_date;
+    *value_ = _Date;
+
     return S_OK;
 }
 
-STDMETHODIMP HostObject::put_DateProperty(DATE dateValue)
+STDMETHODIMP HostObject::put_DateProperty(DATE value_)
 {
-    m_date = dateValue;
+    _Date = value_;
 
-    SYSTEMTIME systemTime;
+    SYSTEMTIME st;
 
-    if (VariantTimeToSystemTime(dateValue, &systemTime))
+    if (::VariantTimeToSystemTime(value, &st))
     {
         // Save the Date and Time as strings to be able to easily check that we are getting the correct values.
-        GetDateFormatEx(LOCALE_NAME_INVARIANT, 0 /*flags*/, &systemTime, NULL /*format*/, m_formattedDate, ARRAYSIZE(m_formattedDate), NULL /*reserved*/);
-        GetTimeFormatEx(LOCALE_NAME_INVARIANT, 0 /*flags*/, &systemTime, NULL /*format*/, m_formattedTime, ARRAYSIZE(m_formattedTime));
+
+        ::GetDateFormatEx(LOCALE_NAME_INVARIANT, 0, &st, nullptr, _FormattedDate, _countof(_FormattedDate), nullptr);
+        ::GetTimeFormatEx(LOCALE_NAME_INVARIANT, 0, &st, nullptr, _FormattedTime, _countof(_FormattedTime));
     }
 
     return S_OK;
@@ -123,38 +136,31 @@ STDMETHODIMP HostObject::CallCallbackAsynchronously(IDispatch * callbackParamete
 {
     wil::com_ptr<IDispatch> callbackParameterForCapture = callbackParameter;
 
-    m_runCallbackAsync([callbackParameterForCapture]() -> void
-    {
-        DISPPARAMS DispParams = { };
+    _RunCallbackAsync
+    (
+        [callbackParameterForCapture]() -> void
+        {
+            DISPPARAMS DispParams = { };
 
-        callbackParameterForCapture->Invoke(DISPID_UNKNOWN, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, &DispParams, nullptr, nullptr, nullptr);
-    });
-
-    return S_OK;
-}
-
-STDMETHODIMP HostObject::GetTypeInfoCount(UINT * pctinfo)
-{
-    *pctinfo = 1;
+            callbackParameterForCapture->Invoke(DISPID_UNKNOWN, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, &DispParams, nullptr, nullptr, nullptr);
+        }
+    );
 
     return S_OK;
 }
 
-/// <summary>
-/// Gets the handle of the module that contains the executing code.
-/// </summary>
-inline HMODULE GetCurrentModule() noexcept
+#pragma region IDispatch
+
+STDMETHODIMP HostObject::GetTypeInfoCount(UINT * typeInfoCount)
 {
-    HMODULE hModule = NULL;
+    *typeInfoCount = 1;
 
-    ::GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCWSTR) GetCurrentModule, &hModule);
-
-    return hModule;
+    return S_OK;
 }
 
-STDMETHODIMP HostObject::GetTypeInfo(UINT iTInfo, LCID lcid, ITypeInfo ** ppTInfo)
+STDMETHODIMP HostObject::GetTypeInfo(UINT typeInfoIndex, LCID lcid, ITypeInfo ** typeInfo)
 {
-    if (iTInfo != 0)
+    if (typeInfoIndex != 0)
         return TYPE_E_ELEMENTNOTFOUND;
 
     if (_TypeLibrary == nullptr)
@@ -176,16 +182,16 @@ STDMETHODIMP HostObject::GetTypeInfo(UINT iTInfo, LCID lcid, ITypeInfo ** ppTInf
         RETURN_IF_FAILED(LoadTypeLib(FilePath, &_TypeLibrary));
     }
 
-    return _TypeLibrary->GetTypeInfoOfGuid(__uuidof(IHostObject), ppTInfo);
+    return _TypeLibrary->GetTypeInfoOfGuid(__uuidof(IHostObject), typeInfo);
 }
 
-STDMETHODIMP HostObject::GetIDsOfNames(REFIID riid, LPOLESTR * rgszNames, UINT cNames, LCID lcid, DISPID * rgDispId)
+STDMETHODIMP HostObject::GetIDsOfNames(REFIID riid, LPOLESTR * names, UINT nameCount, LCID lcid, DISPID * dispIds)
 {
     wil::com_ptr<ITypeInfo> TypeInfo;
 
     RETURN_IF_FAILED(GetTypeInfo(0, lcid, &TypeInfo));
 
-    return TypeInfo->GetIDsOfNames(rgszNames, cNames, rgDispId);
+    return TypeInfo->GetIDsOfNames(names, nameCount, dispIds);
 }
 
 /// <summary>
@@ -199,3 +205,5 @@ STDMETHODIMP HostObject::Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WOR
 
     return TypeInfo->Invoke(this, dispIdMember, flags, dispParams, result, excepInfo, argErr);
 }
+
+#pragma endregion

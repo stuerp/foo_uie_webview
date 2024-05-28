@@ -215,6 +215,7 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
     <ClInclude Include="Preferences.h" />
     <ClInclude Include="PreferencesLayout.h" />
     <ClInclude Include="Resources.h" />
+    <ClInclude Include="Support.h" />
     <ClInclude Include="UIElement.h" />
   </ItemGroup>
   <ItemGroup>
@@ -246,6 +247,7 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Preferences.cpp" />
+    <ClCompile Include="Support.cpp" />
     <ClCompile Include="UIElement.cpp" />
     <ClCompile Include="WebView.cpp" />
   </ItemGroup>

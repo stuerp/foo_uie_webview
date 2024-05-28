@@ -96,6 +96,14 @@ LRESULT UIElement::OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 /// <summary>
+/// Handles a notification from the Preferences page that the template file path has changed.
+/// </summary>
+void UIElement::OnTemplateFilePathChanged()
+{
+}
+
+
+/// <summary>
 /// Handles an async method call.
 /// </summary>
 LRESULT UIElement::OnAsync(UINT msg, WPARAM wParam, LPARAM lParam) noexcept

@@ -27,9 +27,22 @@
 using namespace Microsoft::WRL;
 
 /// <summary>
+/// Allows the preference page to notify all UIElement instances.
+/// </summary>
+class INotify
+{
+public:
+    virtual ~INotify() { }
+
+    virtual void OnTemplateFilePathChanged() = 0;
+};
+
+using PanelTracker = pfc::instanceTracker<INotify>;
+
+/// <summary>
 /// Implements the UIElement and Playback interface.
 /// </summary>
-class UIElement : public CWindowImpl<UIElement>, private play_callback_impl_base
+class UIElement : public PanelTracker, public CWindowImpl<UIElement>, private play_callback_impl_base
 {
 public:
     UIElement();
@@ -85,6 +98,8 @@ public:
     }
 
     #pragma endregion
+
+    void OnTemplateFilePathChanged() override;
 
 protected:
     /// <summary>
