@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.cpp (2024.05.27) P. Stuer **/
+/** $VER: UIElement.cpp (2024.05.29) P. Stuer **/
 
 #include "pch.h"
 
@@ -100,8 +100,11 @@ LRESULT UIElement::OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam)
 /// </summary>
 void UIElement::OnTemplateFilePathChanged()
 {
-}
+    _FilePath = GetTemplateFilePath();
 
+    InitializeFileWatcher();
+    InitializeWebView();
+}
 
 /// <summary>
 /// Handles an async method call.
@@ -286,16 +289,6 @@ CWndClassInfo & UIElement::GetWndClassInfo()
 /// </summary>
 void UIElement::on_playback_starting(play_control::t_track_command command, bool paused)
 {
-    std::wstring FilePath = GetTemplateFilePath();
-
-    if (_FilePath != FilePath)
-    {
-        _FilePath = FilePath;
-
-        InitializeFileWatcher();
-        InitializeWebView();
-    }
-
     if (_WebView == nullptr)
         return;
 
