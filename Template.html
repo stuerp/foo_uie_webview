@@ -23,6 +23,7 @@ body
 }
 div
 { 
+    display: none;
     margin-top: 0; 
     text-align: center;
     display: inline;
@@ -44,7 +45,7 @@ div
 </style>
 </head>
 <body>
-<div>
+<div id="Info">
 <span id="Album"></span><br/>
 <span id="AlbumArtist"></span><br/>
 <span id="AlbumDate"></span><br/>
@@ -87,12 +88,16 @@ Volume: <span id="Volume">?</span>dBFS<br/>
 // Called when playback is being initialized.
 function OnPlaybackStarting(command, paused)
 {
+    document.getElementById("Info").style.display = 'inline';
+
     document.getElementById("Starting").textContent = command + " (" + (paused ? "Paused" : "Playing") + ")";
 }
 
 // Called when playback advances to a new track.
 function OnPlaybackNewTrack()
 {
+    document.getElementById("Info").style.display = 'inline';
+
     document.getElementById("Album").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%album%[: %subtitle%]]");
     document.getElementById("AlbumArtist").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%album artist%]");
     document.getElementById("AlbumDate").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%album recorded%/]%album released%]");
@@ -130,6 +135,8 @@ function OnPlaybackNewTrack()
 function OnPlaybackStop(reason)
 {
     document.getElementById("StopReason").textContent = reason; // "User" / "EOF" / "Starting another" / "Shutting down"
+
+    document.getElementById("Info").style.display = 'none';
 }
 
 // Called when the user seeks to a specific time.

@@ -1,5 +1,5 @@
 
-/** $VER: Preferences.h (2024.05.27) P. Stuer **/
+/** $VER: Preferences.h (2024.06.02) P. Stuer **/
 
 #pragma once
 
@@ -17,3 +17,5 @@ extern cfg_string OnPlaybackPauseCallbackCfg;
 extern cfg_string OnPlaybackTimeCallbackCfg;
 
 extern cfg_string OnVolumeChangeCallbackCfg;
+
+extern void ShowPreferences(HWND hWnd);

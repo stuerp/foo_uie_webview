@@ -20,7 +20,7 @@
 #pragma hdrstop
 
 static constexpr GUID       FilePathGUID                        = { 0x341c4082, 0x255b, 0x4a38, { 0x81, 0x53, 0x55, 0x43, 0x5a, 0xd2, 0xe8, 0xa5 }};
-static constexpr const char FilePathDefault[]                   = "Template.html";
+static constexpr const char FilePathDefault[]                   = ""; // Initialized during startup
 cfg_string                  FilePathCfg(FilePathGUID, FilePathDefault);
 
 static constexpr GUID       OnPlaybackStartingCallbackGUID      = { 0x8f77ab56, 0xcfa5, 0x4dab, { 0x9d, 0xa3, 0x74, 0x06, 0x9c, 0x75, 0x26, 0x07 } };
@@ -265,7 +265,7 @@ public:
 
     GUID get_guid()
     {
-        static constexpr GUID _GUID = {0xb18587e0,0x9c95,0x4ee3,{0x8e,0x9f,0xaa,0x8c,0x77,0xec,0x2f,0x85}}; // {b18587e0-9c95-4ee3-8e9f-aa8c77ec2f85}
+        static constexpr GUID _GUID = GUID_PREFERENCES;
 
         return _GUID;
     }
@@ -276,6 +276,6 @@ public:
     }
 };
 
-static preferences_page_factory_t<PreferencesPage> _PreferencesPageFactory;
+static preferences_page_factory_t<PreferencesPage> _Factory;
 
 #pragma endregion

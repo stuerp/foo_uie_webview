@@ -12,6 +12,25 @@
 using namespace Microsoft::WRL;
 
 /// <summary>
+/// Returns true if a supported WebView version is available on this system.
+/// </summary>
+bool UIElement::GetWebViewVersion(std::wstring & versionString)
+{
+    LPWSTR VersionString = nullptr;
+
+    HRESULT hResult = ::GetAvailableCoreWebView2BrowserVersionString(nullptr, &VersionString);
+
+    if (!SUCCEEDED(hResult))
+        return false;
+
+    versionString = VersionString;
+
+    ::CoTaskMemFree(VersionString);
+
+    return true;
+}
+
+/// <summary>
 /// Creates the WebView.
 /// </summary>
 void UIElement::CreateWebView()
@@ -27,13 +46,13 @@ void UIElement::CreateWebView()
         {
             UNREFERENCED_PARAMETER(hResult);
 
+            _Environment = environment;
+
             // Create a CoreWebView2Controller and get the associated CoreWebView2 whose parent is the main window.
             environment->CreateCoreWebView2Controller(m_hWnd, Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>
             (
                 [this](HRESULT hResult, ICoreWebView2Controller * controller) -> HRESULT
                 {
-                    UNREFERENCED_PARAMETER(hResult);
-
                     if (controller != nullptr)
                     {
                         _Controller = controller;
@@ -70,8 +89,8 @@ void UIElement::CreateWebView()
                         hResult = WebView2_3->SetVirtualHostNameToFolderMapping(_HostName, _ProfilePath.c_str(), COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
                     }
 
+                    // Add an event handler to add the host object before navigation starts. That way the host object is available when the scripts start running.
                     {
-                        // Add an event handler to add the host object before navigation starts. That way the host object is available when the scripts start running.
                         _WebView->add_NavigationStarting(Microsoft::WRL::Callback<ICoreWebView2NavigationStartingEventHandler>
                         (
                             [this](ICoreWebView2 * webView, ICoreWebView2NavigationStartingEventArgs * args) -> HRESULT
@@ -91,9 +110,113 @@ void UIElement::CreateWebView()
                                 return hResult;
                             }
                         ).Get(), &_NavigationStartingToken);
-
-                        ::PostMessageW(m_hWnd, UM_WEB_VIEW_READY, 0, 0);
                     }
+
+                    // Add custom context menu items.
+                    {
+                        wil::com_ptr<ICoreWebView2_11> WebView2_11 = _WebView.try_query<ICoreWebView2_11>();
+
+                        if (WebView2_11 == nullptr)
+                            return S_OK;
+
+                        hResult = WebView2_11->add_ContextMenuRequested(Callback<ICoreWebView2ContextMenuRequestedEventHandler>
+                        (
+                            [this](ICoreWebView2 * sender, ICoreWebView2ContextMenuRequestedEventArgs * eventArgs)
+                            {
+                                wil::com_ptr<ICoreWebView2ContextMenuRequestedEventArgs> Args = eventArgs;
+
+                                wil::com_ptr<ICoreWebView2ContextMenuTarget> Target;
+
+                                HRESULT hr = Args->get_ContextMenuTarget(&Target);
+
+                                if (!SUCCEEDED(hr))
+                                    return S_OK;
+
+                                COREWEBVIEW2_CONTEXT_MENU_TARGET_KIND TargetKind;
+
+                                hr = Target->get_Kind(&TargetKind);
+
+                                if (!SUCCEEDED(hr))
+                                    return S_OK;
+
+                                if (TargetKind != COREWEBVIEW2_CONTEXT_MENU_TARGET_KIND_PAGE)
+                                    return S_OK;
+
+                                wil::com_ptr<ICoreWebView2ContextMenuItemCollection> Items;
+
+                                hr = Args->get_MenuItems(&Items);
+
+                                if (!SUCCEEDED(hr))
+                                    return S_OK;
+
+                                UINT32 ItemCount;
+
+                                hr = Items->get_Count(&ItemCount);
+
+                                if (!SUCCEEDED(hr))
+                                    return S_OK;
+
+                                // Add the context menu item.
+                                {
+                                    // Custom items should be reused whenever possible.
+                                    if (_ContextMenuItem == nullptr)
+                                    {
+                                        wil::com_ptr<ICoreWebView2Environment9> Environment9;
+
+                                        hr = _Environment->QueryInterface(IID_PPV_ARGS(&Environment9));
+
+                                        if (!SUCCEEDED(hr))
+                                            return S_OK;
+
+                                        hr = Environment9->CreateContextMenuItem(TEXT(STR_COMPONENT_NAME), nullptr, COREWEBVIEW2_CONTEXT_MENU_ITEM_KIND_SUBMENU, &_ContextMenuItem);
+
+                                        if (!SUCCEEDED(hr))
+                                            return S_OK;
+
+                                        wil::com_ptr<ICoreWebView2ContextMenuItemCollection> Children;
+
+                                        hr = _ContextMenuItem->get_Children(&Children);
+
+                                        if (!SUCCEEDED(hr))
+                                            return S_OK;
+
+                                        wil::com_ptr<ICoreWebView2ContextMenuItem> MenuItem;
+/*
+                                        wil::com_ptr<IStream> IconStream;
+
+                                        ::SHCreateStreamOnFileEx(L"small.ico", STGM_READ, FILE_ATTRIBUTE_NORMAL, FALSE, nullptr, &IconStream);
+*/
+                                        hr = Environment9->CreateContextMenuItem(L"Preferences", nullptr, COREWEBVIEW2_CONTEXT_MENU_ITEM_KIND_COMMAND, &MenuItem);
+
+                                        if (!SUCCEEDED(hr))
+                                            return S_OK;
+
+                                        hr = MenuItem->add_CustomItemSelected(Callback<ICoreWebView2CustomItemSelectedEventHandler>
+                                        (
+                                            [this, Target](ICoreWebView2ContextMenuItem * sender, IUnknown * args)
+                                            {
+                                                RunAsync([this] { ShowPreferences(); });
+
+                                                return S_OK;
+                                            }
+                                        ).Get(), nullptr);
+
+                                        if (!SUCCEEDED(hr))
+                                            return S_OK;
+
+                                        hr = Children->InsertValueAtIndex(0, MenuItem.get());
+                                    }
+
+                                    hr = Items->InsertValueAtIndex(ItemCount, _ContextMenuItem.get());
+                                }
+
+                                // Display the context menu.
+                                return S_OK;
+                            }
+                        ).Get(), &_ContextMenuRequestedToken);
+                    }
+
+                    ::PostMessageW(m_hWnd, UM_WEB_VIEW_READY, 0, 0);
 
                     return S_OK;
                 }
