@@ -1,5 +1,5 @@
 
-/** $VER: CUIElement.cpp (2024.05.23) P. Stuer **/
+/** $VER: CUIElement.cpp (2024.06.02) P. Stuer **/
 
 #include "pch.h"
 
@@ -32,6 +32,8 @@ CUIElement::~CUIElement()
 /// </summary>
 HWND CUIElement::create_or_transfer_window(HWND hParent, const window_host_ptr & newHost, const ui_helpers::window_position_t & position)
 {
+    _hParent = hParent;
+
     if (*this == nullptr)
     {
         _Host = newHost;
@@ -41,8 +43,6 @@ HWND CUIElement::create_or_transfer_window(HWND hParent, const window_host_ptr &
         position.convert_to_rect(r);
 
         Create(hParent, r, 0, WS_CHILD, 0);
-
-        _hParent = hParent;
     }
     else
     {

@@ -1,5 +1,5 @@
 
-/** $VER: CUIElement.h (2024.05.23) P. Stuer - Columns User Interface support **/
+/** $VER: CUIElement.h (2024.06.02) P. Stuer - Columns User Interface support **/
 
 #pragma once
 
@@ -68,15 +68,6 @@ public:
 
     #pragma endregion
 
-    #pragma region container_uie_window_v3_t interface
-/*
-    const window_host_ptr & get_host() const
-    {
-        return _Host;
-    }
-*/
-    #pragma endregion
-
     #pragma region extension_base interface
 
     /// <summary>
@@ -100,7 +91,6 @@ public:
     /// </summary>
     void set_config(stream_reader * reader, size_t size, abort_callback & abortHandler) final
     {
-//      _MainState.Read(reader, size, abortHandler);
     }
 
     /// <summary>
@@ -108,7 +98,6 @@ public:
     /// </summary>
     void get_config(stream_writer * writer, abort_callback & abortHandler) const final
     {
-//      _MainState.Write(writer, abortHandler);
     }
 
     #pragma endregion

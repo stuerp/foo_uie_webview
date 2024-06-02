@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.h (2024.05.28) P. Stuer **/
+/** $VER: UIElement.h (2024.06.02) P. Stuer **/
 
 #pragma once
 
@@ -86,7 +86,7 @@ public:
         PostMessage(UM_ASYNC, reinterpret_cast<WPARAM>(Task), 0);
     }
 
-    void AsyncMessageBox(std::wstring message, std::wstring title)
+    void MessageBoxAsync(std::wstring message, std::wstring title)
     {
         RunAsync
         (
@@ -157,11 +157,9 @@ private:
     void InitializeFileWatcher();
     void InitializeWebView();
 
-    std::string ReadTemplate(const std::wstring & filePath);
-
     std::wstring GetTemplateFilePath() const noexcept;
 
-    bool FormatText(const std::string & text, pfc::string & formattedText) noexcept;
+    bool TitleFormatText(const std::string & text, pfc::string & formattedText) noexcept;
 
 private:
     fb2k::CCoreDarkModeHooks _DarkMode;
@@ -178,6 +176,4 @@ private:
     wil::com_ptr<HostObject> _HostObject;
 
     FileWatcher _FileWatcher;
-
-    std::string _TemplateText;
 };

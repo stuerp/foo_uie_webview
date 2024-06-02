@@ -1,5 +1,5 @@
 
-/** $VER: Resources.h (2024.05.27) P. Stuer **/
+/** $VER: Resources.h (2024.06.02) P. Stuer **/
 
 #pragma once
 
@@ -60,6 +60,8 @@
 #define IDD_PREFERENCES         101
 
 #define IDC_FILE_PATH           1000
+#define IDC_FILE_PATH_SELECT    1002
+#define IDC_FILE_PATH_EDIT      1004
 
 #define IDC_PLAYBACK_STARTING   1010
 #define IDC_PLAYBACK_NEW_TRACK  1020

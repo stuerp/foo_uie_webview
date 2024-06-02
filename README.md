@@ -69,7 +69,7 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.1.0.0, 2024-05-xx, *"Scratchin' the itch"*
+v0.1.0.0, 2024-06-xx, *"Scratchin' the itch"*
 
 * Initial release.
 
@@ -83,6 +83,8 @@ v0.1.0.0, 2024-05-xx, *"Scratchin' the itch"*
 * https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/user-data-folder?tabs=win32
 * https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/?view=webview2-1.0.2478.35
 * https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2_3?view=webview2-1.0.2478.35#setvirtualhostnametofoldermapping
+* https://learn.microsoft.com/en-us/microsoft-edge/webview2/how-to/hostobject?tabs=win32
+* https://learn.microsoft.com/en-us/microsoft-edge/webview2/how-to/javascript
 
 ## Links
 
@@ -90,6 +92,7 @@ v0.1.0.0, 2024-05-xx, *"Scratchin' the itch"*
 * Repository: [https://github.com/stuerp/foo_vis_text.git](https://github.com/stuerp/foo_vis_text.git)
 * Issue tracker: [https://github.com/stuerp/foo_vis_text/issues](https://github.com/stuerp/foo_vis_text/issues)
 * Wiki: [https://wiki.hydrogenaud.io/index.php?title=Foobar2000:Components/Text_Visualizer_(foo_vis_text)](https://wiki.hydrogenaud.io/index.php?title=Foobar2000:Components/Text_Visualizer_(foo_vis_text)).
+
 ## License
 
 ![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)

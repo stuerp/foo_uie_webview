@@ -1,5 +1,5 @@
 
-/** $VER: Preferences.cpp (2024.05.28) P. Stuer **/
+/** $VER: Preferences.cpp (2024.06.02) P. Stuer **/
 
 #include "pch.h"
 
@@ -13,6 +13,8 @@
 
 #include "UIElement.h"
 #include "Preferences.h"
+#include "Exceptions.h"
+#include "Encoding.h"
 #include "Resources.h"
 
 #pragma hdrstop
@@ -41,12 +43,12 @@ static constexpr GUID       OnPlaybackPauseCallbackGUID         = { 0x12c5a8f7, 
 static constexpr const char OnPlaybackPauseCallbackDefault[]    = "OnPlaybackPause";
 cfg_string                  OnPlaybackPauseCallbackCfg(OnPlaybackPauseCallbackGUID, OnPlaybackPauseCallbackDefault);
 
-static constexpr GUID       OnPlaybackTimeCallbackGUID         = { 0x0c5d244e2, 0xf6cc, 0x4b3f, { 0x99, 0xfe, 0x29, 0xbf, 0x2e, 0x03, 0x14, 0x04 } };
-static constexpr const char OnPlaybackTimeCallbackDefault[]    = "OnPlaybackTime";
+static constexpr GUID       OnPlaybackTimeCallbackGUID          = { 0x0c5d244e2, 0xf6cc, 0x4b3f, { 0x99, 0xfe, 0x29, 0xbf, 0x2e, 0x03, 0x14, 0x04 } };
+static constexpr const char OnPlaybackTimeCallbackDefault[]     = "OnPlaybackTime";
 cfg_string                  OnPlaybackTimeCallbackCfg(OnPlaybackTimeCallbackGUID, OnPlaybackTimeCallbackDefault);
 
-static constexpr GUID       OnVolumeChangeCallbackGUID         = { 0x0959697db, 0x64a4, 0x4726, { 0x85, 0x27, 0x64, 0x88, 0x14, 0x0c, 0xa6, 0xda } };
-static constexpr const char OnVolumeChangeCallbackDefault[]    = "OnVolumeChange";
+static constexpr GUID       OnVolumeChangeCallbackGUID          = { 0x0959697db, 0x64a4, 0x4726, { 0x85, 0x27, 0x64, 0x88, 0x14, 0x0c, 0xa6, 0xda } };
+static constexpr const char OnVolumeChangeCallbackDefault[]     = "OnVolumeChange";
 cfg_string                  OnVolumeChangeCallbackCfg(OnVolumeChangeCallbackGUID, OnVolumeChangeCallbackDefault);
 
 /// <summary>
@@ -115,6 +117,8 @@ public:
     BEGIN_MSG_MAP_EX(Preferences)
         MSG_WM_INITDIALOG(OnInitDialog)
         COMMAND_HANDLER_EX(IDC_FILE_PATH, EN_CHANGE, OnEditChange)
+        COMMAND_HANDLER_EX(IDC_FILE_PATH_SELECT, BN_CLICKED, OnButtonClicked)
+        COMMAND_HANDLER_EX(IDC_FILE_PATH_EDIT, BN_CLICKED, OnButtonClicked)
     END_MSG_MAP()
 
 private:
@@ -157,6 +161,59 @@ private:
         }
 
         OnChanged();
+    }
+
+    /// <summary>
+    /// Handles a click on a button.
+    /// </summary>
+    void OnButtonClicked(UINT, int id, CWindow) noexcept
+    {
+        switch (id)
+        {
+            case IDC_FILE_PATH_SELECT:
+            {
+                char ExpandedFilePath[MAX_PATH];
+
+                if (::ExpandEnvironmentStringsA(_FilePath.c_str(), ExpandedFilePath, _countof(ExpandedFilePath)) == 0)
+                    ::strcpy_s(ExpandedFilePath, _countof(ExpandedFilePath), _FilePath.c_str());
+
+                pfc::string8 DirectoryPath = ExpandedFilePath;
+
+                DirectoryPath.truncate_filename();
+
+                pfc::string8 FilePath = ExpandedFilePath;
+
+                if (::uGetOpenFileName(m_hWnd, "Template files|*.htm;*.html;*.txt", 0, "html", "Choose a template...", DirectoryPath, FilePath, FALSE))
+                {
+                    _FilePath = FilePath;
+
+                    UpdateDialog();
+                    OnChanged();
+                }
+                break;
+            }
+
+            case IDC_FILE_PATH_EDIT:
+            {
+                char ExpandedFilePath[MAX_PATH];
+
+                if (::ExpandEnvironmentStringsA(_FilePath.c_str(), ExpandedFilePath, _countof(ExpandedFilePath)) == 0)
+                    ::strcpy_s(ExpandedFilePath, _countof(ExpandedFilePath), _FilePath.c_str());
+
+                pfc::string8 DirectoryPath = ExpandedFilePath;
+
+                DirectoryPath.truncate_filename();
+
+                INT_PTR Result = (INT_PTR) ::ShellExecuteA(m_hWnd, "edit", ExpandedFilePath, nullptr, DirectoryPath.c_str(), SW_NORMAL);
+
+                if (Result <= 32)
+                    MessageBoxW(::UTF8ToWide(::GetErrorMessage(::GetLastError(), "Failed to launch editor")).c_str(), TEXT(STR_COMPONENT_NAME), MB_OK);
+                break;
+            }
+
+            default:
+                break;
+        }
     }
 
     /// <summary>

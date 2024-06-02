@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.cpp (2024.05.29) P. Stuer **/
+/** $VER: UIElement.cpp (2024.06.02) P. Stuer **/
 
 #include "pch.h"
 
@@ -37,7 +37,7 @@ LRESULT UIElement::OnCreate(LPCREATESTRUCT cs)
 {
     _HostObject = Microsoft::WRL::Make<HostObject>
     (
-        [this](std::function<void(void)> callback)
+        [this](std::function<void (void)> callback)
         {
             RunAsync(callback);
         }
@@ -145,20 +145,11 @@ void UIElement::InitializeWebView()
     if (_WebView == nullptr)
         return;
 
-    try
-    {
-        _TemplateText = ReadTemplate(_FilePath);
-    }
-    catch (...)
-    {
-        _TemplateText.clear();
-    }
-
-    // Navigate to the template content.
-    HRESULT hResult = _WebView->NavigateToString(UTF8ToWide(_TemplateText).c_str());
+    // Navigate to the template.
+    HRESULT hResult = _WebView->Navigate(_FilePath.c_str());
 
     if (!SUCCEEDED(hResult))
-        throw Win32Exception((DWORD) hResult, "Failed to navigate to template content");
+        throw Win32Exception((DWORD) hResult, "Failed to navigate to template");
 
     on_playback_new_track(nullptr);
 }
@@ -166,7 +157,7 @@ void UIElement::InitializeWebView()
 /// <summary>
 /// Formats the specified text using title formatting.
 /// </summary>
-bool UIElement::FormatText(const std::string & text, pfc::string & formattedText) noexcept
+bool UIElement::TitleFormatText(const std::string & text, pfc::string & formattedText) noexcept
 {
     static_api_ptr_t<playlist_manager> _PlaylistManager;
 
@@ -194,51 +185,6 @@ bool UIElement::FormatText(const std::string & text, pfc::string & formattedText
         _PlaylistManager->playlist_item_format_title(PlaylistIndex, ItemIndex, nullptr, formattedText, FormatObject, nullptr, playback_control::t_display_level::display_level_all);
 
     return Success;
-}
-
-/// <summary>
-/// Reads the template text into a string.
-/// </summary>
-std::string UIElement::ReadTemplate(const std::wstring & filePath)
-{
-    HANDLE hFile = ::CreateFileW(filePath.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-
-    if (hFile == INVALID_HANDLE_VALUE)
-        throw Win32Exception(::FormatText("Failed to open template file \"%s\" for read", ::WideToUTF8(filePath).c_str()));
-
-    DWORD Size = ::GetFileSize(hFile, 0);
-
-    char * Data = new char[Size + 1];
-
-    DWORD BytesRead = 0;
-
-    BOOL Success = ::ReadFile(hFile, Data, Size, &BytesRead, 0);
-
-    if (!Success)
-    {
-        DWORD LastError = ::GetLastError();
-
-        ::CloseHandle(hFile);
-
-        throw Win32Exception(LastError, ::FormatText("Failed to read template file \"%s\"", ::WideToUTF8(filePath).c_str()));
-    }
-
-    ::CloseHandle(hFile);
-
-    if (BytesRead == 0)
-        return std::string();
-
-    Data[BytesRead] = '\0';
- 
-    std::string Text;
-    
-    Text.resize((size_t) BytesRead + 1);
-
-    ::memcpy(Text.data(), Data, (size_t) BytesRead + 1);
-
-    delete[] Data;
-
-    return Text;
 }
 
 /// <summary>

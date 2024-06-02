@@ -1,5 +1,5 @@
 ﻿
-/** $VER: Resources.rc (2024.05.27) P. Stuer **/
+/** $VER: Resources.rc (2024.06.02) P. Stuer **/
 
 #include "Resources.h"
 
@@ -50,8 +50,11 @@ IDD_PREFERENCES dialogex 0, 0, 0, 0
 style DS_SETFONT | WS_CHILD
 font 8, "Segoe UI", 400, 0, 1
 {
-    ltext       "Template File Path", IDC_STATIC,       X_D11, Y_D11 + 2, W_D11, H_D11
-    edittext                          IDC_FILE_PATH,    X_D12, Y_D12,     W_D12, H_D12, ES_AUTOHSCROLL
+    ltext       "Template File Path", IDC_STATIC,           X_D11, Y_D11 + 2, W_D11, H_D11
+    edittext                          IDC_FILE_PATH,        X_D12, Y_D12,     W_D12, H_D12, ES_AUTOHSCROLL
+    pushbutton  "...",                IDC_FILE_PATH_SELECT, X_D13, Y_D13,     W_D13, H_D13
+    pushbutton  "&Edit",              IDC_FILE_PATH_EDIT,   X_D14, Y_D14,     W_D14, H_D14
+
 /*
     groupbox "Callbacks", IDC_STATIC, X_D20, Y_D20, W_D20, H_D20, BS_GROUPBOX, WS_EX_TRANSPARENT
 

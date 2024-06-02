@@ -1,5 +1,5 @@
 
-/** $VER: PreferencesLayout.h (2024.05.25) **/
+/** $VER: PreferencesLayout.h (2024.06.02) **/
 
 #pragma once
 
@@ -11,7 +11,7 @@
 #define W_BTN       50 // Button
 #define H_BTN       14 // Button
 
-#define H_EBX       12 // Edit box
+#define H_EBX       14 // Edit box
 #define H_CBX       14 // Combo box
 
 #define W_CHB       10 // Check box
@@ -36,6 +36,18 @@
 #define Y_D12   Y_D11 + H_D11 + IY
 #define W_D12   240
 #define H_D12   H_EBX
+
+// Button: Select
+#define X_D13    X_D12 + W_D12 + IX
+#define Y_D13    Y_D12
+#define W_D13    16
+#define H_D13    H_BTN
+
+// Button: Edit
+#define X_D14    X_D13 + W_D13 + IX
+#define Y_D14    Y_D13
+#define W_D14    W_BTN
+#define H_D14    H_BTN
 
 #pragma endregion
 
