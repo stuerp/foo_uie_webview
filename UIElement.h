@@ -151,7 +151,7 @@ private:
     #pragma endregion
 
 private:
-    void CreateWebView() noexcept;
+    void CreateWebView();
     void DeleteWebView() noexcept;
 
     void InitializeFileWatcher();

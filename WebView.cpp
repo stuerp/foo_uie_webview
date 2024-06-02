@@ -1,9 +1,10 @@
 
-/** $VER: WebView.cpp (2024.05.27) P. Stuer - Creates the WebView. **/
+/** $VER: WebView.cpp (2024.06.02) P. Stuer - Creates the WebView. **/
 
 #include "pch.h"
 
 #include "UIElement.h"
+#include "Exceptions.h"
 
 #include <pfc/string-conv-lite.h>
 #include <pfc/pathUtils.h>
@@ -13,9 +14,14 @@ using namespace Microsoft::WRL;
 /// <summary>
 /// Creates the WebView.
 /// </summary>
-void UIElement::CreateWebView() noexcept
+void UIElement::CreateWebView()
 {
-    ::CreateCoreWebView2EnvironmentWithOptions(nullptr, _UserDataFolderPath.c_str(), nullptr, Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>
+    HRESULT hResult = ::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+
+    if (!SUCCEEDED(hResult))
+        throw Win32Exception((DWORD) hResult, "Failed to initialize COM");
+
+    hResult = ::CreateCoreWebView2EnvironmentWithOptions(nullptr, _UserDataFolderPath.c_str(), nullptr, Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>
     (
         [this](HRESULT hResult, ICoreWebView2Environment * environment) -> HRESULT
         {
@@ -96,6 +102,9 @@ void UIElement::CreateWebView() noexcept
             return S_OK;
         }
     ).Get());
+
+    if (!SUCCEEDED(hResult))
+        throw Win32Exception((DWORD) hResult, "Failed to create WebView");
 }
 
 /// <summary>

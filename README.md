@@ -73,6 +73,10 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
+v0.1.1.0, 2024-06-02, *"Down, boy..."*
+
+* Fixed: Error handling is more tolerant during a first-run situation.
+
 v0.1.0.0, 2024-06-02, *"Scratchin' the itch"*
 
 * Initial release.

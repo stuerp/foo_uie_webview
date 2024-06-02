@@ -80,7 +80,14 @@ void UIElement::OnSize(UINT type, CSize size) noexcept
 /// </summary>
 LRESULT UIElement::OnTemplateChanged(UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    InitializeWebView();
+    try
+    {
+        InitializeWebView();
+    }
+    catch (std::exception & e)
+    {
+        console::error(e.what());
+    }
 
     return 0;
 }
@@ -90,7 +97,14 @@ LRESULT UIElement::OnTemplateChanged(UINT msg, WPARAM wParam, LPARAM lParam)
 /// </summary>
 LRESULT UIElement::OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    InitializeWebView();
+    try
+    {
+        InitializeWebView();
+    }
+    catch (std::exception & e)
+    {
+        console::error(e.what());
+    }
 
     return 0;
 }
@@ -102,8 +116,15 @@ void UIElement::OnTemplateFilePathChanged()
 {
     _FilePath = GetTemplateFilePath();
 
-    InitializeFileWatcher();
-    InitializeWebView();
+    try
+    {
+        InitializeFileWatcher();
+        InitializeWebView();
+    }
+    catch (std::exception & e)
+    {
+        console::error(e.what());
+    }
 }
 
 /// <summary>
