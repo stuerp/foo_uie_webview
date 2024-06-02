@@ -123,7 +123,7 @@ function OnPlaybackNewTrack()
     document.getElementById("Comment").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[ %comment%]");
     document.getElementById("MIDI").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[ $info(midi_player)][, $info(midi_active_voices) voices '(peak ' $info(midi_peak_voices)')'][, extra percussion channel $info(midi_extra_percussion_channel)]");
 
-    return "OK";
+    return "OK"; // Currently not used.
 }
 
 // Called when playback stops.

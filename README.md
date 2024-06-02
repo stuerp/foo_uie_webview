@@ -3,6 +3,10 @@
 
 [foo_vis_text](https://github.com/stuerp/foo_vis_text/releases) is a [foobar2000](https://www.foobar2000.org/) component that implements a text information panel.
 
+It takes a text file and displays it. When the text file is an HTML file, the component sends playback notifications to the panel. The panel can react to those notifications and adjust its output using Javascript code.
+
+Take a look at the included template for an example implementation.
+
 ## Features
 
 * Supports the Default User Interface (DUI) and the [Columns User Interface](https://yuo.be/columns-ui) (CUI).
