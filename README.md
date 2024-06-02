@@ -73,7 +73,7 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.1.0.0, 2024-06-xx, *"Scratchin' the itch"*
+v0.1.0.0, 2024-06-02, *"Scratchin' the itch"*
 
 * Initial release.
 
