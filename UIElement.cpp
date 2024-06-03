@@ -77,16 +77,14 @@ LRESULT UIElement::OnCreate(LPCREATESTRUCT cs)
 {
     std::wstring WebViewVersion;
 
-    if (GetWebViewVersion(WebViewVersion))
-    {
-        console::printf(STR_COMPONENT_BASENAME " is using WebView %s.", WideToUTF8(WebViewVersion).c_str());
-    }
-    else
+    if (!GetWebViewVersion(WebViewVersion))
     {
         console::printf(STR_COMPONENT_BASENAME " failed to find compatible WebView component.");
 
         return 1;
     }
+
+    console::printf(STR_COMPONENT_BASENAME " is using WebView %s.", WideToUTF8(WebViewVersion).c_str());
 
     _HostObject = Microsoft::WRL::Make<HostObject>
     (
@@ -111,6 +109,8 @@ void UIElement::OnDestroy() noexcept
     _FileWatcher.Stop();
 
     DeleteWebView();
+
+    _HostObject = nullptr;
 }
 
 /// <summary>
@@ -288,7 +288,7 @@ std::wstring UIElement::GetTemplateFilePath() const noexcept
 }
 
 /// <summary>
-/// Handles a request to show the preferences.
+/// Shows the preferences page.
 /// </summary>
 void UIElement::ShowPreferences() noexcept
 {
