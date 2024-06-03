@@ -143,7 +143,6 @@ private:
         MSG_WM_SIZE(OnSize)
 
         MESSAGE_HANDLER_EX(UM_TEMPLATE_CHANGED, OnTemplateChanged)
-
         MESSAGE_HANDLER_EX(UM_WEB_VIEW_READY, OnWebViewReady)
         MESSAGE_HANDLER_EX(UM_ASYNC, OnAsync)
     END_MSG_MAP()
@@ -151,8 +150,11 @@ private:
     #pragma endregion
 
 private:
+    bool GetWebViewVersion(std::wstring & versionInfo);
     void CreateWebView();
     void DeleteWebView() noexcept;
+
+    HRESULT CreateContextMenu(const wchar_t * itemLabel, const wchar_t * iconName) noexcept;
 
     void InitializeFileWatcher();
     void InitializeWebView();
@@ -161,6 +163,8 @@ private:
 
     bool TitleFormatText(const std::string & text, pfc::string & formattedText) noexcept;
 
+    void ShowPreferences() noexcept;
+
 private:
     fb2k::CCoreDarkModeHooks _DarkMode;
 
@@ -168,10 +172,13 @@ private:
     std::wstring _UserDataFolderPath;
     std::wstring _FilePath;
 
+    wil::com_ptr<ICoreWebView2Environment> _Environment;
     wil::com_ptr<ICoreWebView2Controller> _Controller;
     wil::com_ptr<ICoreWebView2> _WebView;
+    wil::com_ptr<ICoreWebView2ContextMenuItem> _ContextSubMenu;
 
     EventRegistrationToken _NavigationStartingToken = {};
+    EventRegistrationToken _ContextMenuRequestedToken = {};
 
     wil::com_ptr<HostObject> _HostObject;
 

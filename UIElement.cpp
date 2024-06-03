@@ -6,6 +6,10 @@
 #include "UIElement.h"
 #include "Encoding.h"
 #include "Exceptions.h"
+#include "Support.h"
+
+#include <pathcch.h>
+#pragma comment(lib, "pathcch")
 
 #include <SDK/titleformat.h>
 #include <SDK/playlist.h>
@@ -23,9 +27,45 @@ UIElement::UIElement() : m_bMsgHandled(FALSE)
     if (::_strnicmp(ProfilePath, "file://", 7) == 0)
         _ProfilePath = UTF8ToWide(ProfilePath.subString(7).c_str());
 
+    if (!::PathFileExistsW(_ProfilePath.c_str()))
+    {
+        // Create the profile directory.
+        if (!::CreateDirectoryW(_ProfilePath.c_str(), nullptr))
+            console::printf(::GetErrorMessage(::GetLastError(), ::FormatText(STR_COMPONENT_BASENAME " failed to create profile directory \"%s\"", ::WideToUTF8(_ProfilePath).c_str())).c_str());
+    }
+
     _UserDataFolderPath = _ProfilePath.c_str();
 
     _FilePath = GetTemplateFilePath();
+
+    if (::PathFileExistsW(_FilePath.c_str()))
+        return;
+
+    // Create a default template file.
+    {
+        wchar_t DefaultFilePath[MAX_PATH];
+
+        HMODULE hModule = GetCurrentModule();
+
+        if (hModule == NULL)
+            return;
+
+        if (::GetModuleFileNameW(hModule, DefaultFilePath, _countof(DefaultFilePath)) == 0)
+            return;
+
+        HRESULT hResult = ::PathCchRemoveFileSpec(DefaultFilePath, _countof(DefaultFilePath));
+
+        if (!SUCCEEDED(hResult))
+            return;
+
+        hResult = ::PathCchAppend(DefaultFilePath, _countof(DefaultFilePath), L"Default-Template.html");
+
+        if (!SUCCEEDED(hResult))
+            return;
+
+        if (!::CopyFileW(DefaultFilePath, _FilePath.c_str(), TRUE))
+            console::printf(::GetErrorMessage(::GetLastError(), ::FormatText(STR_COMPONENT_BASENAME " failed to create default template file \"%s\"", ::WideToUTF8(_FilePath).c_str())).c_str());
+    }
 }
 
 #pragma region User Interface
@@ -35,6 +75,17 @@ UIElement::UIElement() : m_bMsgHandled(FALSE)
 /// </summary>
 LRESULT UIElement::OnCreate(LPCREATESTRUCT cs)
 {
+    std::wstring WebViewVersion;
+
+    if (!GetWebViewVersion(WebViewVersion))
+    {
+        console::printf(STR_COMPONENT_BASENAME " failed to find compatible WebView component.");
+
+        return 1;
+    }
+
+    console::printf(STR_COMPONENT_BASENAME " is using WebView %s.", WideToUTF8(WebViewVersion).c_str());
+
     _HostObject = Microsoft::WRL::Make<HostObject>
     (
         [this](std::function<void (void)> callback)
@@ -58,6 +109,8 @@ void UIElement::OnDestroy() noexcept
     _FileWatcher.Stop();
 
     DeleteWebView();
+
+    _HostObject = nullptr;
 }
 
 /// <summary>
@@ -91,6 +144,8 @@ LRESULT UIElement::OnTemplateChanged(UINT msg, WPARAM wParam, LPARAM lParam)
 
     return 0;
 }
+
+#include <SDK/ui.h>
 
 /// <summary>
 /// The WebView is ready.
@@ -218,7 +273,30 @@ std::wstring UIElement::GetTemplateFilePath() const noexcept
     if (::ExpandEnvironmentStringsW(pfc::wideFromUTF8(FilePathCfg.c_str()), FilePath, _countof(FilePath)) == 0)
         ::wcscpy_s(FilePath, _countof(FilePath), pfc::wideFromUTF8(FilePathCfg.c_str()));
 
+    // Create the default location of the template.
+    if (FilePath[0] == '\0')
+    {
+        ::wcscpy_s(FilePath, _countof(FilePath), _ProfilePath.c_str());
+
+        HRESULT hResult = ::PathCchAppend(FilePath, _countof(FilePath), L"Template.html");
+
+        if (SUCCEEDED(hResult))
+            FilePathCfg = pfc::utf8FromWide(FilePath);
+    }
+
     return std::wstring(FilePath);
+}
+
+/// <summary>
+/// Shows the preferences page.
+/// </summary>
+void UIElement::ShowPreferences() noexcept
+{
+    static constexpr GUID _GUID = GUID_PREFERENCES;
+
+    static_api_ptr_t<ui_control> uc;
+
+    uc->show_preferences(_GUID);
 }
 
 /// <summary>
@@ -371,17 +449,41 @@ void UIElement::on_playback_edited(metadb_handle_ptr hTrack)
 }
 
 /// <summary>
-/// Called when dynamic info (VBR bitrate etc) changes.
+/// Called when dynamic info (VBR bitrate etc...) changes.
 /// </summary>
 void UIElement::on_playback_dynamic_info(const file_info & fileInfo)
 {
+    if (_WebView == nullptr)
+        return;
+
+    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackDynamicInfoCallbackCfg.c_str());
+
+    if (FunctionName.empty())
+        return;
+
+    HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s()", FunctionName.c_str()).c_str(), nullptr);
+
+    if (!SUCCEEDED(hResult))
+        throw std::exception("on_playback_dynamic_info failed");
 }
 
 /// <summary>
-/// Called when the per-track dynamic info (stream track titles etc.) change. Happens less often than on_playback_dynamic_info().
+/// Called when the per-track dynamic info (stream track titles etc...) change. Happens less often than on_playback_dynamic_info().
 /// </summary>
 void UIElement::on_playback_dynamic_info_track(const file_info & fileInfo)
 {
+    if (_WebView == nullptr)
+        return;
+
+    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackDynamicTrackInfoCallbackCfg.c_str());
+
+    if (FunctionName.empty())
+        return;
+
+    HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s()", FunctionName.c_str()).c_str(), nullptr);
+
+    if (!SUCCEEDED(hResult))
+        throw std::exception("on_playback_dynamic_info_track failed");
 }
 
 /// <summary>

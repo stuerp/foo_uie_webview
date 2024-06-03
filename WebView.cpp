@@ -11,6 +11,27 @@
 
 using namespace Microsoft::WRL;
 
+static HRESULT CreateIconStream(const wchar_t * resourceName, wil::com_ptr<IStream> & stream);
+
+/// <summary>
+/// Returns true if a supported WebView version is available on this system.
+/// </summary>
+bool UIElement::GetWebViewVersion(std::wstring & versionString)
+{
+    LPWSTR VersionString = nullptr;
+
+    HRESULT hResult = ::GetAvailableCoreWebView2BrowserVersionString(nullptr, &VersionString);
+
+    if (!SUCCEEDED(hResult))
+        return false;
+
+    versionString = VersionString;
+
+    ::CoTaskMemFree(VersionString);
+
+    return true;
+}
+
 /// <summary>
 /// Creates the WebView.
 /// </summary>
@@ -27,13 +48,13 @@ void UIElement::CreateWebView()
         {
             UNREFERENCED_PARAMETER(hResult);
 
+            _Environment = environment;
+
             // Create a CoreWebView2Controller and get the associated CoreWebView2 whose parent is the main window.
             environment->CreateCoreWebView2Controller(m_hWnd, Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>
             (
                 [this](HRESULT hResult, ICoreWebView2Controller * controller) -> HRESULT
                 {
-                    UNREFERENCED_PARAMETER(hResult);
-
                     if (controller != nullptr)
                     {
                         _Controller = controller;
@@ -70,8 +91,8 @@ void UIElement::CreateWebView()
                         hResult = WebView2_3->SetVirtualHostNameToFolderMapping(_HostName, _ProfilePath.c_str(), COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
                     }
 
+                    // Add an event handler to add the host object before navigation starts. That way the host object is available when the scripts start running.
                     {
-                        // Add an event handler to add the host object before navigation starts. That way the host object is available when the scripts start running.
                         _WebView->add_NavigationStarting(Microsoft::WRL::Callback<ICoreWebView2NavigationStartingEventHandler>
                         (
                             [this](ICoreWebView2 * webView, ICoreWebView2NavigationStartingEventArgs * args) -> HRESULT
@@ -91,9 +112,66 @@ void UIElement::CreateWebView()
                                 return hResult;
                             }
                         ).Get(), &_NavigationStartingToken);
-
-                        ::PostMessageW(m_hWnd, UM_WEB_VIEW_READY, 0, 0);
                     }
+
+                    // Add custom context menu items.
+                    {
+                        wil::com_ptr<ICoreWebView2_11> WebView2_11 = _WebView.try_query<ICoreWebView2_11>();
+
+                        if (WebView2_11 == nullptr)
+                            return S_OK;
+
+                        hResult = WebView2_11->add_ContextMenuRequested(Callback<ICoreWebView2ContextMenuRequestedEventHandler>
+                        (
+                            [this](ICoreWebView2 * sender, ICoreWebView2ContextMenuRequestedEventArgs * eventArgs)
+                            {
+                                wil::com_ptr<ICoreWebView2ContextMenuRequestedEventArgs> Args = eventArgs;
+
+                                wil::com_ptr<ICoreWebView2ContextMenuTarget> Target;
+
+                                HRESULT hr = Args->get_ContextMenuTarget(&Target);
+
+                                if (!SUCCEEDED(hr))
+                                    return S_OK;
+
+                                COREWEBVIEW2_CONTEXT_MENU_TARGET_KIND TargetKind;
+
+                                hr = Target->get_Kind(&TargetKind);
+
+                                if (!SUCCEEDED(hr))
+                                    return S_OK;
+
+                                if (TargetKind != COREWEBVIEW2_CONTEXT_MENU_TARGET_KIND_PAGE)
+                                    return S_OK;
+
+                                wil::com_ptr<ICoreWebView2ContextMenuItemCollection> Items;
+
+                                hr = Args->get_MenuItems(&Items);
+
+                                if (!SUCCEEDED(hr))
+                                    return S_OK;
+
+                                UINT32 ItemCount;
+
+                                hr = Items->get_Count(&ItemCount);
+
+                                if (!SUCCEEDED(hr))
+                                    return S_OK;
+
+                                hr = CreateContextMenu(TEXT(STR_COMPONENT_NAME), MAKEINTRESOURCE(IDR_CONTEXT_MENU_ICON));
+
+                                if (!SUCCEEDED(hr))
+                                    return S_OK;
+
+                                hr = Items->InsertValueAtIndex(ItemCount, _ContextSubMenu.get());
+
+                                // Display the context menu.
+                                return S_OK;
+                            }
+                        ).Get(), &_ContextMenuRequestedToken);
+                    }
+
+                    ::PostMessageW(m_hWnd, UM_WEB_VIEW_READY, 0, 0);
 
                     return S_OK;
                 }
@@ -122,4 +200,104 @@ void UIElement::DeleteWebView() noexcept
     }
 
     _Controller = nullptr;
+}
+
+/// <summary>
+/// Creates the context menu.
+/// </summary>
+HRESULT UIElement::CreateContextMenu(const wchar_t * itemLabel, const wchar_t * iconName) noexcept
+{
+    if (itemLabel == nullptr)
+        return E_FAIL;
+
+    if (_ContextSubMenu != nullptr)
+        return S_FALSE; // Custom items should be reused whenever possible.
+
+    wil::com_ptr<ICoreWebView2Environment9> Environment9;
+
+    HRESULT hr = _Environment->QueryInterface(IID_PPV_ARGS(&Environment9));
+
+    if (!SUCCEEDED(hr))
+        return hr;
+
+    // Create the sub menu.
+    {
+        wil::com_ptr<IStream> IconStream;
+
+        (void) CreateIconStream(iconName, IconStream); // Ignore any error.
+
+        hr = Environment9->CreateContextMenuItem(itemLabel, IconStream.get(), COREWEBVIEW2_CONTEXT_MENU_ITEM_KIND_SUBMENU, &_ContextSubMenu);
+
+        if (!SUCCEEDED(hr))
+            return hr;
+
+        wil::com_ptr<ICoreWebView2ContextMenuItemCollection> Children;
+
+        hr = _ContextSubMenu->get_Children(&Children);
+
+        if (!SUCCEEDED(hr))
+            return hr;
+
+        wil::com_ptr<ICoreWebView2ContextMenuItem> ContextMenuItem;
+
+        // Creates a menu item.
+        {
+            hr = Environment9->CreateContextMenuItem(L"Preferences", nullptr, COREWEBVIEW2_CONTEXT_MENU_ITEM_KIND_COMMAND, &ContextMenuItem);
+
+            if (!SUCCEEDED(hr))
+                return hr;
+
+            hr = ContextMenuItem->add_CustomItemSelected(Callback<ICoreWebView2CustomItemSelectedEventHandler>
+            (
+                [this](ICoreWebView2ContextMenuItem * sender, IUnknown * args)
+                {
+                    RunAsync([this] { ShowPreferences(); });
+
+                    return S_OK;
+                }
+            ).Get(), nullptr);
+
+            if (!SUCCEEDED(hr))
+                return hr;
+        }
+
+        hr = Children->InsertValueAtIndex(0, ContextMenuItem.get());
+    }
+
+    return hr;
+}
+
+/// <summary>
+/// Creates a stream that contains the complete binary data of a Windows icon. The resource type is RT_RCDATA instead of RT_GROUP_ICON or RT_ICON.
+/// </summary>
+HRESULT CreateIconStream(const wchar_t * resourceName, wil::com_ptr<IStream> & stream)
+{
+    HRSRC hResource = ::FindResourceW(THIS_INSTANCE, resourceName, RT_RCDATA);
+
+    if (hResource == NULL)
+        return E_FAIL;
+
+    DWORD ResourceSize = ::SizeofResource(THIS_INSTANCE, hResource);
+
+    if (ResourceSize == 0)
+        return E_FAIL;
+
+    HGLOBAL hGlobal = ::LoadResource(THIS_INSTANCE, hResource);
+
+    if (hGlobal == NULL)
+        return E_FAIL;
+
+    BYTE * ResourceData = (BYTE *) ::LockResource(hGlobal);
+
+    if (ResourceData == nullptr)
+        return E_FAIL;
+
+    IStream * Stream = ::SHCreateMemStream(ResourceData, ResourceSize);
+
+    if (Stream == nullptr)
+        return E_FAIL;
+
+    stream = Stream;
+
+    return S_OK;
 }
