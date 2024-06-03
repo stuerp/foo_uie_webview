@@ -71,3 +71,5 @@
 #define IDC_PLAYBACK_PAUSE      1050
 #define IDC_PLAYBACK_TIME       1060
 #define IDC_VOLUME_CHANGE       1070
+
+#define IDI_MAIN                2000

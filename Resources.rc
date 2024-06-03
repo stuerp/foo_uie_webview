@@ -65,3 +65,5 @@ font 8, "Segoe UI", 400, 0, 1
         edittext    IDC_PLAYBACK_NEW_TRACK, X_D24, Y_D24, W_D24, H_D24, ES_AUTOHSCROLL
 */
 }
+
+IDI_MAIN icon discardable "Main.ico"

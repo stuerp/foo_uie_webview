@@ -168,7 +168,15 @@ void UIElement::CreateWebView()
                                         if (!SUCCEEDED(hr))
                                             return S_OK;
 
-                                        hr = Environment9->CreateContextMenuItem(TEXT(STR_COMPONENT_NAME), nullptr, COREWEBVIEW2_CONTEXT_MENU_ITEM_KIND_SUBMENU, &_ContextMenuItem);
+                                        wil::com_ptr<IStream> IconStream;
+
+//                                      hr = ::SHCreateStreamOnFileEx(LR"(c:\Users\Peter\Code\C++\Media\foobar2000\foo_vis_text\Icon.ico)", STGM_READ, FILE_ATTRIBUTE_NORMAL, FALSE, nullptr, &IconStream);
+                                        HGLOBAL hGlobal = NULL;//CreateInitialContents();
+
+                                        if (SUCCEEDED(::CreateStreamOnHGlobal(hGlobal, TRUE, &IconStream)))
+                                            hGlobal = NULL; // Not our HGLOBAL any more.
+
+                                        hr = Environment9->CreateContextMenuItem(TEXT(STR_COMPONENT_NAME), IconStream.get(), COREWEBVIEW2_CONTEXT_MENU_ITEM_KIND_SUBMENU, &_ContextMenuItem);
 
                                         if (!SUCCEEDED(hr))
                                             return S_OK;
@@ -181,11 +189,7 @@ void UIElement::CreateWebView()
                                             return S_OK;
 
                                         wil::com_ptr<ICoreWebView2ContextMenuItem> MenuItem;
-/*
-                                        wil::com_ptr<IStream> IconStream;
 
-                                        ::SHCreateStreamOnFileEx(L"small.ico", STGM_READ, FILE_ATTRIBUTE_NORMAL, FALSE, nullptr, &IconStream);
-*/
                                         hr = Environment9->CreateContextMenuItem(L"Preferences", nullptr, COREWEBVIEW2_CONTEXT_MENU_ITEM_KIND_COMMAND, &MenuItem);
 
                                         if (!SUCCEEDED(hr))
@@ -246,3 +250,108 @@ void UIElement::DeleteWebView() noexcept
 
     _Controller = nullptr;
 }
+/*
+HICON GetIconFromInstance( HINSTANCE hInstance, LPTSTR nIndex )
+{
+    HRSRC imageResHandle = ::FindResourceW(THIS_HINSTANCE, resourceName, resourceType);
+
+    if (imageResHandle == NULL)
+        return E_FAIL;
+
+    HGLOBAL imageResDataHandle = ::LoadResource(THIS_HINSTANCE, imageResHandle);
+
+    if (imageResDataHandle == NULL)
+        return E_FAIL;
+*/
+/*
+    HICON	hIcon = NULL;
+    HRSRC	hRsrc = NULL;
+    HGLOBAL	hGlobal = NULL;
+    LPVOID	lpRes = NULL;
+    int    	nID;
+
+    // Find the group icon
+    if( (hRsrc = FindResource( hInstance, nIndex, RT_GROUP_ICON )) == NULL )
+        return NULL;
+    if( (hGlobal = LoadResource( hInstance, hRsrc )) == NULL )
+        return NULL;
+    if( (lpRes = LockResource(hGlobal)) == NULL )
+        return NULL;
+
+    // Find this particular image
+    nID = LookupIconIdFromDirectory( lpRes, TRUE );
+    if( (hRsrc = FindResource( hInstance, MAKEINTRESOURCE(nID), RT_ICON )) == NULL )
+        return NULL;
+    if( (hGlobal = LoadResource( hInstance, hRsrc )) == NULL )
+        return NULL;
+    if( (lpRes = LockResource(hGlobal)) == NULL )
+        return NULL;
+    // Let the OS make us an icon
+    hIcon = CreateIconFromResource( lpRes, SizeofResource(hInstance,hRsrc), TRUE, 0x00030000 );
+    return hIcon;
+*/
+/*
+HRESULT ImageService::CreateFromResource(const WCHAR * resourceName, const WCHAR * resourceType, Image ** image)
+{
+    *image = nullptr;
+
+    // Locate the resource.
+    HRSRC ResourceHandle = ::FindResourceW(THIS_INSTANCE, resourceName, resourceType);
+
+    HRESULT hr = ResourceHandle ? S_OK : E_FAIL;
+
+    // Load the resource.
+    HGLOBAL ResourceData = 0;
+
+    if (SUCCEEDED(hr))
+    {
+        ResourceData = ::LoadResource(THIS_INSTANCE, ResourceHandle);
+
+        hr = ResourceData ? S_OK : E_FAIL;
+    }
+
+    // Lock it to get a system memory pointer.
+    void * ResourceBits = nullptr;
+
+    if (SUCCEEDED(hr))
+    {
+        ResourceBits = ::LockResource(ResourceData);
+
+        hr = ResourceBits ? S_OK : E_FAIL;
+    }
+
+    // Calculate the size.
+    DWORD ResourceSize = 0;
+
+    if (SUCCEEDED(hr))
+    {
+        ResourceSize = ::SizeofResource(THIS_INSTANCE, ResourceHandle);
+
+        hr = ResourceSize ? S_OK : E_FAIL;
+    }
+
+    // Create a WIC stream to map onto the memory.
+    IWICStream * Stream = nullptr;
+
+    if (SUCCEEDED(hr))
+        hr = _ImagingFactory->CreateStream(&Stream);
+
+    // Initialize the stream with the memory pointer and size.
+    if (SUCCEEDED(hr))
+        hr = Stream->InitializeFromMemory(reinterpret_cast<BYTE *>(ResourceBits), ResourceSize);
+
+    // Create a decoder.
+    IWICBitmapDecoder * bitmapDecoder = nullptr;
+
+    if (SUCCEEDED(hr))
+        hr = _ImagingFactory->CreateDecoderFromStream(Stream, nullptr, WICDecodeMetadataCacheOnLoad, &bitmapDecoder);
+
+    if (SUCCEEDED(hr))
+        *image = new Image(ResourceSize, bitmapDecoder);
+
+    SafeRelease(bitmapDecoder);
+    SafeRelease(Stream);
+
+    return hr;
+}
+*/
