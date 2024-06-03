@@ -1,5 +1,5 @@
 
-/** $VER: WebView.cpp (2024.06.02) P. Stuer - Creates the WebView. **/
+/** $VER: WebView.cpp (2024.06.03) P. Stuer - Creates the WebView. **/
 
 #include "pch.h"
 
@@ -60,6 +60,8 @@ void UIElement::CreateWebView()
                         _Controller = controller;
                         _Controller->get_CoreWebView2(&_WebView);
                     }
+
+                    hResult = SetDarkMode(_DarkMode);
 
                     // Add a few settings.
                     {
@@ -203,12 +205,35 @@ void UIElement::DeleteWebView() noexcept
 }
 
 /// <summary>
+/// Enables or disables dark mode.
+/// </summary>
+HRESULT UIElement::SetDarkMode(bool enabled) const noexcept
+{
+    if (_WebView == nullptr)
+        return E_UNEXPECTED;
+
+    wil::com_ptr<ICoreWebView2_13> WebView2_13 = _WebView.try_query<ICoreWebView2_13>();
+
+    if (WebView2_13 == nullptr)
+        return E_NOINTERFACE;
+
+    wil::com_ptr<ICoreWebView2Profile> Profile;
+
+    HRESULT hr = WebView2_13->get_Profile(&Profile);
+
+    if (!SUCCEEDED(hr))
+        return hr;
+
+    return Profile->put_PreferredColorScheme(enabled ? COREWEBVIEW2_PREFERRED_COLOR_SCHEME_DARK : COREWEBVIEW2_PREFERRED_COLOR_SCHEME_LIGHT);
+}
+
+/// <summary>
 /// Creates the context menu.
 /// </summary>
 HRESULT UIElement::CreateContextMenu(const wchar_t * itemLabel, const wchar_t * iconName) noexcept
 {
     if (itemLabel == nullptr)
-        return E_FAIL;
+        return E_INVALIDARG;
 
     if (_ContextSubMenu != nullptr)
         return S_FALSE; // Custom items should be reused whenever possible.
@@ -275,27 +300,27 @@ HRESULT CreateIconStream(const wchar_t * resourceName, wil::com_ptr<IStream> & s
     HRSRC hResource = ::FindResourceW(THIS_INSTANCE, resourceName, RT_RCDATA);
 
     if (hResource == NULL)
-        return E_FAIL;
+        return HRESULT_FROM_WIN32(::GetLastError());
 
     DWORD ResourceSize = ::SizeofResource(THIS_INSTANCE, hResource);
 
     if (ResourceSize == 0)
-        return E_FAIL;
+        return HRESULT_FROM_WIN32(::GetLastError());
 
     HGLOBAL hGlobal = ::LoadResource(THIS_INSTANCE, hResource);
 
     if (hGlobal == NULL)
-        return E_FAIL;
+        return HRESULT_FROM_WIN32(::GetLastError());
 
     BYTE * ResourceData = (BYTE *) ::LockResource(hGlobal);
 
     if (ResourceData == nullptr)
-        return E_FAIL;
+        return HRESULT_FROM_WIN32(::GetLastError());
 
     IStream * Stream = ::SHCreateMemStream(ResourceData, ResourceSize);
 
     if (Stream == nullptr)
-        return E_FAIL;
+        return HRESULT_FROM_WIN32(::GetLastError());
 
     stream = Stream;
 

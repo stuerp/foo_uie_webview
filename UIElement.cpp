@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.cpp (2024.06.02) P. Stuer **/
+/** $VER: UIElement.cpp (2024.06.03) P. Stuer **/
 
 #include "pch.h"
 
@@ -14,6 +14,7 @@
 #include <SDK/titleformat.h>
 #include <SDK/playlist.h>
 #include <SDK/playback_control.h>
+#include <SDK/ui.h>
 
 #pragma hdrstop
 
@@ -22,21 +23,29 @@
 /// </summary>
 UIElement::UIElement() : m_bMsgHandled(FALSE)
 {
-    pfc::string8 ProfilePath = pfc::io::path::combine(core_api::get_profile_path(), STR_COMPONENT_BASENAME);
+    playlist_callback_single_impl_base::set_callback_flags(flag_on_item_focus_change);
 
-    if (::_strnicmp(ProfilePath, "file://", 7) == 0)
-        _ProfilePath = UTF8ToWide(ProfilePath.subString(7).c_str());
-
-    if (!::PathFileExistsW(_ProfilePath.c_str()))
     {
-        // Create the profile directory.
-        if (!::CreateDirectoryW(_ProfilePath.c_str(), nullptr))
-            console::printf(::GetErrorMessage(::GetLastError(), ::FormatText(STR_COMPONENT_BASENAME " failed to create profile directory \"%s\"", ::WideToUTF8(_ProfilePath).c_str())).c_str());
+        pfc::string8 ProfilePath = pfc::io::path::combine(core_api::get_profile_path(), STR_COMPONENT_BASENAME);
+
+        if (::_strnicmp(ProfilePath, "file://", 7) == 0)
+            _ProfilePath = UTF8ToWide(ProfilePath.subString(7).c_str());
     }
 
-    _UserDataFolderPath = _ProfilePath.c_str();
+    {
+        if (!::PathFileExistsW(_ProfilePath.c_str()))
+        {
+            // Create the profile directory.
+            if (!::CreateDirectoryW(_ProfilePath.c_str(), nullptr))
+                console::printf(::GetErrorMessage(::GetLastError(), ::FormatText(STR_COMPONENT_BASENAME " failed to create profile directory \"%s\"", ::WideToUTF8(_ProfilePath).c_str())).c_str());
+        }
+    }
 
-    _FilePath = GetTemplateFilePath();
+    {
+        _UserDataFolderPath = _ProfilePath.c_str();
+
+        _FilePath = GetTemplateFilePath();
+    }
 
     if (::PathFileExistsW(_FilePath.c_str()))
         return;
@@ -145,8 +154,6 @@ LRESULT UIElement::OnTemplateChanged(UINT msg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-#include <SDK/ui.h>
-
 /// <summary>
 /// The WebView is ready.
 /// </summary>
@@ -160,6 +167,11 @@ LRESULT UIElement::OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam)
     {
         console::error(e.what());
     }
+
+    if (_HostObject == nullptr)
+        return 1;
+
+    _HostObject->SetFollowSelectedTrackMode(true);
 
     return 0;
 }
@@ -355,7 +367,7 @@ void UIElement::on_playback_starting(play_control::t_track_command command, bool
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(\"%s\", %s)", FunctionName.c_str(), CommandName, (paused ? L"true" : L"false")).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw std::exception("on_playback_new_track failed");
+        throw Win32Exception((DWORD) hResult, "on_playback_new_track failed");
 }
 
 /// <summary>
@@ -374,7 +386,7 @@ void UIElement::on_playback_new_track(metadb_handle_ptr /*track*/)
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s()", FunctionName.c_str()).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw std::exception("on_playback_new_track failed");
+        throw Win32Exception((DWORD) hResult, "on_playback_new_track failed");
 }
 
 /// <summary>
@@ -400,7 +412,7 @@ void UIElement::on_playback_stop(play_control::t_stop_reason reason)
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(\"%s\")", FunctionName.c_str(), Reason).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw std::exception("on_playback_stop failed");
+        throw Win32Exception((DWORD) hResult, "on_playback_stop failed");
 }
 
 /// <summary>
@@ -419,7 +431,7 @@ void UIElement::on_playback_seek(double time)
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(%f)", FunctionName.c_str(), time).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw std::exception("on_playback_seek failed");
+        throw Win32Exception((DWORD) hResult, "on_playback_seek failed");
 }
 
 /// <summary>
@@ -438,7 +450,7 @@ void UIElement::on_playback_pause(bool paused)
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(%s)", FunctionName.c_str(), (paused ? L"true" : L"false")).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw std::exception("on_playback_pause failed");
+        throw Win32Exception((DWORD) hResult, "on_playback_pause failed");
 }
 
 /// <summary>
@@ -464,7 +476,7 @@ void UIElement::on_playback_dynamic_info(const file_info & fileInfo)
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s()", FunctionName.c_str()).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw std::exception("on_playback_dynamic_info failed");
+        throw Win32Exception((DWORD) hResult, "on_playback_dynamic_info failed");
 }
 
 /// <summary>
@@ -483,7 +495,7 @@ void UIElement::on_playback_dynamic_info_track(const file_info & fileInfo)
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s()", FunctionName.c_str()).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw std::exception("on_playback_dynamic_info_track failed");
+        throw Win32Exception((DWORD) hResult, "on_playback_dynamic_info_track failed");
 }
 
 /// <summary>
@@ -502,7 +514,7 @@ void UIElement::on_playback_time(double time)
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(%f)", FunctionName.c_str(), time).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw std::exception("on_playback_time failed");
+        throw Win32Exception((DWORD) hResult, "on_playback_time failed");
 }
 
 /// <summary>
@@ -521,7 +533,30 @@ void UIElement::on_volume_change(float newValue) // in dBFS
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(%f)", FunctionName.c_str(), (double) newValue).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw std::exception("on_volume_change failed");
+        throw Win32Exception((DWORD) hResult, "on_volume_change failed");
+}
+
+#pragma endregion
+
+#pragma region playlist_callback_single
+
+/// <summary>
+/// Called when the selected item changes.
+/// </summary>
+void UIElement::on_item_focus_change(t_size fromIndex, t_size toIndex)
+{
+    if (_WebView == nullptr)
+        return;
+
+    const std::wstring FunctionName = ::UTF8ToWide(OnPlaylistFocusedItemChangedCallbackCfg.c_str());
+
+    if (FunctionName.empty())
+        return;
+
+    HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s()", FunctionName.c_str()).c_str(), nullptr);
+
+    if (!SUCCEEDED(hResult))
+        throw Win32Exception((DWORD) hResult, "on_item_focus_change failed");
 }
 
 #pragma endregion
