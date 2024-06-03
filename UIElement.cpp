@@ -449,17 +449,41 @@ void UIElement::on_playback_edited(metadb_handle_ptr hTrack)
 }
 
 /// <summary>
-/// Called when dynamic info (VBR bitrate etc) changes.
+/// Called when dynamic info (VBR bitrate etc...) changes.
 /// </summary>
 void UIElement::on_playback_dynamic_info(const file_info & fileInfo)
 {
+    if (_WebView == nullptr)
+        return;
+
+    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackDynamicInfoCallbackCfg.c_str());
+
+    if (FunctionName.empty())
+        return;
+
+    HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s()", FunctionName.c_str()).c_str(), nullptr);
+
+    if (!SUCCEEDED(hResult))
+        throw std::exception("on_playback_dynamic_info failed");
 }
 
 /// <summary>
-/// Called when the per-track dynamic info (stream track titles etc.) change. Happens less often than on_playback_dynamic_info().
+/// Called when the per-track dynamic info (stream track titles etc...) change. Happens less often than on_playback_dynamic_info().
 /// </summary>
 void UIElement::on_playback_dynamic_info_track(const file_info & fileInfo)
 {
+    if (_WebView == nullptr)
+        return;
+
+    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackDynamicTrackInfoCallbackCfg.c_str());
+
+    if (FunctionName.empty())
+        return;
+
+    HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s()", FunctionName.c_str()).c_str(), nullptr);
+
+    if (!SUCCEEDED(hResult))
+        throw std::exception("on_playback_dynamic_info_track failed");
 }
 
 /// <summary>
