@@ -154,6 +154,8 @@ private:
     void CreateWebView();
     void DeleteWebView() noexcept;
 
+    HRESULT CreateContextMenu(const wchar_t * itemLabel, const wchar_t * iconName) noexcept;
+
     void InitializeFileWatcher();
     void InitializeWebView();
 
@@ -173,7 +175,7 @@ private:
     wil::com_ptr<ICoreWebView2Environment> _Environment;
     wil::com_ptr<ICoreWebView2Controller> _Controller;
     wil::com_ptr<ICoreWebView2> _WebView;
-    wil::com_ptr<ICoreWebView2ContextMenuItem> _ContextMenuItem;
+    wil::com_ptr<ICoreWebView2ContextMenuItem> _ContextSubMenu;
 
     EventRegistrationToken _NavigationStartingToken = {};
     EventRegistrationToken _ContextMenuRequestedToken = {};

@@ -11,6 +11,8 @@
 
 using namespace Microsoft::WRL;
 
+static HRESULT CreateIconStream(const wchar_t * resourceName, wil::com_ptr<IStream> & stream);
+
 /// <summary>
 /// Returns true if a supported WebView version is available on this system.
 /// </summary>
@@ -156,63 +158,12 @@ void UIElement::CreateWebView()
                                 if (!SUCCEEDED(hr))
                                     return S_OK;
 
-                                // Add the context menu item.
-                                {
-                                    // Custom items should be reused whenever possible.
-                                    if (_ContextMenuItem == nullptr)
-                                    {
-                                        wil::com_ptr<ICoreWebView2Environment9> Environment9;
+                                hr = CreateContextMenu(TEXT(STR_COMPONENT_NAME), MAKEINTRESOURCE(IDR_CONTEXT_MENU_ICON));
 
-                                        hr = _Environment->QueryInterface(IID_PPV_ARGS(&Environment9));
+                                if (!SUCCEEDED(hr))
+                                    return S_OK;
 
-                                        if (!SUCCEEDED(hr))
-                                            return S_OK;
-
-                                        wil::com_ptr<IStream> IconStream;
-
-//                                      hr = ::SHCreateStreamOnFileEx(LR"(c:\Users\Peter\Code\C++\Media\foobar2000\foo_vis_text\Icon.ico)", STGM_READ, FILE_ATTRIBUTE_NORMAL, FALSE, nullptr, &IconStream);
-                                        HGLOBAL hGlobal = NULL;//CreateInitialContents();
-
-                                        if (SUCCEEDED(::CreateStreamOnHGlobal(hGlobal, TRUE, &IconStream)))
-                                            hGlobal = NULL; // Not our HGLOBAL any more.
-
-                                        hr = Environment9->CreateContextMenuItem(TEXT(STR_COMPONENT_NAME), IconStream.get(), COREWEBVIEW2_CONTEXT_MENU_ITEM_KIND_SUBMENU, &_ContextMenuItem);
-
-                                        if (!SUCCEEDED(hr))
-                                            return S_OK;
-
-                                        wil::com_ptr<ICoreWebView2ContextMenuItemCollection> Children;
-
-                                        hr = _ContextMenuItem->get_Children(&Children);
-
-                                        if (!SUCCEEDED(hr))
-                                            return S_OK;
-
-                                        wil::com_ptr<ICoreWebView2ContextMenuItem> MenuItem;
-
-                                        hr = Environment9->CreateContextMenuItem(L"Preferences", nullptr, COREWEBVIEW2_CONTEXT_MENU_ITEM_KIND_COMMAND, &MenuItem);
-
-                                        if (!SUCCEEDED(hr))
-                                            return S_OK;
-
-                                        hr = MenuItem->add_CustomItemSelected(Callback<ICoreWebView2CustomItemSelectedEventHandler>
-                                        (
-                                            [this, Target](ICoreWebView2ContextMenuItem * sender, IUnknown * args)
-                                            {
-                                                RunAsync([this] { ShowPreferences(); });
-
-                                                return S_OK;
-                                            }
-                                        ).Get(), nullptr);
-
-                                        if (!SUCCEEDED(hr))
-                                            return S_OK;
-
-                                        hr = Children->InsertValueAtIndex(0, MenuItem.get());
-                                    }
-
-                                    hr = Items->InsertValueAtIndex(ItemCount, _ContextMenuItem.get());
-                                }
+                                hr = Items->InsertValueAtIndex(ItemCount, _ContextSubMenu.get());
 
                                 // Display the context menu.
                                 return S_OK;
@@ -250,108 +201,103 @@ void UIElement::DeleteWebView() noexcept
 
     _Controller = nullptr;
 }
-/*
-HICON GetIconFromInstance( HINSTANCE hInstance, LPTSTR nIndex )
-{
-    HRSRC imageResHandle = ::FindResourceW(THIS_HINSTANCE, resourceName, resourceType);
 
-    if (imageResHandle == NULL)
+/// <summary>
+/// Creates the context menu.
+/// </summary>
+HRESULT UIElement::CreateContextMenu(const wchar_t * itemLabel, const wchar_t * iconName) noexcept
+{
+    if (itemLabel == nullptr)
         return E_FAIL;
 
-    HGLOBAL imageResDataHandle = ::LoadResource(THIS_HINSTANCE, imageResHandle);
+    if (_ContextSubMenu != nullptr)
+        return S_FALSE; // Custom items should be reused whenever possible.
 
-    if (imageResDataHandle == NULL)
-        return E_FAIL;
-*/
-/*
-    HICON	hIcon = NULL;
-    HRSRC	hRsrc = NULL;
-    HGLOBAL	hGlobal = NULL;
-    LPVOID	lpRes = NULL;
-    int    	nID;
+    wil::com_ptr<ICoreWebView2Environment9> Environment9;
 
-    // Find the group icon
-    if( (hRsrc = FindResource( hInstance, nIndex, RT_GROUP_ICON )) == NULL )
-        return NULL;
-    if( (hGlobal = LoadResource( hInstance, hRsrc )) == NULL )
-        return NULL;
-    if( (lpRes = LockResource(hGlobal)) == NULL )
-        return NULL;
+    HRESULT hr = _Environment->QueryInterface(IID_PPV_ARGS(&Environment9));
 
-    // Find this particular image
-    nID = LookupIconIdFromDirectory( lpRes, TRUE );
-    if( (hRsrc = FindResource( hInstance, MAKEINTRESOURCE(nID), RT_ICON )) == NULL )
-        return NULL;
-    if( (hGlobal = LoadResource( hInstance, hRsrc )) == NULL )
-        return NULL;
-    if( (lpRes = LockResource(hGlobal)) == NULL )
-        return NULL;
-    // Let the OS make us an icon
-    hIcon = CreateIconFromResource( lpRes, SizeofResource(hInstance,hRsrc), TRUE, 0x00030000 );
-    return hIcon;
-*/
-/*
-HRESULT ImageService::CreateFromResource(const WCHAR * resourceName, const WCHAR * resourceType, Image ** image)
-{
-    *image = nullptr;
+    if (!SUCCEEDED(hr))
+        return hr;
 
-    // Locate the resource.
-    HRSRC ResourceHandle = ::FindResourceW(THIS_INSTANCE, resourceName, resourceType);
-
-    HRESULT hr = ResourceHandle ? S_OK : E_FAIL;
-
-    // Load the resource.
-    HGLOBAL ResourceData = 0;
-
-    if (SUCCEEDED(hr))
+    // Create the sub menu.
     {
-        ResourceData = ::LoadResource(THIS_INSTANCE, ResourceHandle);
+        wil::com_ptr<IStream> IconStream;
 
-        hr = ResourceData ? S_OK : E_FAIL;
+        (void) CreateIconStream(iconName, IconStream); // Ignore any error.
+
+        hr = Environment9->CreateContextMenuItem(itemLabel, IconStream.get(), COREWEBVIEW2_CONTEXT_MENU_ITEM_KIND_SUBMENU, &_ContextSubMenu);
+
+        if (!SUCCEEDED(hr))
+            return hr;
+
+        wil::com_ptr<ICoreWebView2ContextMenuItemCollection> Children;
+
+        hr = _ContextSubMenu->get_Children(&Children);
+
+        if (!SUCCEEDED(hr))
+            return hr;
+
+        wil::com_ptr<ICoreWebView2ContextMenuItem> ContextMenuItem;
+
+        // Creates a menu item.
+        {
+            hr = Environment9->CreateContextMenuItem(L"Preferences", nullptr, COREWEBVIEW2_CONTEXT_MENU_ITEM_KIND_COMMAND, &ContextMenuItem);
+
+            if (!SUCCEEDED(hr))
+                return hr;
+
+            hr = ContextMenuItem->add_CustomItemSelected(Callback<ICoreWebView2CustomItemSelectedEventHandler>
+            (
+                [this](ICoreWebView2ContextMenuItem * sender, IUnknown * args)
+                {
+                    RunAsync([this] { ShowPreferences(); });
+
+                    return S_OK;
+                }
+            ).Get(), nullptr);
+
+            if (!SUCCEEDED(hr))
+                return hr;
+        }
+
+        hr = Children->InsertValueAtIndex(0, ContextMenuItem.get());
     }
-
-    // Lock it to get a system memory pointer.
-    void * ResourceBits = nullptr;
-
-    if (SUCCEEDED(hr))
-    {
-        ResourceBits = ::LockResource(ResourceData);
-
-        hr = ResourceBits ? S_OK : E_FAIL;
-    }
-
-    // Calculate the size.
-    DWORD ResourceSize = 0;
-
-    if (SUCCEEDED(hr))
-    {
-        ResourceSize = ::SizeofResource(THIS_INSTANCE, ResourceHandle);
-
-        hr = ResourceSize ? S_OK : E_FAIL;
-    }
-
-    // Create a WIC stream to map onto the memory.
-    IWICStream * Stream = nullptr;
-
-    if (SUCCEEDED(hr))
-        hr = _ImagingFactory->CreateStream(&Stream);
-
-    // Initialize the stream with the memory pointer and size.
-    if (SUCCEEDED(hr))
-        hr = Stream->InitializeFromMemory(reinterpret_cast<BYTE *>(ResourceBits), ResourceSize);
-
-    // Create a decoder.
-    IWICBitmapDecoder * bitmapDecoder = nullptr;
-
-    if (SUCCEEDED(hr))
-        hr = _ImagingFactory->CreateDecoderFromStream(Stream, nullptr, WICDecodeMetadataCacheOnLoad, &bitmapDecoder);
-
-    if (SUCCEEDED(hr))
-        *image = new Image(ResourceSize, bitmapDecoder);
-
-    SafeRelease(bitmapDecoder);
-    SafeRelease(Stream);
 
     return hr;
 }
-*/
+
+/// <summary>
+/// Creates a stream that contains the complete binary data of a Windows icon. The resource type is RT_RCDATA instead of RT_GROUP_ICON or RT_ICON.
+/// </summary>
+HRESULT CreateIconStream(const wchar_t * resourceName, wil::com_ptr<IStream> & stream)
+{
+    HRSRC hResource = ::FindResourceW(THIS_INSTANCE, resourceName, RT_RCDATA);
+
+    if (hResource == NULL)
+        return E_FAIL;
+
+    DWORD ResourceSize = ::SizeofResource(THIS_INSTANCE, hResource);
+
+    if (ResourceSize == 0)
+        return E_FAIL;
+
+    HGLOBAL hGlobal = ::LoadResource(THIS_INSTANCE, hResource);
+
+    if (hGlobal == NULL)
+        return E_FAIL;
+
+    BYTE * ResourceData = (BYTE *) ::LockResource(hGlobal);
+
+    if (ResourceData == nullptr)
+        return E_FAIL;
+
+    IStream * Stream = ::SHCreateMemStream(ResourceData, ResourceSize);
+
+    if (Stream == nullptr)
+        return E_FAIL;
+
+    stream = Stream;
+
+    return S_OK;
+}

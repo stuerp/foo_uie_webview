@@ -66,4 +66,4 @@ font 8, "Segoe UI", 400, 0, 1
 */
 }
 
-IDI_MAIN icon discardable "Main.ico"
+IDR_CONTEXT_MENU_ICON rcdata "Main.ico"

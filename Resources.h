@@ -1,5 +1,5 @@
 
-/** $VER: Resources.h (2024.06.02) P. Stuer **/
+/** $VER: Resources.h (2024.06.03) P. Stuer **/
 
 #pragma once
 
@@ -72,4 +72,4 @@
 #define IDC_PLAYBACK_TIME       1060
 #define IDC_VOLUME_CHANGE       1070
 
-#define IDI_MAIN                2000
+#define IDR_CONTEXT_MENU_ICON   2000

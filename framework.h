@@ -1,5 +1,5 @@
 
-/** $VER: framework.h (2024.05.25) P. Stuer **/
+/** $VER: framework.h (2024.06.03) P. Stuer **/
 
 #pragma once
 
@@ -26,3 +26,6 @@
 #include <cmath>
 #include <cassert>
 #include <string>
+
+EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+#define THIS_INSTANCE ((HINSTANCE) &__ImageBase)
