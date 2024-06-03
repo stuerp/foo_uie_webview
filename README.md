@@ -91,7 +91,7 @@ To create the component first build the x86 configuration and next the x64 confi
 
 v0.1.2.0, 2024-06-xx, *"Listening to user feedback"*
 
-* New: Added OnPlaybackDynamicInfo() and OnPlaybackDynamicTrackInfo() callback.
+* New: Added OnPlaybackDynamicInfo() and OnPlaybackDynamicTrackInfo() callback. Useful to display meta data from streamed audio.
 * Improved: A copy of the default template file is created when the component starts the first time.
 * Improved: The context menu contains a menu item to access the preferences page.
 
