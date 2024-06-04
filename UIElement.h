@@ -9,11 +9,12 @@
 #include "FileWatcher.h"
 #include "Preferences.h"
 
+#include <SDK/cfg_var.h>
 #include <SDK/coreDarkMode.h>
 #include <SDK/playback_control.h>
 #include <SDK/play_callback.h>
 #include <SDK/playlist.h>
-#include <SDK/cfg_var.h>
+#include <SDK/ui_element.h>
 
 #include <pfc/string_conv.h>
 #include <pfc/string-conv-lite.h>
