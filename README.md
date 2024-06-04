@@ -31,7 +31,7 @@ or
 
 When you add a Text Visualizer panel to the foobar2000 user interface the following things happen:
 
-* The component tries to enable a supported WebView. WebView is installed by the Microsoft Edge browser. If no compatible WebView can be found the component will fail gracefully and report the error in the foobar2000 console.
+* The component tries to enable a supported WebView. WebView is part of the Microsoft Edge browser. If no compatible WebView can be found the component will fail gracefully and report the error in the foobar2000 console.
 * A subdirectory called `foo_vis_text` gets created in your foobar2000 profile directory. It will contain various state information used by WebView.
 * The component looks by default for the HTML file `foo_vis_text\Template.html` in your foobar2000 profile directory. The location of the template can be changed in the preference page of the component. A copy of the default template will be created in that location if the file does not exist when the component starts.
 * A menu item will be added to the `View / Visualizations` foobar2000 menu.
