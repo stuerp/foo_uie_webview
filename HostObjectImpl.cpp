@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.cpp (2024.05.28) P. Stuer **/
+/** $VER: HostObjectImpl.cpp (2024.06.03) P. Stuer **/
 
 #include "pch.h"
 
@@ -13,6 +13,8 @@
 
 #include <SDK/titleformat.h>
 #include <SDK/playlist.h>
+#include <SDK/ui.h>
+#include <SDK/contextmenu.h>
 
 #include <pfc/string-conv-lite.h>
 
@@ -33,7 +35,20 @@ STDMETHODIMP HostObject::GetFormattedText(BSTR text, BSTR * formattedText)
     t_size PlaylistIndex = ~0u;
     t_size ItemIndex = ~0u;
 
-    if (!_PlaylistManager->get_playing_item_location(&PlaylistIndex, &ItemIndex))
+    auto SelectionManager = ui_selection_manager::get();
+
+    auto SelectionType = SelectionManager->get_selection_type();
+
+    // Description as used in the Preferences dialog (Display / Selection Viewers).
+    const bool PreferCurrentlyPlayingTrack = (SelectionType == contextmenu_item::caller_now_playing);
+    const bool PreferCurrentSelection      = (SelectionType == contextmenu_item::caller_active_playlist_selection);
+
+    bool IsTrackPlaying = false;
+
+    if (PreferCurrentlyPlayingTrack)
+        IsTrackPlaying = _PlaylistManager->get_playing_item_location(&PlaylistIndex, &ItemIndex);
+
+    if (PreferCurrentSelection || !IsTrackPlaying)
     {
         PlaylistIndex = _PlaylistManager->get_active_playlist();
 

@@ -9,10 +9,12 @@
 #include "FileWatcher.h"
 #include "Preferences.h"
 
+#include <SDK/cfg_var.h>
 #include <SDK/coreDarkMode.h>
 #include <SDK/playback_control.h>
 #include <SDK/play_callback.h>
-#include <SDK/cfg_var.h>
+#include <SDK/playlist.h>
+#include <SDK/ui_element.h>
 
 #include <pfc/string_conv.h>
 #include <pfc/string-conv-lite.h>
@@ -42,7 +44,7 @@ using PanelTracker = pfc::instanceTracker<INotify>;
 /// <summary>
 /// Implements the UIElement and Playback interface.
 /// </summary>
-class UIElement : public PanelTracker, public CWindowImpl<UIElement>, private play_callback_impl_base
+class UIElement : public PanelTracker, public CWindowImpl<UIElement>, private play_callback_impl_base, private playlist_callback_single_impl_base
 {
 public:
     UIElement();
@@ -128,6 +130,12 @@ private:
 
     #pragma endregion
 
+    #pragma region playlist_callback_single
+
+    virtual void on_item_focus_change(t_size fromIndex, t_size toIndex) override;
+
+    #pragma endregion
+
     #pragma region CWindowImpl
 
     LRESULT OnCreate(LPCREATESTRUCT cs);
@@ -155,6 +163,7 @@ private:
     void DeleteWebView() noexcept;
 
     HRESULT CreateContextMenu(const wchar_t * itemLabel, const wchar_t * iconName) noexcept;
+    HRESULT SetDarkMode(bool enabled) const noexcept;
 
     void InitializeFileWatcher();
     void InitializeWebView();

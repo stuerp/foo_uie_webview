@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.h (2024.05.27) P. Stuer **/
+/** $VER: HostObjectImpl.h (2024.06.03) P. Stuer **/
 
 #pragma once
 
@@ -62,6 +62,8 @@ public:
 
     #pragma endregion
 
+    void SetFollowSelectedTrackMode(bool enabled) noexcept { _FollowSelectedTrack = enabled; }
+
 private:
     wil::com_ptr<ITypeLib> _TypeLibrary;
 
@@ -73,4 +75,6 @@ private:
     DATE _Date = 0.;
     WCHAR _FormattedTime[200] = {};
     WCHAR _FormattedDate[200] = {};
+
+    bool _FollowSelectedTrack;
 };

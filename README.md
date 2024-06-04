@@ -89,6 +89,12 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
+v0.1.3.0, 2024-06-04, *"It's getting dark in here..."*
+
+* New: Added dark mode support to WebView.
+* New: Added "Follow selected track" mode. Supports the "Display / Selection Viewers" user preference ("Prefer current selection" vs. "Prefer currently playing track").
+* Fixed: Added support for "Layout Editing" mode. The foobar2000 context menu is available again.
+
 v0.1.2.0, 2024-06-03, *"Listening to user feedback"*
 
 * New: Added OnPlaybackDynamicInfo() and OnPlaybackDynamicTrackInfo() callback. Useful to display meta data from streamed audio.

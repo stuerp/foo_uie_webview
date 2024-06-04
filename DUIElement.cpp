@@ -1,5 +1,5 @@
 
-/** $VER: DUIElement.cpp (2024.05.23) P. Stuer **/
+/** $VER: DUIElement.cpp (2024.06.04) P. Stuer **/
 
 #include "pch.h"
 
@@ -90,11 +90,15 @@ ui_element_config::ptr DUIElement::get_configuration()
 
 /// <summary>
 /// Used by host to notify the element about various events.
-/// See ui_element_notify_* GUIDs for possible p_what parameter; meaning of other parameters depends on p_what value.
+/// See ui_element_notify_* GUIDs for possible "what" parameter; meaning of other parameters depends on the "what" value.
 /// Container classes should dispatch all notifications to their children.
 /// </summary>
 void DUIElement::notify(const GUID & what, t_size param1, const void * param2, t_size param2Size)
 {
+    if (what == ui_element_notify_edit_mode_changed)
+    {
+        ShowWindow(m_callback->is_edit_mode_enabled() ? SW_HIDE : SW_SHOW);
+    }
 /*
     if (what == ui_element_notify_colors_changed)
     {

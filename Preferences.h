@@ -19,3 +19,5 @@ extern cfg_string OnPlaybackDynamicTrackInfoCallbackCfg;
 extern cfg_string OnPlaybackTimeCallbackCfg;
 
 extern cfg_string OnVolumeChangeCallbackCfg;
+
+extern cfg_string OnPlaylistFocusedItemChangedCallbackCfg;
