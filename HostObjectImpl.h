@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.h (2024.06.03) P. Stuer **/
+/** $VER: HostObjectImpl.h (2024.06.05) P. Stuer **/
 
 #pragma once
 
@@ -39,42 +39,24 @@ public:
 
     STDMETHODIMP GetFormattedText(BSTR text, BSTR * formattedText) override;
 
-    // Demonstrate getting and setting a property.
-    STDMETHODIMP get_Property(BSTR* stringResult) override;
-    STDMETHODIMP put_Property(BSTR stringValue) override;
-    STDMETHODIMP get_IndexedProperty(INT index, BSTR* stringResult) override;
-    STDMETHODIMP put_IndexedProperty(INT index, BSTR stringValue) override;
-    STDMETHODIMP get_DateProperty(DATE* dateResult) override;
-    STDMETHODIMP put_DateProperty(DATE dateValue) override;
-    STDMETHODIMP CreateNativeDate() override;
-
-    // Demonstrate native calling back into JavaScript.
-    STDMETHODIMP CallCallbackAsynchronously(IDispatch* callbackParameter) override;
-
     #pragma endregion
 
     #pragma region IDispatch
 
-    STDMETHODIMP GetTypeInfoCount(UINT * pctinfo) override;
-    STDMETHODIMP GetTypeInfo(UINT iTInfo, LCID lcid, ITypeInfo ** ppTInfo) override;
-    STDMETHODIMP GetIDsOfNames(REFIID riid, LPOLESTR * rgszNames, UINT cNames, LCID lcid, DISPID * rgDispId) override;
+    STDMETHODIMP GetTypeInfoCount(UINT * typeInfoCount) override;
+    STDMETHODIMP GetTypeInfo(UINT typeInfoIndex, LCID lcid, ITypeInfo ** typeInfo) override;
+    STDMETHODIMP GetIDsOfNames(REFIID riid, LPOLESTR * names, UINT nameCount, LCID lcid, DISPID * dispIds) override;
     STDMETHODIMP Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WORD flags, DISPPARAMS * dispParams, VARIANT * result, EXCEPINFO * excepInfo, UINT * argErr) override;
 
     #pragma endregion
 
-    void SetFollowSelectedTrackMode(bool enabled) noexcept { _FollowSelectedTrack = enabled; }
+private:
+    static HRESULT GetTrackIndex(t_size & playlistIndex, t_size & itemIndex) noexcept;
+    static HRESULT GetTypeLibFilePath(std::wstring & filePath) noexcept;
 
 private:
     wil::com_ptr<ITypeLib> _TypeLibrary;
 
-    std::wstring _PropertyValue;
-    std::map<INT, std::wstring> _PropertyValues;
     wil::com_ptr<IDispatch> _Callback;
     RunCallbackAsync _RunCallbackAsync;
-
-    DATE _Date = 0.;
-    WCHAR _FormattedTime[200] = {};
-    WCHAR _FormattedDate[200] = {};
-
-    bool _FollowSelectedTrack;
 };

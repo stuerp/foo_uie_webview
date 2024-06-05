@@ -114,6 +114,14 @@ protected:
         return guid;
     }
 
+    /// <summary>
+    /// Shows or hides the WebView.
+    /// </summary>
+    void ShowWebView(bool visible)
+    {
+        _Controller->put_IsVisible((BOOL) visible);
+    }
+
 private:
     #pragma region Playback callback methods
 
@@ -169,8 +177,6 @@ private:
     void InitializeWebView();
 
     std::wstring GetTemplateFilePath() const noexcept;
-
-    bool TitleFormatText(const std::string & text, pfc::string & formattedText) noexcept;
 
     void ShowPreferences() noexcept;
 

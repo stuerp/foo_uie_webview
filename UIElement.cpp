@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.cpp (2024.06.03) P. Stuer **/
+/** $VER: UIElement.cpp (2024.06.05) P. Stuer **/
 
 #include "pch.h"
 
@@ -88,7 +88,7 @@ LRESULT UIElement::OnCreate(LPCREATESTRUCT cs)
 
     if (!GetWebViewVersion(WebViewVersion))
     {
-        console::printf(STR_COMPONENT_BASENAME " failed to find compatible WebView component.");
+        console::printf(STR_COMPONENT_BASENAME " failed to find a compatible WebView component.");
 
         return 1;
     }
@@ -168,11 +168,6 @@ LRESULT UIElement::OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam)
         console::error(e.what());
     }
 
-    if (_HostObject == nullptr)
-        return 1;
-
-    _HostObject->SetFollowSelectedTrackMode(true);
-
     return 0;
 }
 
@@ -237,42 +232,9 @@ void UIElement::InitializeWebView()
     HRESULT hResult = _WebView->Navigate(_FilePath.c_str());
 
     if (!SUCCEEDED(hResult))
-        throw Win32Exception((DWORD) hResult, "Failed to navigate to template");
+        throw Win32Exception(hResult, "Failed to navigate to template");
 
     on_playback_new_track(nullptr);
-}
-
-/// <summary>
-/// Formats the specified text using title formatting.
-/// </summary>
-bool UIElement::TitleFormatText(const std::string & text, pfc::string & formattedText) noexcept
-{
-    static_api_ptr_t<playlist_manager> _PlaylistManager;
-
-    t_size PlaylistIndex = ~0u;
-    t_size ItemIndex = ~0u;
-
-    if (!_PlaylistManager->get_playing_item_location(&PlaylistIndex, &ItemIndex))
-    {
-        PlaylistIndex = _PlaylistManager->get_active_playlist();
-
-        if (PlaylistIndex == ~0u)
-            return false;
-
-        ItemIndex = _PlaylistManager->playlist_get_focus_item(PlaylistIndex);
-
-        if (ItemIndex == ~0u)
-            return false;
-    }
-
-    titleformat_object::ptr FormatObject;
-
-    bool Success = titleformat_compiler::get()->compile(FormatObject, text.c_str());
-
-    if (Success)
-        _PlaylistManager->playlist_item_format_title(PlaylistIndex, ItemIndex, nullptr, formattedText, FormatObject, nullptr, playback_control::t_display_level::display_level_all);
-
-    return Success;
 }
 
 /// <summary>
@@ -326,7 +288,7 @@ CWndClassInfo & UIElement::GetWndClassInfo()
             NULL, // Instance,
             NULL, // Icon
             NULL, // Cursor
-            NULL, // Background brush
+            (HBRUSH) COLOR_WINDOW, // Background brush
             NULL, // Menu
             TEXT(STR_WINDOW_CLASS_NAME), // Class name
             NULL // Small Icon
@@ -367,7 +329,7 @@ void UIElement::on_playback_starting(play_control::t_track_command command, bool
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(\"%s\", %s)", FunctionName.c_str(), CommandName, (paused ? L"true" : L"false")).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw Win32Exception((DWORD) hResult, "on_playback_new_track failed");
+        throw Win32Exception(hResult, "on_playback_new_track() failed");
 }
 
 /// <summary>
@@ -386,7 +348,7 @@ void UIElement::on_playback_new_track(metadb_handle_ptr /*track*/)
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s()", FunctionName.c_str()).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw Win32Exception((DWORD) hResult, "on_playback_new_track failed");
+        throw Win32Exception(hResult, "on_playback_new_track() failed");
 }
 
 /// <summary>
@@ -412,7 +374,7 @@ void UIElement::on_playback_stop(play_control::t_stop_reason reason)
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(\"%s\")", FunctionName.c_str(), Reason).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw Win32Exception((DWORD) hResult, "on_playback_stop failed");
+        throw Win32Exception(hResult, "on_playback_stop() failed");
 }
 
 /// <summary>
@@ -431,7 +393,7 @@ void UIElement::on_playback_seek(double time)
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(%f)", FunctionName.c_str(), time).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw Win32Exception((DWORD) hResult, "on_playback_seek failed");
+        throw Win32Exception(hResult, "on_playback_seek() failed");
 }
 
 /// <summary>
@@ -450,7 +412,7 @@ void UIElement::on_playback_pause(bool paused)
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(%s)", FunctionName.c_str(), (paused ? L"true" : L"false")).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw Win32Exception((DWORD) hResult, "on_playback_pause failed");
+        throw Win32Exception(hResult, "on_playback_pause() failed");
 }
 
 /// <summary>
@@ -476,7 +438,7 @@ void UIElement::on_playback_dynamic_info(const file_info & fileInfo)
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s()", FunctionName.c_str()).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw Win32Exception((DWORD) hResult, "on_playback_dynamic_info failed");
+        throw Win32Exception(hResult, "on_playback_dynamic_info() failed");
 }
 
 /// <summary>
@@ -495,7 +457,7 @@ void UIElement::on_playback_dynamic_info_track(const file_info & fileInfo)
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s()", FunctionName.c_str()).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw Win32Exception((DWORD) hResult, "on_playback_dynamic_info_track failed");
+        throw Win32Exception(hResult, "on_playback_dynamic_info_track() failed");
 }
 
 /// <summary>
@@ -514,7 +476,7 @@ void UIElement::on_playback_time(double time)
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(%f)", FunctionName.c_str(), time).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw Win32Exception((DWORD) hResult, "on_playback_time failed");
+        throw Win32Exception(hResult, "on_playback_time failed()");
 }
 
 /// <summary>
@@ -533,7 +495,7 @@ void UIElement::on_volume_change(float newValue) // in dBFS
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s(%f)", FunctionName.c_str(), (double) newValue).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw Win32Exception((DWORD) hResult, "on_volume_change failed");
+        throw Win32Exception(hResult, "on_volume_change failed()");
 }
 
 #pragma endregion
@@ -556,7 +518,7 @@ void UIElement::on_item_focus_change(t_size fromIndex, t_size toIndex)
     HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s()", FunctionName.c_str()).c_str(), nullptr);
 
     if (!SUCCEEDED(hResult))
-        throw Win32Exception((DWORD) hResult, "on_item_focus_change failed");
+        throw Win32Exception(hResult, "on_item_focus_change failed()");
 }
 
 #pragma endregion

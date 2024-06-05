@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.cpp (2024.06.03) P. Stuer **/
+/** $VER: HostObjectImpl.cpp (2024.06.05) P. Stuer **/
 
 #include "pch.h"
 
@@ -21,20 +21,47 @@
 /// <summary>
 /// Initializes a new instance
 /// </summary>
-HostObject::HostObject(HostObject::RunCallbackAsync runCallbackAsync) : _PropertyValue(L"Example Property String Value"), _RunCallbackAsync(runCallbackAsync)
+HostObject::HostObject(HostObject::RunCallbackAsync runCallbackAsync) : _RunCallbackAsync(runCallbackAsync)
 {
 }
 
 /// <summary>
-/// Gets the interpreted version of the specified text containing Title Formating.
+/// Gets the interpreted version of the specified text containing Title Formating instructions.
 /// </summary>
 STDMETHODIMP HostObject::GetFormattedText(BSTR text, BSTR * formattedText)
 {
-    static_api_ptr_t<playlist_manager> _PlaylistManager;
-
     t_size PlaylistIndex = ~0u;
     t_size ItemIndex = ~0u;
 
+    GetTrackIndex(PlaylistIndex, ItemIndex);
+
+    titleformat_object::ptr FormatObject;
+    pfc::string8 Text = pfc::utf8FromWide(text);
+
+    bool Success = titleformat_compiler::get()->compile(FormatObject, Text);
+
+    if (!Success)
+    {
+        console::printf(STR_COMPONENT_NAME " failed to compile \"%s\".", Text.c_str());
+
+        return E_INVALIDARG;
+    }
+
+    static_api_ptr_t<playlist_manager> PlaylistManager;
+    pfc::string8 FormattedText;
+
+    PlaylistManager->playlist_item_format_title(PlaylistIndex, ItemIndex, nullptr, FormattedText, FormatObject, nullptr, playback_control::t_display_level::display_level_all);
+
+    *formattedText = ::SysAllocString(pfc::wideFromUTF8(FormattedText).c_str());
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the index of the active playlist and the focused item, taking into account the user preferences.
+/// </summary>
+HRESULT HostObject::GetTrackIndex(t_size & playlistIndex, t_size & itemIndex) noexcept
+{
     auto SelectionManager = ui_selection_manager::get();
 
     auto SelectionType = SelectionManager->get_selection_type();
@@ -45,127 +72,32 @@ STDMETHODIMP HostObject::GetFormattedText(BSTR text, BSTR * formattedText)
 
     bool IsTrackPlaying = false;
 
+    static_api_ptr_t<playlist_manager> PlaylistManager;
+
     if (PreferCurrentlyPlayingTrack)
-        IsTrackPlaying = _PlaylistManager->get_playing_item_location(&PlaylistIndex, &ItemIndex);
+        IsTrackPlaying = PlaylistManager->get_playing_item_location(&playlistIndex, &itemIndex);
 
     if (PreferCurrentSelection || !IsTrackPlaying)
     {
-        PlaylistIndex = _PlaylistManager->get_active_playlist();
+        playlistIndex = PlaylistManager->get_active_playlist();
 
-        if (PlaylistIndex == ~0u)
+        if (playlistIndex == ~0u)
             return E_FAIL;
 
-        ItemIndex = _PlaylistManager->playlist_get_focus_item(PlaylistIndex);
+        itemIndex = PlaylistManager->playlist_get_focus_item(playlistIndex);
 
-        if (ItemIndex == ~0u)
+        if (itemIndex == ~0u)
             return E_FAIL;
     }
-
-    titleformat_object::ptr FormatObject;
-
-    bool Success = titleformat_compiler::get()->compile(FormatObject, pfc::utf8FromWide(text));
-
-    if (!Success)
-        return E_FAIL;
-
-    pfc::string8 FormattedText;
-
-    _PlaylistManager->playlist_item_format_title(PlaylistIndex, ItemIndex, nullptr, FormattedText, FormatObject, nullptr, playback_control::t_display_level::display_level_all);
-
-    *formattedText = ::SysAllocString(pfc::wideFromUTF8(FormattedText).c_str());
-
-    return S_OK;
-}
-
-STDMETHODIMP HostObject::get_Property(BSTR * value_)
-{
-    *value_ = ::SysAllocString(_PropertyValue.c_str());
-
-    return S_OK;
-}
-
-STDMETHODIMP HostObject::put_Property(BSTR value_)
-{
-    _PropertyValue = value_;
-
-    return S_OK;
-}
-
-STDMETHODIMP HostObject::get_IndexedProperty(INT index, BSTR * result)
-{
-    std::wstring Result(L"[");
-
-    Result = Result + std::to_wstring(index) + L"] is " + _PropertyValues[index] + L".";
-
-    *result = ::SysAllocString(Result.c_str());
-
-    return S_OK;
-}
-
-STDMETHODIMP HostObject::put_IndexedProperty(INT index, BSTR value_)
-{
-    _PropertyValues[index] = value_;
-
-    return S_OK;
-}
-
-STDMETHODIMP HostObject::get_DateProperty(DATE * value_)
-{
-    *value_ = _Date;
-
-    return S_OK;
-}
-
-STDMETHODIMP HostObject::put_DateProperty(DATE value_)
-{
-    _Date = value_;
-
-    SYSTEMTIME st;
-
-    if (::VariantTimeToSystemTime(value, &st))
-    {
-        // Save the Date and Time as strings to be able to easily check that we are getting the correct values.
-
-        ::GetDateFormatEx(LOCALE_NAME_INVARIANT, 0, &st, nullptr, _FormattedDate, _countof(_FormattedDate), nullptr);
-        ::GetTimeFormatEx(LOCALE_NAME_INVARIANT, 0, &st, nullptr, _FormattedTime, _countof(_FormattedTime));
-    }
-
-    return S_OK;
-}
-
-STDMETHODIMP HostObject::CreateNativeDate()
-{
-    SYSTEMTIME systemTime;
-
-    ::GetSystemTime(&systemTime);
-
-    DATE date;
-
-    if (SystemTimeToVariantTime(&systemTime, &date))
-        return put_DateProperty(date);
-
-    return E_UNEXPECTED;
-}
-
-STDMETHODIMP HostObject::CallCallbackAsynchronously(IDispatch * callbackParameter)
-{
-    wil::com_ptr<IDispatch> callbackParameterForCapture = callbackParameter;
-
-    _RunCallbackAsync
-    (
-        [callbackParameterForCapture]() -> void
-        {
-            DISPPARAMS DispParams = { };
-
-            callbackParameterForCapture->Invoke(DISPID_UNKNOWN, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, &DispParams, nullptr, nullptr, nullptr);
-        }
-    );
 
     return S_OK;
 }
 
 #pragma region IDispatch
 
+/// <summary>
+/// Retrieves the number of type information interfaces that an object provides (either 0 or 1).
+/// </summary>
 STDMETHODIMP HostObject::GetTypeInfoCount(UINT * typeInfoCount)
 {
     *typeInfoCount = 1;
@@ -173,6 +105,9 @@ STDMETHODIMP HostObject::GetTypeInfoCount(UINT * typeInfoCount)
     return S_OK;
 }
 
+/// <summary>
+/// Retrieves the type information for an object, which can then be used to get the type information for an interface.
+/// </summary>
 STDMETHODIMP HostObject::GetTypeInfo(UINT typeInfoIndex, LCID lcid, ITypeInfo ** typeInfo)
 {
     if (typeInfoIndex != 0)
@@ -180,31 +115,34 @@ STDMETHODIMP HostObject::GetTypeInfo(UINT typeInfoIndex, LCID lcid, ITypeInfo **
 
     if (_TypeLibrary == nullptr)
     {
-        wchar_t FilePath[MAX_PATH];
+        // FIXME: The type library should be embedded in the resources of the component DLL, not a separate file.
+        std::wstring TypeLibFilePath;
 
-        HMODULE hModule = GetCurrentModule();;
+        HRESULT hr = GetTypeLibFilePath(TypeLibFilePath);
 
-        if (hModule == NULL)
-            return HRESULT_FROM_WIN32(::GetLastError());
+        if (!SUCCEEDED(hr))
+            return hr;
 
-        if (::GetModuleFileNameW(hModule, FilePath, _countof(FilePath)) == 0)
-            return HRESULT_FROM_WIN32(::GetLastError());
+        hr = ::LoadTypeLib(TypeLibFilePath.c_str(), &_TypeLibrary);
 
-        RETURN_IF_FAILED(::PathCchRemoveFileSpec(FilePath, _countof(FilePath)));
-
-        ::PathCchAppend(FilePath, _countof(FilePath), TEXT(STR_COMPONENT_BASENAME) L".tlb");
-
-        RETURN_IF_FAILED(LoadTypeLib(FilePath, &_TypeLibrary));
+        if (!SUCCEEDED(hr))
+            return hr;
     }
 
     return _TypeLibrary->GetTypeInfoOfGuid(__uuidof(IHostObject), typeInfo);
 }
 
+/// <summary>
+/// Maps a single member and an optional set of argument names to a corresponding set of integer DISPIDs, which can be used on subsequent calls to Invoke.
+/// </summary>
 STDMETHODIMP HostObject::GetIDsOfNames(REFIID riid, LPOLESTR * names, UINT nameCount, LCID lcid, DISPID * dispIds)
 {
     wil::com_ptr<ITypeInfo> TypeInfo;
 
-    RETURN_IF_FAILED(GetTypeInfo(0, lcid, &TypeInfo));
+    HRESULT hr = GetTypeInfo(0, lcid, &TypeInfo);
+
+    if (!SUCCEEDED(hr))
+        return hr;
 
     return TypeInfo->GetIDsOfNames(names, nameCount, dispIds);
 }
@@ -216,9 +154,42 @@ STDMETHODIMP HostObject::Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WOR
 {
     wil::com_ptr<ITypeInfo> TypeInfo;
 
-    RETURN_IF_FAILED(GetTypeInfo(0, lcid, &TypeInfo));
+    HRESULT hr = GetTypeInfo(0, lcid, &TypeInfo);
+
+    if (!SUCCEEDED(hr))
+        return hr;
 
     return TypeInfo->Invoke(this, dispIdMember, flags, dispParams, result, excepInfo, argErr);
+}
+
+/// <summary>
+/// Gets the complete file path of our type library.
+/// </summary>
+HRESULT HostObject::GetTypeLibFilePath(std::wstring & filePath) noexcept
+{
+    wchar_t FilePath[MAX_PATH];
+
+    HMODULE hModule = GetCurrentModule();
+
+    if (hModule == NULL)
+        return HRESULT_FROM_WIN32(::GetLastError());
+
+    if (::GetModuleFileNameW(hModule, FilePath, _countof(FilePath)) == 0)
+        return HRESULT_FROM_WIN32(::GetLastError());
+
+    HRESULT hr = ::PathCchRemoveFileSpec(FilePath, _countof(FilePath));
+
+    if (!SUCCEEDED(hr))
+        return hr;
+
+    ::PathCchAppend(FilePath, _countof(FilePath), TEXT(STR_COMPONENT_BASENAME) L".tlb");
+
+    if (!SUCCEEDED(hr))
+        return hr;
+
+    filePath = FilePath;
+
+    return S_OK;
 }
 
 #pragma endregion

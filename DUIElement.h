@@ -38,5 +38,5 @@ public:
     #pragma endregion
 
 protected:
-    ui_element_instance_callback::ptr m_callback;
+    ui_element_instance_callback::ptr m_callback; // Don't rename this. BumpableElement uses it.
 };
