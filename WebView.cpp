@@ -40,7 +40,7 @@ void UIElement::CreateWebView()
     HRESULT hResult = ::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
     if (!SUCCEEDED(hResult))
-        throw Win32Exception((DWORD) hResult, "Failed to initialize COM");
+        throw Win32Exception(hResult, "Failed to initialize COM");
 
     hResult = ::CreateCoreWebView2EnvironmentWithOptions(nullptr, _UserDataFolderPath.c_str(), nullptr, Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>
     (
@@ -61,7 +61,7 @@ void UIElement::CreateWebView()
                         _Controller->get_CoreWebView2(&_WebView);
                     }
 
-                    hResult = SetDarkMode(_DarkMode);
+                    (void) SetDarkMode(_DarkMode); // Ignore result.
 
                     // Add a few settings.
                     {
@@ -77,7 +77,7 @@ void UIElement::CreateWebView()
                         }
                     }
 
-                    // Resize WebView to fit the bounds of the parent window
+                    // Resize WebView to fit the bounds of the parent window.
                     {
                         RECT Bounds;
 
@@ -86,9 +86,12 @@ void UIElement::CreateWebView()
                         _Controller->put_Bounds(Bounds);
                     }
 
-                    // Set a mapping between a virtual host name and a folder path to make it available to web sites via that host name. (E,g, L"<img src="http://foo_vis_text.local/wv2.png"/>")
+                    // Set a mapping between a virtual host name and a folder path to make it available to web sites via that host name. (E.g. L"<img src="http://foo_vis_text.local/wv2.png"/>")
                     {
                         wil::com_ptr<ICoreWebView2_3> WebView2_3 = _WebView.try_query<ICoreWebView2_3>();
+
+                        if (WebView2_3 == nullptr)
+                            return E_NOINTERFACE;
 
                         hResult = WebView2_3->SetVirtualHostNameToFolderMapping(_HostName, _ProfilePath.c_str(), COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
                     }
@@ -107,11 +110,11 @@ void UIElement::CreateWebView()
 
                                 // We can call AddHostObjectToScript multiple times in a row without calling RemoveHostObject first.
                                 // This will replace the previous object with the new object. In our case this is the same object and everything is fine.
-                                HRESULT hResult = _WebView->AddHostObjectToScript(TEXT(STR_COMPONENT_BASENAME), &RemoteObject);
+                                HRESULT hr = _WebView->AddHostObjectToScript(TEXT(STR_COMPONENT_BASENAME), &RemoteObject);
 
                                 RemoteObject.pdispVal->Release();
 
-                                return hResult;
+                                return hr;
                             }
                         ).Get(), &_NavigationStartingToken);
                     }
@@ -121,7 +124,7 @@ void UIElement::CreateWebView()
                         wil::com_ptr<ICoreWebView2_11> WebView2_11 = _WebView.try_query<ICoreWebView2_11>();
 
                         if (WebView2_11 == nullptr)
-                            return S_OK;
+                            return E_NOINTERFACE;
 
                         hResult = WebView2_11->add_ContextMenuRequested(Callback<ICoreWebView2ContextMenuRequestedEventHandler>
                         (
@@ -134,41 +137,40 @@ void UIElement::CreateWebView()
                                 HRESULT hr = Args->get_ContextMenuTarget(&Target);
 
                                 if (!SUCCEEDED(hr))
-                                    return S_OK;
+                                    return hr;
 
                                 COREWEBVIEW2_CONTEXT_MENU_TARGET_KIND TargetKind;
 
                                 hr = Target->get_Kind(&TargetKind);
 
                                 if (!SUCCEEDED(hr))
-                                    return S_OK;
+                                    return hr;
 
                                 if (TargetKind != COREWEBVIEW2_CONTEXT_MENU_TARGET_KIND_PAGE)
-                                    return S_OK;
+                                    return hr;
 
                                 wil::com_ptr<ICoreWebView2ContextMenuItemCollection> Items;
 
                                 hr = Args->get_MenuItems(&Items);
 
                                 if (!SUCCEEDED(hr))
-                                    return S_OK;
+                                    return hr;
 
                                 UINT32 ItemCount;
 
                                 hr = Items->get_Count(&ItemCount);
 
                                 if (!SUCCEEDED(hr))
-                                    return S_OK;
+                                    return hr;
 
                                 hr = CreateContextMenu(TEXT(STR_COMPONENT_NAME), MAKEINTRESOURCE(IDR_CONTEXT_MENU_ICON));
 
                                 if (!SUCCEEDED(hr))
-                                    return S_OK;
+                                    return hr;
 
                                 hr = Items->InsertValueAtIndex(ItemCount, _ContextSubMenu.get());
 
-                                // Display the context menu.
-                                return S_OK;
+                                return hr;
                             }
                         ).Get(), &_ContextMenuRequestedToken);
                     }
@@ -184,7 +186,7 @@ void UIElement::CreateWebView()
     ).Get());
 
     if (!SUCCEEDED(hResult))
-        throw Win32Exception((DWORD) hResult, "Failed to create WebView");
+        throw Win32Exception(hResult, "Failed to create WebView");
 }
 
 /// <summary>
@@ -210,7 +212,7 @@ void UIElement::DeleteWebView() noexcept
 HRESULT UIElement::SetDarkMode(bool enabled) const noexcept
 {
     if (_WebView == nullptr)
-        return E_UNEXPECTED;
+        return E_ILLEGAL_METHOD_CALL;
 
     wil::com_ptr<ICoreWebView2_13> WebView2_13 = _WebView.try_query<ICoreWebView2_13>();
 

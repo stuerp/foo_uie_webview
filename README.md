@@ -37,6 +37,14 @@ When you add a Text Visualizer panel to the foobar2000 user interface the follow
 * A menu item will be added to the `View / Visualizations` foobar2000 menu.
 * A `Text Visualizer` preferences page is added to Preferences dialog in the `Display` category.
 
+### Preferences
+
+The preferences page allows you to specify the path of the template file that should be used. The path can contain environment variables e.g. `"%UserProfile%\Documents\Template.html"`.
+
+The panel automatically rereads the template file when the file path or the contents changes.
+
+The `Edit` button launches the editor that has been associated with the file type of the template in Windows.
+
 ### Tips
 
 * The directory where the component is installed contains an example template file called `Default-Template.html`. Do not store your customized template file in this directory because it will be overwritten or removed when the component gets upgraded.
@@ -88,6 +96,10 @@ Open `foo_vis_text.sln` with Visual Studio and build the solution.
 To create the component first build the x86 configuration and next the x64 configuration.
 
 ## Change Log
+
+v0.1.3.1, 2024-06-05
+
+* Fixed: "Layout Editing" mode now works when the panel is part of a Tab control.
 
 v0.1.3.0, 2024-06-04, *"It's getting dark in here..."*
 

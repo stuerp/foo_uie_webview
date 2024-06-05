@@ -9,23 +9,6 @@ library HostObjectLibrary
     interface IHostObject : IUnknown
     {
         HRESULT GetFormattedText([in] BSTR text, [out, retval] BSTR * formattedText);
-
-        // Demonstrate getting and setting a property.
-        [propget] HRESULT Property([out, retval] BSTR * stringResult);
-        [propput] HRESULT Property([in] BSTR stringValue);
-
-        [propget] HRESULT IndexedProperty(INT index, [out, retval] BSTR * stringResult);
-        [propput] HRESULT IndexedProperty(INT index, [in] BSTR stringValue);
-
-        // Demonstrate native calling back into JavaScript.
-        HRESULT CallCallbackAsynchronously([in] IDispatch * callbackParameter);
-
-        // Demonstrate a property which uses Date types
-        [propget] HRESULT DateProperty([out, retval] DATE * dateResult);
-        [propput] HRESULT DateProperty([in] DATE dateValue);
-
-        // Creates a date object on the native side and sets the DateProperty to it.
-        HRESULT CreateNativeDate();
     };
 
     [uuid(637abc45-11f7-4dde-84b4-317d62a638d3)]
