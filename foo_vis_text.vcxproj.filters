@@ -10,11 +10,12 @@
     <ClInclude Include="FileWatcher.h" />
     <ClInclude Include="Exceptions.h" />
     <ClInclude Include="Encoding.h" />
-    <ClInclude Include="Preferences.h" />
     <ClInclude Include="PreferencesLayout.h" />
     <ClInclude Include="HostObjectImpl.h" />
     <ClInclude Include="HostObject_h.h" />
     <ClInclude Include="Support.h" />
+    <ClInclude Include="Configuration.h" />
+    <ClInclude Include="UIElementTracker.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -30,6 +31,8 @@
     <ClCompile Include="HostObjectImpl.cpp" />
     <ClCompile Include="HostObject_i.c" />
     <ClCompile Include="Support.cpp" />
+    <ClCompile Include="Configuration.cpp" />
+    <ClCompile Include="UIElementTracker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources.rc" />

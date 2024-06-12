@@ -1,5 +1,5 @@
 
-/** $VER: CUIElement.h (2024.06.02) P. Stuer - Columns User Interface support **/
+/** $VER: CUIElement.h (2024.06.12) P. Stuer - Columns User Interface support **/
 
 #pragma once
 
@@ -91,6 +91,7 @@ public:
     /// </summary>
     void set_config(stream_reader * reader, size_t size, abort_callback & abortHandler) final
     {
+        _Configuration.Read(reader, size, abortHandler);
     }
 
     /// <summary>
@@ -98,9 +99,15 @@ public:
     /// </summary>
     void get_config(stream_writer * writer, abort_callback & abortHandler) const final
     {
+        _Configuration.Write(writer, abortHandler);
     }
 
     #pragma endregion
+
+    virtual bool IsWebViewVisible() const noexcept
+    {
+        return true;
+    }
 
 private:
     window_host_ptr _Host;

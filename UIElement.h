@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.h (2024.06.02) P. Stuer **/
+/** $VER: UIElement.h (2024.06.12) P. Stuer **/
 
 #pragma once
 
@@ -7,7 +7,7 @@
 
 #include "Resources.h"
 #include "FileWatcher.h"
-#include "Preferences.h"
+#include "Configuration.h"
 
 #include <SDK/cfg_var.h>
 #include <SDK/coreDarkMode.h>
@@ -29,22 +29,9 @@
 using namespace Microsoft::WRL;
 
 /// <summary>
-/// Allows the preference page to notify all UIElement instances.
-/// </summary>
-class INotify
-{
-public:
-    virtual ~INotify() { }
-
-    virtual void OnTemplateFilePathChanged() = 0;
-};
-
-using PanelTracker = pfc::instanceTracker<INotify>;
-
-/// <summary>
 /// Implements the UIElement and Playback interface.
 /// </summary>
-class UIElement : public PanelTracker, public CWindowImpl<UIElement>, private play_callback_impl_base, private playlist_callback_single_impl_base
+class UIElement : public CWindowImpl<UIElement>, private play_callback_impl_base, private playlist_callback_single_impl_base
 {
 public:
     UIElement();
@@ -53,6 +40,8 @@ public:
     UIElement & operator=(const UIElement &) = delete;
     UIElement(UIElement &&) = delete;
     UIElement & operator=(UIElement &&) = delete;
+
+    virtual ~UIElement() { }
 
     #pragma region CWindowImpl
 
@@ -101,7 +90,21 @@ public:
 
     #pragma endregion
 
-    void OnTemplateFilePathChanged() override;
+    #pragma region Configuration
+
+    const configuration_t & GetConfiguration() const noexcept
+    {
+        return _Configuration;
+    }
+
+    void SetConfiguration(const configuration_t & configuration) noexcept
+    {
+        _Configuration = configuration;
+
+        OnConfigurationChanged();
+    }
+
+    #pragma endregion
 
 protected:
     /// <summary>
@@ -114,13 +117,9 @@ protected:
         return guid;
     }
 
-    /// <summary>
-    /// Shows or hides the WebView.
-    /// </summary>
-    void ShowWebView(bool visible)
-    {
-        _Controller->put_IsVisible((BOOL) visible);
-    }
+    virtual bool IsWebViewVisible() const noexcept = 0;
+
+    virtual void SetWebViewVisibility(bool visible) noexcept;
 
 private:
     #pragma region Playback callback methods
@@ -146,17 +145,19 @@ private:
 
     #pragma region CWindowImpl
 
-    LRESULT OnCreate(LPCREATESTRUCT cs);
+    LRESULT OnCreate(LPCREATESTRUCT cs) noexcept;
     void OnDestroy() noexcept;
     void OnSize(UINT nType, CSize size) noexcept;
-    LRESULT OnTemplateChanged(UINT msg, WPARAM wParam, LPARAM lParam);
-    LRESULT OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam);
+    void OnPaint(CDCHandle dc) noexcept;
+    LRESULT OnTemplateChanged(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+    LRESULT OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
     LRESULT OnAsync(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 
     BEGIN_MSG_MAP_EX(UIElement)
         MSG_WM_CREATE(OnCreate)
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_SIZE(OnSize)
+        MSG_WM_PAINT(OnPaint)
 
         MESSAGE_HANDLER_EX(UM_TEMPLATE_CHANGED, OnTemplateChanged)
         MESSAGE_HANDLER_EX(UM_WEB_VIEW_READY, OnWebViewReady)
@@ -164,6 +165,8 @@ private:
     END_MSG_MAP()
 
     #pragma endregion
+
+    void Initialize();
 
 private:
     bool GetWebViewVersion(std::wstring & versionInfo);
@@ -180,12 +183,16 @@ private:
 
     void ShowPreferences() noexcept;
 
+    void OnConfigurationChanged() noexcept;
+
+protected:
+    configuration_t _Configuration;
+
 private:
     fb2k::CCoreDarkModeHooks _DarkMode;
 
-    std::wstring _ProfilePath;
     std::wstring _UserDataFolderPath;
-    std::wstring _FilePath;
+    std::wstring _ExpandedTemplateFilePath;
 
     wil::com_ptr<ICoreWebView2Environment> _Environment;
     wil::com_ptr<ICoreWebView2Controller> _Controller;

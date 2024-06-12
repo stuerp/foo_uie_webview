@@ -8,13 +8,13 @@
 
 #define NUM_FILE_MAJOR          0
 #define NUM_FILE_MINOR          1
-#define NUM_FILE_PATCH          3
-#define NUM_FILE_PRERELEASE     2
+#define NUM_FILE_PATCH          4
+#define NUM_FILE_PRERELEASE     0
 
 #define NUM_PRODUCT_MAJOR       0
 #define NUM_PRODUCT_MINOR       1
-#define NUM_PRODUCT_PATCH       3
-#define NUM_PRODUCT_PRERELEASE  2
+#define NUM_PRODUCT_PATCH       4
+#define NUM_PRODUCT_PRERELEASE  0
 
 /** Component specific **/
 
@@ -50,7 +50,7 @@
 
 #define GUID_UI_ELEMENT         {0xdabae3e2, 0xd31d, 0x4faa, { 0x88, 0xae, 0xf1, 0x50, 0xd6, 0x80, 0x33, 0x85}};
 #define GUID_PREFERENCES        {0xb18587e0, 0x9c95, 0x4ee3, { 0x8e, 0x9f, 0xaa, 0x8c, 0x77, 0xec, 0x2f, 0x85}};
-#define STR_WINDOW_CLASS_NAME   "{A1D51583-D8B7-40CF-88EC-B4C0AB194140}"
+#define STR_WINDOW_CLASS_NAME   STR_COMPONENT_BASENAME "_{A1D51583-D8B7-40CF-88EC-B4C0AB194140}"
 
 /** Messages **/
 

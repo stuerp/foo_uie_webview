@@ -97,8 +97,11 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.1.3.2, 2024-06-12
+v0.1.4.0, 2024-06-12
 
+* New: Support for multiple instances. Each instance can have its own configuration.
+* New: Added OnPlaybackEdited() callback.
+* Improved: The name of the component will be displayed in Layout Edit mode.
 * Fixed: Work-around for WebView not appearing after foobar2000 starts while being hosted in a hidden tab.
 
 v0.1.3.1, 2024-06-05
