@@ -122,6 +122,12 @@ function OnPlaybackPause(paused)
     document.getElementById("Paused").textContent = paused; // true / false
 }
 
+// Called when the currently played file gets edited.
+function OnPlaybackEdited()
+{
+    Refresh();
+}
+
 // Called when dynamic info (VBR bitrate etc...) changes.
 function OnPlaybackDynamicInfo()
 {

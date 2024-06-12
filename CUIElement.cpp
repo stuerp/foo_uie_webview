@@ -1,18 +1,14 @@
 
-/** $VER: CUIElement.cpp (2024.06.02) P. Stuer **/
+/** $VER: CUIElement.cpp (2024.06.12) P. Stuer **/
 
 #include "pch.h"
 
 #include "CUIElement.h"
 
-#include <ui_extension.h>
-
 #pragma hdrstop
 
 namespace uie
 {
-static cui::colours::client::factory<CUIColorClient> _CUIColorClientFactory;
-
 /// <summary>
 /// Initializes a new instance.
 /// </summary>
@@ -82,4 +78,5 @@ void CUIColorClient::on_bool_changed(uint32_t changed_items_mask) const
 {
 }
 
+static cui::colours::client::factory<CUIColorClient> _CUIColorClientFactory;
 }

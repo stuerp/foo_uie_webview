@@ -1,13 +1,13 @@
 
-/** $VER: DUIElement.h (2024.03.11) P. Stuer - Default User Interface support **/
+/** $VER: DUIElement.h (2024.06.12) P. Stuer - Default User Interface support **/
 
 #pragma once
 
 #include "framework.h"
 
-#include <helpers/BumpableElem.h>
-
 #include "UIElement.h"
+
+#include <helpers/BumpableElem.h>
 
 /// <summary>
 /// Implements a Default UI element.
@@ -21,6 +21,8 @@ public:
     DUIElement & operator=(const DUIElement &) = delete;
     DUIElement(DUIElement &&) = delete;
     DUIElement & operator=(DUIElement &&) = delete;
+
+    virtual ~DUIElement() { };
 
     #pragma region ui_element_instance interface
 
@@ -36,6 +38,11 @@ public:
     virtual void notify(const GUID & what, t_size param1, const void * param2, t_size param2Size);
 
     #pragma endregion
+
+    virtual bool IsWebViewVisible() const noexcept
+    {
+        return !m_callback->is_edit_mode_enabled(); // Hide the WebView to allow the default foobar2000 context menu to appear in "Layout Edit" mode.
+    }
 
 protected:
     ui_element_instance_callback::ptr m_callback; // Don't rename this. BumpableElement uses it.

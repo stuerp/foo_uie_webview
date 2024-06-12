@@ -1,5 +1,5 @@
 
-/** $VER: Preferences.cpp (2024.06.03) P. Stuer **/
+/** $VER: Preferences.cpp (2024.06.12) P. Stuer **/
 
 #include "pch.h"
 
@@ -12,56 +12,12 @@
 #include <helpers/DarkMode.h>
 
 #include "UIElement.h"
-#include "Preferences.h"
+#include "UIElementTracker.h"
 #include "Exceptions.h"
 #include "Encoding.h"
 #include "Resources.h"
 
 #pragma hdrstop
-
-static constexpr GUID       FilePathGUID                                    = { 0x341c4082, 0x255b, 0x4a38, { 0x81, 0x53, 0x55, 0x43, 0x5a, 0xd2, 0xe8, 0xa5 }};
-static constexpr const char FilePathDefault[]                               = ""; // Initialized during startup
-cfg_string                  FilePathCfg(FilePathGUID, FilePathDefault);
-
-static constexpr GUID       OnPlaybackStartingCallbackGUID                  = { 0x8f77ab56, 0xcfa5, 0x4dab, { 0x9d, 0xa3, 0x74, 0x06, 0x9c, 0x75, 0x26, 0x07 } };
-static constexpr const char OnPlaybackStartingCallbackDefault[]             = "OnPlaybackStarting";
-cfg_string                  OnPlaybackStartingCallbackCfg(OnPlaybackStartingCallbackGUID, OnPlaybackStartingCallbackDefault);
-
-static constexpr GUID       OnPlaybackNewTrackCallbackGUID                  = { 0xe82961ad, 0xaa0a, 0x47b9, { 0x9b, 0x3d, 0x71, 0xd0, 0x2a, 0xf5, 0x09, 0x67 } };
-static constexpr const char OnPlaybackNewTrackCallbackDefault[]             = "OnPlaybackNewTrack";
-cfg_string                  OnPlaybackNewTrackCallbackCfg(OnPlaybackNewTrackCallbackGUID, OnPlaybackNewTrackCallbackDefault);
-
-static constexpr GUID       OnPlaybackStopCallbackGUID                      = { 0xdb62948a, 0x550a, 0x487c, { 0xac, 0xb0, 0x44, 0xf2, 0xdd, 0x5e, 0xd7, 0xa1 } };
-static constexpr const char OnPlaybackStopCallbackDefault[]                 = "OnPlaybackStop";
-cfg_string                  OnPlaybackStopCallbackCfg(OnPlaybackStopCallbackGUID, OnPlaybackStopCallbackDefault);
-
-static constexpr GUID       OnPlaybackSeekCallbackGUID                      = { 0x6d28ff36, 0x08aa, 0x4ac6, { 0xa8, 0x68, 0x57, 0x68, 0x08, 0xa9, 0xcc, 0x3d } };
-static constexpr const char OnPlaybackSeekCallbackDefault[]                 = "OnPlaybackSeek";
-cfg_string                  OnPlaybackSeekCallbackCfg(OnPlaybackSeekCallbackGUID, OnPlaybackSeekCallbackDefault);
-
-static constexpr GUID       OnPlaybackPauseCallbackGUID                     = { 0x12c5a8f7, 0x7521, 0x4cb9, { 0xa6, 0x7c, 0x9d, 0xf2, 0x26, 0xaa, 0xdf, 0x54 } };
-static constexpr const char OnPlaybackPauseCallbackDefault[]                = "OnPlaybackPause";
-cfg_string                  OnPlaybackPauseCallbackCfg(OnPlaybackPauseCallbackGUID, OnPlaybackPauseCallbackDefault);
-
-static constexpr GUID       OnPlaybackDynamicInfoCallbackGUID               = { 0xfc709bc4, 0x0695, 0x4e57, { 0x90, 0x28, 0x16, 0x93, 0x0b, 0xf5, 0xd8, 0x2d } };
-static constexpr const char OnPlaybackDynamicInfoCallbackDefault[]          = "OnPlaybackDynamicInfo";
-cfg_string                  OnPlaybackDynamicInfoCallbackCfg(OnPlaybackDynamicInfoCallbackGUID, OnPlaybackDynamicInfoCallbackDefault);
-
-static constexpr GUID       OnPlaybackDynamicTrackInfoCallbackGUID          = { 0xee5e22f6, 0xe835, 0x480d, { 0x97, 0x1d, 0xb5, 0xd0, 0xd5, 0x27, 0x4c, 0x9c } };
-static constexpr const char OnPlaybackDynamicTrackInfoCallbackDefault[]     = "OnPlaybackDynamicTrackInfo";
-cfg_string                  OnPlaybackDynamicTrackInfoCallbackCfg(OnPlaybackDynamicTrackInfoCallbackGUID, OnPlaybackDynamicTrackInfoCallbackDefault);
-
-static constexpr GUID       OnPlaybackTimeCallbackGUID                      = { 0x0c5d244e2, 0xf6cc, 0x4b3f, { 0x99, 0xfe, 0x29, 0xbf, 0x2e, 0x03, 0x14, 0x04 } };
-static constexpr const char OnPlaybackTimeCallbackDefault[]                 = "OnPlaybackTime";
-cfg_string                  OnPlaybackTimeCallbackCfg(OnPlaybackTimeCallbackGUID, OnPlaybackTimeCallbackDefault);
-
-static constexpr GUID       OnVolumeChangeCallbackGUID                      = { 0x0959697db, 0x64a4, 0x4726, { 0x85, 0x27, 0x64, 0x88, 0x14, 0x0c, 0xa6, 0xda } };
-static constexpr const char OnVolumeChangeCallbackDefault[]                 = "OnVolumeChange";
-cfg_string                  OnVolumeChangeCallbackCfg(OnVolumeChangeCallbackGUID, OnVolumeChangeCallbackDefault);
-
-static constexpr GUID       OnPlaylistFocusedItemChangedCallbackGUID        = { 0x08943ae16, 0xa9d4, 0x4b05, { 0x97, 0xe4, 0x6d, 0xce, 0x05, 0x11, 0x99, 0x6b } };;
-static constexpr const char OnPlaylistFocusedItemChangedCallbackDefault[]   = "OnPlaylistFocusedItemChanged";
-cfg_string                  OnPlaylistFocusedItemChangedCallbackCfg(OnPlaylistFocusedItemChangedCallbackGUID, OnPlaylistFocusedItemChangedCallbackDefault);
 
 /// <summary>
 /// Implements the preferences page for the component.
@@ -69,7 +25,13 @@ cfg_string                  OnPlaylistFocusedItemChangedCallbackCfg(OnPlaylistFo
 class Preferences : public CDialogImpl<Preferences>, public preferences_page_instance
 {
 public:
-    Preferences(preferences_page_callback::ptr callback) : m_bMsgHandled(FALSE), _Callback(callback) { }
+    Preferences(preferences_page_callback::ptr callback) : m_bMsgHandled(FALSE), _Callback(callback)
+    {
+        UIElement * CurrentElement = _UIElementTracker.GetCurrentElement();
+
+        if (CurrentElement != nullptr)
+            _Configuration = CurrentElement->GetConfiguration();
+    }
 
     virtual ~Preferences() { }
 
@@ -98,15 +60,17 @@ public:
     /// </summary>
     virtual void apply() final
     {
-        if (FilePathCfg != _FilePath)
-        {
-            FilePathCfg = _FilePath;
+        wchar_t Text[MAX_PATH];
 
-            for (auto && Panel : PanelTracker::instanceList())
-            {
-                Panel->OnTemplateFilePathChanged();
-            }
-        }
+        GetDlgItemTextW(IDC_FILE_PATH, Text, _countof(Text));
+
+        if (_Configuration._TemplateFilePath != Text)
+            _Configuration._TemplateFilePath = Text;
+
+        UIElement * CurrentElement = _UIElementTracker.GetCurrentElement();
+
+        if (CurrentElement != nullptr)
+            CurrentElement->SetConfiguration(_Configuration);
 
         OnChanged();
     }
@@ -116,7 +80,7 @@ public:
     /// </summary>
     virtual void reset() final
     {
-        ::uSetDlgItemText(m_hWnd, IDC_FILE_PATH, FilePathDefault);
+        _Configuration.Reset();
 
         UpdateDialog();
 
@@ -141,8 +105,6 @@ private:
     {
         _DarkModeHooks.AddDialogWithControls(*this);
 
-        _FilePath = FilePathCfg;
-
         UpdateDialog();
 
         return FALSE;
@@ -155,22 +117,6 @@ private:
     {
         if (code != EN_CHANGE)
             return;
-
-        pfc::string8 Text;
-
-        ::uGetDlgItemText(m_hWnd, IDC_FILE_PATH, Text);
-
-        switch (id)
-        {
-            case IDC_FILE_PATH:
-            {
-                _FilePath = Text;
-                break;
-            }
-
-            default:
-                return;
-        }
 
         OnChanged();
     }
@@ -186,8 +132,8 @@ private:
             {
                 char ExpandedFilePath[MAX_PATH];
 
-                if (::ExpandEnvironmentStringsA(_FilePath.c_str(), ExpandedFilePath, _countof(ExpandedFilePath)) == 0)
-                    ::strcpy_s(ExpandedFilePath, _countof(ExpandedFilePath), _FilePath.c_str());
+                if (::ExpandEnvironmentStringsA(::WideToUTF8(_Configuration._TemplateFilePath).c_str(), ExpandedFilePath, _countof(ExpandedFilePath)) == 0)
+                    ::strcpy_s(ExpandedFilePath, _countof(ExpandedFilePath), ::WideToUTF8(_Configuration._TemplateFilePath).c_str());
 
                 pfc::string8 DirectoryPath = ExpandedFilePath;
 
@@ -197,7 +143,7 @@ private:
 
                 if (::uGetOpenFileName(m_hWnd, "Template files|*.htm;*.html;*.txt", 0, "html", "Choose a template...", DirectoryPath, FilePath, FALSE))
                 {
-                    _FilePath = FilePath;
+                    _Configuration._TemplateFilePath = ::UTF8ToWide(FilePath.c_str());
 
                     UpdateDialog();
                     OnChanged();
@@ -209,8 +155,8 @@ private:
             {
                 char ExpandedFilePath[MAX_PATH];
 
-                if (::ExpandEnvironmentStringsA(_FilePath.c_str(), ExpandedFilePath, _countof(ExpandedFilePath)) == 0)
-                    ::strcpy_s(ExpandedFilePath, _countof(ExpandedFilePath), _FilePath.c_str());
+                if (::ExpandEnvironmentStringsA(::WideToUTF8(_Configuration._TemplateFilePath).c_str(), ExpandedFilePath, _countof(ExpandedFilePath)) == 0)
+                    ::strcpy_s(ExpandedFilePath, _countof(ExpandedFilePath), ::WideToUTF8(_Configuration._TemplateFilePath).c_str());
 
                 pfc::string8 DirectoryPath = ExpandedFilePath;
 
@@ -241,7 +187,11 @@ private:
     /// </summary>
     bool HasChanged() noexcept
     {
-        return _FilePath != FilePathCfg;
+        wchar_t Text[MAX_PATH];
+
+        GetDlgItemTextW(IDC_FILE_PATH, Text, _countof(Text));
+
+        return _Configuration._TemplateFilePath != Text;
     }
 
     /// <summary>
@@ -249,7 +199,7 @@ private:
     /// </summary>
     void UpdateDialog() noexcept
     {
-        ::uSetDlgItemText(m_hWnd, IDC_FILE_PATH, _FilePath);
+        SetDlgItemTextW(IDC_FILE_PATH, _Configuration._TemplateFilePath.c_str());
     }
 
 private:
@@ -257,7 +207,7 @@ private:
 
     fb2k::CDarkModeHooks _DarkModeHooks;
 
-    pfc::string8 _FilePath;
+    configuration_t _Configuration;
 };
 
 #pragma region PreferencesPage

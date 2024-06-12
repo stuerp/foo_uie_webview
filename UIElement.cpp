@@ -1,9 +1,10 @@
 
-/** $VER: UIElement.cpp (2024.06.05) P. Stuer **/
+/** $VER: UIElement.cpp (2024.06.12) P. Stuer **/
 
 #include "pch.h"
 
 #include "UIElement.h"
+#include "UIElementTracker.h"
 #include "Encoding.h"
 #include "Exceptions.h"
 #include "Support.h"
@@ -24,57 +25,6 @@
 UIElement::UIElement() : m_bMsgHandled(FALSE)
 {
     playlist_callback_single_impl_base::set_callback_flags(flag_on_item_focus_change);
-
-    {
-        pfc::string8 ProfilePath = pfc::io::path::combine(core_api::get_profile_path(), STR_COMPONENT_BASENAME);
-
-        if (::_strnicmp(ProfilePath, "file://", 7) == 0)
-            _ProfilePath = UTF8ToWide(ProfilePath.subString(7).c_str());
-    }
-
-    {
-        if (!::PathFileExistsW(_ProfilePath.c_str()))
-        {
-            // Create the profile directory.
-            if (!::CreateDirectoryW(_ProfilePath.c_str(), nullptr))
-                console::printf(::GetErrorMessage(::GetLastError(), ::FormatText(STR_COMPONENT_BASENAME " failed to create profile directory \"%s\"", ::WideToUTF8(_ProfilePath).c_str())).c_str());
-        }
-    }
-
-    {
-        _UserDataFolderPath = _ProfilePath.c_str();
-
-        _FilePath = GetTemplateFilePath();
-    }
-
-    if (::PathFileExistsW(_FilePath.c_str()))
-        return;
-
-    // Create a default template file.
-    {
-        wchar_t DefaultFilePath[MAX_PATH];
-
-        HMODULE hModule = GetCurrentModule();
-
-        if (hModule == NULL)
-            return;
-
-        if (::GetModuleFileNameW(hModule, DefaultFilePath, _countof(DefaultFilePath)) == 0)
-            return;
-
-        HRESULT hResult = ::PathCchRemoveFileSpec(DefaultFilePath, _countof(DefaultFilePath));
-
-        if (!SUCCEEDED(hResult))
-            return;
-
-        hResult = ::PathCchAppend(DefaultFilePath, _countof(DefaultFilePath), L"Default-Template.html");
-
-        if (!SUCCEEDED(hResult))
-            return;
-
-        if (!::CopyFileW(DefaultFilePath, _FilePath.c_str(), TRUE))
-            console::printf(::GetErrorMessage(::GetLastError(), ::FormatText(STR_COMPONENT_BASENAME " failed to create default template file \"%s\"", ::WideToUTF8(_FilePath).c_str())).c_str());
-    }
 }
 
 #pragma region User Interface
@@ -82,8 +32,10 @@ UIElement::UIElement() : m_bMsgHandled(FALSE)
 /// <summary>
 /// Creates the window.
 /// </summary>
-LRESULT UIElement::OnCreate(LPCREATESTRUCT cs)
+LRESULT UIElement::OnCreate(LPCREATESTRUCT cs) noexcept
 {
+    _UIElementTracker.Add(this);
+
     std::wstring WebViewVersion;
 
     if (!GetWebViewVersion(WebViewVersion))
@@ -103,6 +55,8 @@ LRESULT UIElement::OnCreate(LPCREATESTRUCT cs)
         }
     );
 
+    Initialize();
+
     CreateWebView();
 
     InitializeFileWatcher();
@@ -120,6 +74,8 @@ void UIElement::OnDestroy() noexcept
     DeleteWebView();
 
     _HostObject = nullptr;
+
+    _UIElementTracker.Remove(this);
 }
 
 /// <summary>
@@ -138,9 +94,38 @@ void UIElement::OnSize(UINT type, CSize size) noexcept
 }
 
 /// <summary>
+/// Handles the WM_PAINT message.
+/// </summary>
+void UIElement::OnPaint(CDCHandle dc) noexcept
+{
+    PAINTSTRUCT ps = { };
+
+    BeginPaint(&ps);
+
+    RECT cr;
+
+    GetClientRect(&cr);
+
+    HTHEME hTheme = ::OpenThemeData(m_hWnd, VSCLASS_TEXTSTYLE);
+
+    const DWORD Format = DT_SINGLELINE | DT_CENTER | DT_VCENTER;
+
+    if (hTheme != NULL)
+    {
+        ::DrawThemeText(hTheme, ps.hdc, TEXT_BODYTEXT, 0, TEXT(STR_COMPONENT_NAME), -1, Format, 0, &cr);
+
+        ::CloseThemeData(hTheme);
+    }
+    else
+        ::DrawTextW(ps.hdc, TEXT(STR_COMPONENT_NAME), -1, &cr, (UINT) Format);
+
+    EndPaint(&ps);
+}
+
+/// <summary>
 /// Handles a change to the template. Either the path name or the content changed.
 /// </summary>
-LRESULT UIElement::OnTemplateChanged(UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT UIElement::OnTemplateChanged(UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
     try
     {
@@ -157,10 +142,12 @@ LRESULT UIElement::OnTemplateChanged(UINT msg, WPARAM wParam, LPARAM lParam)
 /// <summary>
 /// The WebView is ready.
 /// </summary>
-LRESULT UIElement::OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT UIElement::OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
     try
     {
+        SetWebViewVisibility(IsWebViewVisible()); // Work-around for WebView not appearing after foobar2000 starts while being hosted in a hidden tab.
+
         InitializeWebView();
     }
     catch (std::exception & e)
@@ -174,9 +161,9 @@ LRESULT UIElement::OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam)
 /// <summary>
 /// Handles a notification from the Preferences page that the template file path has changed.
 /// </summary>
-void UIElement::OnTemplateFilePathChanged()
+void UIElement::OnConfigurationChanged() noexcept
 {
-    _FilePath = GetTemplateFilePath();
+    _ExpandedTemplateFilePath = GetTemplateFilePath();
 
     try
     {
@@ -204,6 +191,61 @@ LRESULT UIElement::OnAsync(UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 }
 
 /// <summary>
+/// Initializes the component.
+/// </summary>
+void UIElement::Initialize()
+{
+    {
+        pfc::string8 Path = pfc::io::path::combine(core_api::get_profile_path(), STR_COMPONENT_BASENAME);
+
+        if (::_strnicmp(Path, "file://", 7) == 0)
+            Path = Path.subString(7);
+
+        _UserDataFolderPath = ::UTF8ToWide(Path.c_str());
+
+        if (!::PathFileExistsW(_UserDataFolderPath.c_str()))
+        {
+            // Create the user data directory.
+            if (!::CreateDirectoryW(_UserDataFolderPath.c_str(), nullptr))
+                console::printf(::GetErrorMessage(::GetLastError(), ::FormatText(STR_COMPONENT_BASENAME " failed to create user data folder \"%s\"", ::WideToUTF8(_UserDataFolderPath).c_str())).c_str());
+        }
+    }
+
+    {
+        _ExpandedTemplateFilePath = GetTemplateFilePath();
+
+        if (::PathFileExistsW(_ExpandedTemplateFilePath.c_str()))
+            return;
+    }
+
+    // Create a default template file.
+    {
+        wchar_t DefaultFilePath[MAX_PATH];
+
+        HMODULE hModule = GetCurrentModule();
+
+        if (hModule == NULL)
+            return;
+
+        if (::GetModuleFileNameW(hModule, DefaultFilePath, _countof(DefaultFilePath)) == 0)
+            return;
+
+        HRESULT hResult = ::PathCchRemoveFileSpec(DefaultFilePath, _countof(DefaultFilePath));
+
+        if (!SUCCEEDED(hResult))
+            return;
+
+        hResult = ::PathCchAppend(DefaultFilePath, _countof(DefaultFilePath), L"Default-Template.html");
+
+        if (!SUCCEEDED(hResult))
+            return;
+
+        if (!::CopyFileW(DefaultFilePath, _ExpandedTemplateFilePath.c_str(), TRUE))
+            console::printf(::GetErrorMessage(::GetLastError(), ::FormatText(STR_COMPONENT_BASENAME " failed to create default template file \"%s\"", ::WideToUTF8(_ExpandedTemplateFilePath).c_str())).c_str());
+    }
+}
+
+/// <summary>
 /// Initializes the file watcher.
 /// </summary>
 void UIElement::InitializeFileWatcher()
@@ -212,7 +254,7 @@ void UIElement::InitializeFileWatcher()
 
     try
     {
-        _FileWatcher.Start(m_hWnd, _FilePath);
+        _FileWatcher.Start(m_hWnd, _ExpandedTemplateFilePath);
     }
     catch (std::exception & e)
     {
@@ -229,12 +271,36 @@ void UIElement::InitializeWebView()
         return;
 
     // Navigate to the template.
-    HRESULT hResult = _WebView->Navigate(_FilePath.c_str());
+    HRESULT hResult = _WebView->Navigate(_ExpandedTemplateFilePath.c_str());
 
     if (!SUCCEEDED(hResult))
-        throw Win32Exception(hResult, "Failed to navigate to template");
+    {
+        (void)_WebView->Navigate(L"about:blank");
+
+        throw Win32Exception(hResult, ::FormatText(STR_COMPONENT_BASENAME " failed to navigate to template \"%s\"", ::WideToUTF8(_ExpandedTemplateFilePath).c_str()));
+    }
 
     on_playback_new_track(nullptr);
+}
+
+/// <summary>
+/// Shows or hides the WebView.
+/// </summary>
+void UIElement::SetWebViewVisibility(bool visible) noexcept
+{
+    // Hack: Don't use put_IsVisible(). It hides the host window. Reduce the WebView's size if we need to show the client area 'behind' the WebView f.e. in Layout Edit mode.
+    RECT cr = { };
+
+    if (visible)
+        GetClientRect(&cr);
+
+    if (_Controller != nullptr)
+        _Controller->put_Bounds(cr);
+
+    if (visible)
+        on_playback_new_track(nullptr); // Forces a refresh when the WebView becomes visible again e.g. after exiting Layout Edit mode.
+    else
+        InvalidateRect(nullptr, TRUE);
 }
 
 /// <summary>
@@ -244,19 +310,8 @@ std::wstring UIElement::GetTemplateFilePath() const noexcept
 {
     wchar_t FilePath[MAX_PATH];
 
-    if (::ExpandEnvironmentStringsW(pfc::wideFromUTF8(FilePathCfg.c_str()), FilePath, _countof(FilePath)) == 0)
-        ::wcscpy_s(FilePath, _countof(FilePath), pfc::wideFromUTF8(FilePathCfg.c_str()));
-
-    // Create the default location of the template.
-    if (FilePath[0] == '\0')
-    {
-        ::wcscpy_s(FilePath, _countof(FilePath), _ProfilePath.c_str());
-
-        HRESULT hResult = ::PathCchAppend(FilePath, _countof(FilePath), L"Template.html");
-
-        if (SUCCEEDED(hResult))
-            FilePathCfg = pfc::utf8FromWide(FilePath);
-    }
+    if (::ExpandEnvironmentStringsW(_Configuration._TemplateFilePath.c_str(), FilePath, _countof(FilePath)) == 0)
+        ::wcscpy_s(FilePath, _countof(FilePath), _Configuration._TemplateFilePath.c_str());
 
     return std::wstring(FilePath);
 }
@@ -266,6 +321,8 @@ std::wstring UIElement::GetTemplateFilePath() const noexcept
 /// </summary>
 void UIElement::ShowPreferences() noexcept
 {
+    _UIElementTracker.SetCurrentElement(this);
+
     static constexpr GUID _GUID = GUID_PREFERENCES;
 
     static_api_ptr_t<ui_control> uc;
@@ -311,7 +368,7 @@ void UIElement::on_playback_starting(play_control::t_track_command command, bool
     if (_WebView == nullptr)
         return;
 
-    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackStartingCallbackCfg.c_str());
+    const std::wstring FunctionName = OnPlaybackStartingCallback;
 
     if (FunctionName.empty())
         return;
@@ -340,7 +397,7 @@ void UIElement::on_playback_new_track(metadb_handle_ptr /*track*/)
     if (_WebView == nullptr)
         return;
 
-    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackNewTrackCallbackCfg.c_str());
+    const std::wstring FunctionName = OnPlaybackNewTrackCallback;
 
     if (FunctionName.empty())
         return;
@@ -359,7 +416,7 @@ void UIElement::on_playback_stop(play_control::t_stop_reason reason)
     if (_WebView == nullptr)
         return;
 
-    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackStopCallbackCfg.c_str());
+    const std::wstring FunctionName = OnPlaybackStopCallback;
 
     if (FunctionName.empty())
         return;
@@ -385,7 +442,7 @@ void UIElement::on_playback_seek(double time)
     if (_WebView == nullptr)
         return;
 
-    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackSeekCallbackCfg.c_str());
+    const std::wstring FunctionName = OnPlaybackSeekCallback;
 
     if (FunctionName.empty())
         return;
@@ -404,7 +461,7 @@ void UIElement::on_playback_pause(bool paused)
     if (_WebView == nullptr)
         return;
 
-    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackPauseCallbackCfg.c_str());
+    const std::wstring FunctionName = OnPlaybackPauseCallback;
 
     if (FunctionName.empty())
         return;
@@ -420,6 +477,18 @@ void UIElement::on_playback_pause(bool paused)
 /// </summary>
 void UIElement::on_playback_edited(metadb_handle_ptr hTrack)
 {
+    if (_WebView == nullptr)
+        return;
+
+    const std::wstring FunctionName = OnPlaybackEditedCallback;
+
+    if (FunctionName.empty())
+        return;
+
+    HRESULT hResult = _WebView->ExecuteScript(::FormatText(L"%s()", FunctionName.c_str()).c_str(), nullptr);
+
+    if (!SUCCEEDED(hResult))
+        throw Win32Exception(hResult, "on_playback_edited() failed");
 }
 
 /// <summary>
@@ -430,7 +499,7 @@ void UIElement::on_playback_dynamic_info(const file_info & fileInfo)
     if (_WebView == nullptr)
         return;
 
-    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackDynamicInfoCallbackCfg.c_str());
+    const std::wstring FunctionName = OnPlaybackDynamicInfoCallback;
 
     if (FunctionName.empty())
         return;
@@ -449,7 +518,7 @@ void UIElement::on_playback_dynamic_info_track(const file_info & fileInfo)
     if (_WebView == nullptr)
         return;
 
-    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackDynamicTrackInfoCallbackCfg.c_str());
+    const std::wstring FunctionName = OnPlaybackDynamicTrackInfoCallback;
 
     if (FunctionName.empty())
         return;
@@ -468,7 +537,7 @@ void UIElement::on_playback_time(double time)
     if (_WebView == nullptr)
         return;
 
-    const std::wstring FunctionName = ::UTF8ToWide(OnPlaybackTimeCallbackCfg.c_str());
+    const std::wstring FunctionName = OnPlaybackTimeCallback;
 
     if (FunctionName.empty())
         return;
@@ -487,7 +556,7 @@ void UIElement::on_volume_change(float newValue) // in dBFS
     if (_WebView == nullptr)
         return;
 
-    const std::wstring FunctionName = ::UTF8ToWide(OnVolumeChangeCallbackCfg.c_str());
+    const std::wstring FunctionName = OnVolumeChangeCallback;
 
     if (FunctionName.empty())
         return;
@@ -510,7 +579,7 @@ void UIElement::on_item_focus_change(t_size fromIndex, t_size toIndex)
     if (_WebView == nullptr)
         return;
 
-    const std::wstring FunctionName = ::UTF8ToWide(OnPlaylistFocusedItemChangedCallbackCfg.c_str());
+    const std::wstring FunctionName = OnPlaylistFocusedItemChangedCallback;
 
     if (FunctionName.empty())
         return;

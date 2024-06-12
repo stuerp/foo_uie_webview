@@ -1,5 +1,5 @@
 
-/** $VER: DUIElement.cpp (2024.06.04) P. Stuer **/
+/** $VER: DUIElement.cpp (2024.06.12) P. Stuer **/
 
 #include "pch.h"
 
@@ -54,7 +54,11 @@ GUID DUIElement::g_get_subclass()
 /// </summary>
 ui_element_config::ptr DUIElement::g_get_default_configuration()
 {
+    configuration_t DefaultConfiguration;
+
     ui_element_config_builder Builder;
+
+    DefaultConfiguration.Write(&Builder.m_stream);
 
     return Builder.finish(g_get_guid());
 }
@@ -76,6 +80,8 @@ void DUIElement::initialize_window(HWND p_parent)
 void DUIElement::set_configuration(ui_element_config::ptr data)
 {
     ui_element_config_parser Parser(data);
+
+    _Configuration.Read(&Parser.m_stream, Parser.get_remaining());
 }
 
 /// <summary>
@@ -84,6 +90,8 @@ void DUIElement::set_configuration(ui_element_config::ptr data)
 ui_element_config::ptr DUIElement::get_configuration()
 {
     ui_element_config_builder Builder;
+
+    _Configuration.Write(&Builder.m_stream);
 
     return Builder.finish(g_get_guid());
 }
@@ -97,7 +105,7 @@ void DUIElement::notify(const GUID & what, t_size param1, const void * param2, t
 {
     if (what == ui_element_notify_edit_mode_changed)
     {
-        ShowWebView(!m_callback->is_edit_mode_enabled()); // Hide the WebView to allow the default foobar2000 context menu to appear in "Layout Edit" mode.
+        SetWebViewVisibility(IsWebViewVisible());
     }
 /*
     if (what == ui_element_notify_colors_changed)

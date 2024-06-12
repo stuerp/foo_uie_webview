@@ -1,5 +1,5 @@
 
-/** $VER: WebView.cpp (2024.06.03) P. Stuer - Creates the WebView. **/
+/** $VER: WebView.cpp (2024.06.12) P. Stuer - Creates the WebView. **/
 
 #include "pch.h"
 
@@ -59,6 +59,8 @@ void UIElement::CreateWebView()
                     {
                         _Controller = controller;
                         _Controller->get_CoreWebView2(&_WebView);
+
+                        _Controller->put_IsVisible(TRUE);
                     }
 
                     (void) SetDarkMode(_DarkMode); // Ignore result.
@@ -93,7 +95,7 @@ void UIElement::CreateWebView()
                         if (WebView2_3 == nullptr)
                             return E_NOINTERFACE;
 
-                        hResult = WebView2_3->SetVirtualHostNameToFolderMapping(_HostName, _ProfilePath.c_str(), COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
+                        hResult = WebView2_3->SetVirtualHostNameToFolderMapping(_HostName, _UserDataFolderPath.c_str(), COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
                     }
 
                     // Add an event handler to add the host object before navigation starts. That way the host object is available when the scripts start running.
