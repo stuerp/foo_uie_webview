@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.cpp (2024.06.05) P. Stuer **/
+/** $VER: UIElement.cpp (2024.06.12) P. Stuer **/
 
 #include "pch.h"
 
@@ -161,6 +161,8 @@ LRESULT UIElement::OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam)
 {
     try
     {
+        ShowWebView(true); // Work-around for WebView not appearing after foobar2000 starts while being hosted in a hidden tab.
+
         InitializeWebView();
     }
     catch (std::exception & e)

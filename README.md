@@ -97,6 +97,10 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
+v0.1.3.2, 2024-06-12
+
+* Fixed: Work-around for WebView not appearing after foobar2000 starts while being hosted in a hidden tab.
+
 v0.1.3.1, 2024-06-05
 
 * Fixed: "Layout Editing" mode now works when the panel is part of a Tab control.
