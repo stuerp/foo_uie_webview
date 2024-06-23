@@ -72,7 +72,7 @@ public:
         if (CurrentElement != nullptr)
             CurrentElement->SetConfiguration(_Configuration);
 
-        OnChanged();
+        OnChanged(); // The flags have been updated.
     }
 
     /// <summary>
@@ -82,7 +82,7 @@ public:
     {
         _Configuration.Reset();
 
-        UpdateDialog();
+        SetDlgItemTextW(IDC_FILE_PATH, _Configuration._TemplateFilePath.c_str());
 
         OnChanged();
     }
@@ -105,7 +105,7 @@ private:
     {
         _DarkModeHooks.AddDialogWithControls(*this);
 
-        UpdateDialog();
+        SetDlgItemTextW(IDC_FILE_PATH, _Configuration._TemplateFilePath.c_str());
 
         return FALSE;
     }
@@ -143,7 +143,7 @@ private:
 
                 if (::uGetOpenFileName(m_hWnd, "Template files|*.htm;*.html;*.txt", 0, "html", "Choose a template...", DirectoryPath, FilePath, FALSE))
                 {
-                    _Configuration._TemplateFilePath = ::UTF8ToWide(FilePath.c_str());
+                    SetDlgItemTextW(IDC_FILE_PATH, ::UTF8ToWide(FilePath.c_str()).c_str());
 
                     UpdateDialog();
                     OnChanged();
@@ -199,7 +199,7 @@ private:
     /// </summary>
     void UpdateDialog() noexcept
     {
-        SetDlgItemTextW(IDC_FILE_PATH, _Configuration._TemplateFilePath.c_str());
+//      SetDlgItemTextW(IDC_FILE_PATH, _Configuration._TemplateFilePath.c_str());
     }
 
 private:

@@ -97,6 +97,12 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
+v0.1.5.0, 2024-06-xx
+
+* New: The location of the EdgeView user data folder can be specified in the Preferences dialog.
+  * Note: The existing folder will not be moved or deleted. The new location will only be used after restarting foobar2000.
+* Fixed: A last minute change (never a good thing) broke the support for multiple instances of the Preferences dialog box.
+
 v0.1.4.0, 2024-06-12
 
 * New: Support for multiple instances. Each instance can have its own configuration.
