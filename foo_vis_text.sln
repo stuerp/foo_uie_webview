@@ -21,6 +21,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libPPUI", "..\sdk\libPPUI\l
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "columns_ui_sdk", "..\3rdParty\columns_ui_sdk\columns_ui-sdk-public.vcxproj", "{93EC0EDE-01CD-4FB0-B8E8-4F2A027E026E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{293E92C8-6881-4837-8400-34B8CE68A6B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug FB2K|x64 = Debug FB2K|x64

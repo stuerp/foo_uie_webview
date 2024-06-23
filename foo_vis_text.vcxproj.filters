@@ -33,6 +33,7 @@
     <ClCompile Include="Support.cpp" />
     <ClCompile Include="Configuration.cpp" />
     <ClCompile Include="UIElementTracker.cpp" />
+    <ClCompile Include="Rendering.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources.rc" />

@@ -1,5 +1,5 @@
 
-/** $VER: configuration_t.cpp (2024.06.12) P. Stuer **/
+/** $VER: configuration_t.cpp (2024.06.23) P. Stuer **/
 
 #include "pch.h"
 
@@ -39,21 +39,29 @@ configuration_t::configuration_t()
 /// </summary>
 void configuration_t::Reset() noexcept
 {
+    _Name = TEXT(STR_COMPONENT_NAME);
+
     pfc::string8 Path = pfc::io::path::combine(core_api::get_profile_path(), STR_COMPONENT_BASENAME);
 
     if (::_strnicmp(Path, "file://", 7) == 0)
         Path = Path.subString(7);
 
-    wchar_t FilePath[MAX_PATH];
+    {
+        wchar_t FilePath[MAX_PATH];
 
-    ::wcscpy_s(FilePath, _countof(FilePath), ::UTF8ToWide(Path.c_str()).c_str());
+        ::wcscpy_s(FilePath, _countof(FilePath), ::UTF8ToWide(Path.c_str()).c_str());
 
-    HRESULT hResult = ::PathCchAppend(FilePath, _countof(FilePath), L"Template.html");
+        HRESULT hResult = ::PathCchAppend(FilePath, _countof(FilePath), L"Template.html");
 
-    if (SUCCEEDED(hResult))
-        _TemplateFilePath = FilePath;
-    else
-        ::wcscpy_s(FilePath, _countof(FilePath), L"Template.html");
+        if (SUCCEEDED(hResult))
+            _TemplateFilePath = FilePath;
+        else
+            ::wcscpy_s(FilePath, _countof(FilePath), L"Template.html");
+    }
+
+    {
+        _UserDataFolderPath = ::UTF8ToWide(Path.c_str());
+    }
 }
 
 /// <summary>
@@ -61,7 +69,9 @@ void configuration_t::Reset() noexcept
 /// </summary>
 configuration_t & configuration_t::operator=(const configuration_t & other)
 {
+    _Name = other._Name;
     _TemplateFilePath = other._TemplateFilePath;
+    _UserDataFolderPath = other._UserDataFolderPath;
 
     return *this;
 }
@@ -88,8 +98,17 @@ void configuration_t::Read(stream_reader * reader, size_t size, abort_callback &
             return;
         }
 
+        pfc::string UTF8String;
+
         // Version 1, v0.1.4.0
-        pfc::string FilePath; reader->read_string(FilePath, abortHandler); _TemplateFilePath = pfc::wideFromUTF8(FilePath);
+        reader->read_string(UTF8String, abortHandler); _TemplateFilePath = pfc::wideFromUTF8(UTF8String);
+
+        // Version 2, v0.1.5.0
+        if (Version >= 2)
+        {
+            reader->read_string(UTF8String, abortHandler); _Name               = pfc::wideFromUTF8(UTF8String);
+            reader->read_string(UTF8String, abortHandler); _UserDataFolderPath = pfc::wideFromUTF8(UTF8String);
+        }
     }
     catch (exception & ex)
     {
@@ -109,7 +128,11 @@ void configuration_t::Write(stream_writer * writer, abort_callback & abortHandle
         writer->write_object_t(_CurrentVersion, abortHandler);
 
         // Version 1, v0.1.4.0
-        pfc::string FilePath = pfc::utf8FromWide(_TemplateFilePath.c_str()); writer->write_string(FilePath, abortHandler);
+        pfc::string UTF8String = pfc::utf8FromWide(_TemplateFilePath.c_str()); writer->write_string(UTF8String, abortHandler);
+
+        // Version 2, v0.1.5.0
+        UTF8String = pfc::utf8FromWide(_Name.c_str());               writer->write_string(UTF8String, abortHandler);
+        UTF8String = pfc::utf8FromWide(_UserDataFolderPath.c_str()); writer->write_string(UTF8String, abortHandler);
     }
     catch (exception & ex)
     {

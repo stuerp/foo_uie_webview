@@ -1,10 +1,11 @@
 
-/** $VER: WebView.cpp (2024.06.12) P. Stuer - Creates the WebView. **/
+/** $VER: WebView.cpp (2024.06.23) P. Stuer - Creates the WebView. **/
 
 #include "pch.h"
 
 #include "UIElement.h"
 #include "Exceptions.h"
+#include "Encoding.h"
 
 #include <pfc/string-conv-lite.h>
 #include <pfc/pathUtils.h>
@@ -42,7 +43,7 @@ void UIElement::CreateWebView()
     if (!SUCCEEDED(hResult))
         throw Win32Exception(hResult, "Failed to initialize COM");
 
-    hResult = ::CreateCoreWebView2EnvironmentWithOptions(nullptr, _UserDataFolderPath.c_str(), nullptr, Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>
+    hResult = ::CreateCoreWebView2EnvironmentWithOptions(nullptr, _Configuration._UserDataFolderPath.c_str(), nullptr, Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>
     (
         [this](HRESULT hResult, ICoreWebView2Environment * environment) -> HRESULT
         {
@@ -90,12 +91,12 @@ void UIElement::CreateWebView()
 
                     // Set a mapping between a virtual host name and a folder path to make it available to web sites via that host name. (E.g. L"<img src="http://foo_vis_text.local/wv2.png"/>")
                     {
-                        wil::com_ptr<ICoreWebView2_3> WebView2_3 = _WebView.try_query<ICoreWebView2_3>();
+                        wil::com_ptr<ICoreWebView2_3> WebView3 = _WebView.try_query<ICoreWebView2_3>();
 
-                        if (WebView2_3 == nullptr)
+                        if (WebView3 == nullptr)
                             return E_NOINTERFACE;
 
-                        hResult = WebView2_3->SetVirtualHostNameToFolderMapping(_HostName, _UserDataFolderPath.c_str(), COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
+                        hResult = WebView3->SetVirtualHostNameToFolderMapping(_HostName, _Configuration._UserDataFolderPath.c_str(), COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
                     }
 
                     // Add an event handler to add the host object before navigation starts. That way the host object is available when the scripts start running.
@@ -119,6 +120,38 @@ void UIElement::CreateWebView()
                                 return hr;
                             }
                         ).Get(), &_NavigationStartingToken);
+                    }
+
+                    // Add an event handler to known when navigation has completed.
+                    {
+                        _WebView->add_NavigationCompleted(Microsoft::WRL::Callback<ICoreWebView2NavigationCompletedEventHandler>
+                        (
+                            [this](ICoreWebView2* sender, ICoreWebView2NavigationCompletedEventArgs* args) -> HRESULT
+                            {
+                                BOOL Success;
+
+                                HRESULT hr = args->get_IsSuccess(&Success);
+
+                                if (!SUCCEEDED(hr))
+                                    return hr;
+
+                                if (!Success)
+                                {
+                                    COREWEBVIEW2_WEB_ERROR_STATUS WebErrorStatus;
+
+                                    hr = args->get_WebErrorStatus(&WebErrorStatus);
+
+                                    if (WebErrorStatus == COREWEBVIEW2_WEB_ERROR_STATUS_DISCONNECTED)
+                                    {
+                                        // Do something here if you want to handle a specific error case.
+                                        // In most cases this isn't necessary, because the WebView will display its own error page automatically.
+                                    }
+                                }
+
+                                _IsNavigationCompleted = true;
+
+                                return S_OK;
+                            }).Get(), &_NavigationCompletedToken);
                     }
 
                     // Add custom context menu items.
@@ -177,6 +210,7 @@ void UIElement::CreateWebView()
                         ).Get(), &_ContextMenuRequestedToken);
                     }
 
+                    // Tell the host we're fully initialized.
                     ::PostMessageW(m_hWnd, UM_WEB_VIEW_READY, 0, 0);
 
                     return S_OK;
@@ -200,6 +234,7 @@ void UIElement::DeleteWebView() noexcept
     {
         _WebView->RemoveHostObjectFromScript(TEXT(STR_COMPONENT_BASENAME));
 
+        _WebView->remove_NavigationStarting(_NavigationCompletedToken);
         _WebView->remove_NavigationStarting(_NavigationStartingToken);
 
         _WebView = nullptr;

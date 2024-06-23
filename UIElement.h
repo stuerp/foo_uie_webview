@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.h (2024.06.12) P. Stuer **/
+/** $VER: UIElement.h (2024.06.23) P. Stuer **/
 
 #pragma once
 
@@ -15,6 +15,7 @@
 #include <SDK/play_callback.h>
 #include <SDK/playlist.h>
 #include <SDK/ui_element.h>
+#include <SDK/vis.h>
 
 #include <pfc/string_conv.h>
 #include <pfc/string-conv-lite.h>
@@ -168,6 +169,8 @@ private:
 
     void Initialize();
 
+    HRESULT PostChunk(const audio_sample * samples, size_t sampleCount, uint32_t channelCount, uint32_t sampleRate) noexcept;
+
 private:
     bool GetWebViewVersion(std::wstring & versionInfo);
     void CreateWebView();
@@ -185,13 +188,19 @@ private:
 
     void OnConfigurationChanged() noexcept;
 
+    void StartTimer() noexcept;
+    void StopTimer() noexcept;
+
+    static void TimerCallback(HWND unnamedParam1, UINT unnamedParam2, UINT_PTR unnamedParam3, DWORD unnamedParam4) noexcept;
+
+    void OnTimer() noexcept;
+
 protected:
     configuration_t _Configuration;
 
 private:
     fb2k::CCoreDarkModeHooks _DarkMode;
 
-    std::wstring _UserDataFolderPath;
     std::wstring _ExpandedTemplateFilePath;
 
     wil::com_ptr<ICoreWebView2Environment> _Environment;
@@ -200,9 +209,23 @@ private:
     wil::com_ptr<ICoreWebView2ContextMenuItem> _ContextSubMenu;
 
     EventRegistrationToken _NavigationStartingToken = {};
+    EventRegistrationToken _NavigationCompletedToken = {};
     EventRegistrationToken _ContextMenuRequestedToken = {};
 
     wil::com_ptr<HostObject> _HostObject;
 
+    bool _IsNavigationCompleted;
+
     FileWatcher _FileWatcher;
+
+    PTP_TIMER _ThreadPoolTimer;
+    bool _IsFrozen;
+    bool _IsHidden;
+
+    visualisation_stream_v2::ptr _VisualisationStream;
+    double _LastPlaybackTime;
+
+    wil::com_ptr<ICoreWebView2_17> _WebView17;
+    wil::com_ptr<ICoreWebView2SharedBuffer> _SharedBuffer;
+    BYTE * _Buffer;
 };

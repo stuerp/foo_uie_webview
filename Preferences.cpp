@@ -1,5 +1,5 @@
 
-/** $VER: Preferences.cpp (2024.06.12) P. Stuer **/
+/** $VER: Preferences.cpp (2024.06.23) P. Stuer **/
 
 #include "pch.h"
 
@@ -62,10 +62,26 @@ public:
     {
         wchar_t Text[MAX_PATH];
 
-        GetDlgItemTextW(IDC_FILE_PATH, Text, _countof(Text));
+        {
+            GetDlgItemTextW(IDC_NAME, Text, _countof(Text));
 
-        if (_Configuration._TemplateFilePath != Text)
-            _Configuration._TemplateFilePath = Text;
+            if (_Configuration._Name != Text)
+                _Configuration._Name = Text;
+        }
+
+        {
+            GetDlgItemTextW(IDC_USER_DATA_FOLDER_PATH, Text, _countof(Text));
+
+            if (_Configuration._UserDataFolderPath != Text)
+                _Configuration._UserDataFolderPath = Text;
+        }
+
+        {
+            GetDlgItemTextW(IDC_FILE_PATH, Text, _countof(Text));
+
+            if (_Configuration._TemplateFilePath != Text)
+                _Configuration._TemplateFilePath = Text;
+        }
 
         UIElement * CurrentElement = _UIElementTracker.GetCurrentElement();
 
@@ -82,16 +98,24 @@ public:
     {
         _Configuration.Reset();
 
-        SetDlgItemTextW(IDC_FILE_PATH, _Configuration._TemplateFilePath.c_str());
+        SetDlgItemTextW(IDC_NAME,                  _Configuration._Name.c_str());
+        SetDlgItemTextW(IDC_USER_DATA_FOLDER_PATH, _Configuration._UserDataFolderPath.c_str());
+        SetDlgItemTextW(IDC_FILE_PATH,             _Configuration._TemplateFilePath.c_str());
 
         OnChanged();
     }
 
     #pragma endregion
 
-    //WTL message map
+    // WTL message map
     BEGIN_MSG_MAP_EX(Preferences)
         MSG_WM_INITDIALOG(OnInitDialog)
+
+        COMMAND_HANDLER_EX(IDC_NAME, EN_CHANGE, OnEditChange)
+
+        COMMAND_HANDLER_EX(IDC_USER_DATA_FOLDER_PATH, EN_CHANGE, OnEditChange)
+        COMMAND_HANDLER_EX(IDC_USER_DATA_FOLDER_PATH_SELECT, BN_CLICKED, OnButtonClicked)
+
         COMMAND_HANDLER_EX(IDC_FILE_PATH, EN_CHANGE, OnEditChange)
         COMMAND_HANDLER_EX(IDC_FILE_PATH_SELECT, BN_CLICKED, OnButtonClicked)
         COMMAND_HANDLER_EX(IDC_FILE_PATH_EDIT, BN_CLICKED, OnButtonClicked)
@@ -105,6 +129,8 @@ private:
     {
         _DarkModeHooks.AddDialogWithControls(*this);
 
+        SetDlgItemTextW(IDC_NAME, _Configuration._Name.c_str());
+        SetDlgItemTextW(IDC_USER_DATA_FOLDER_PATH, _Configuration._UserDataFolderPath.c_str());
         SetDlgItemTextW(IDC_FILE_PATH, _Configuration._TemplateFilePath.c_str());
 
         return FALSE;
@@ -128,6 +154,27 @@ private:
     {
         switch (id)
         {
+            case IDC_USER_DATA_FOLDER_PATH_SELECT:
+            {
+                char ExpandedDirectoryPath[MAX_PATH];
+
+                if (::ExpandEnvironmentStringsA(::WideToUTF8(_Configuration._UserDataFolderPath).c_str(), ExpandedDirectoryPath, _countof(ExpandedDirectoryPath)) == 0)
+                    ::strcpy_s(ExpandedDirectoryPath, _countof(ExpandedDirectoryPath), ::WideToUTF8(_Configuration._UserDataFolderPath).c_str());
+
+                pfc::string8 DirectoryPath = ExpandedDirectoryPath;
+
+                DirectoryPath.truncate_filename();
+
+                if (::uBrowseForFolder(m_hWnd, "Locate the EdgeView user data folder...", DirectoryPath))
+                {
+                    SetDlgItemTextW(IDC_USER_DATA_FOLDER_PATH, ::UTF8ToWide(DirectoryPath.c_str()).c_str());
+
+                    UpdateDialog();
+                    OnChanged();
+                }
+                break;
+            }
+
             case IDC_FILE_PATH_SELECT:
             {
                 char ExpandedFilePath[MAX_PATH];
@@ -189,6 +236,16 @@ private:
     {
         wchar_t Text[MAX_PATH];
 
+        GetDlgItemTextW(IDC_NAME, Text, _countof(Text));
+
+        if (_Configuration._Name != Text)
+            return true;
+
+        GetDlgItemTextW(IDC_USER_DATA_FOLDER_PATH, Text, _countof(Text));
+
+        if (_Configuration._UserDataFolderPath != Text)
+            return true;
+
         GetDlgItemTextW(IDC_FILE_PATH, Text, _countof(Text));
 
         return _Configuration._TemplateFilePath != Text;
@@ -199,7 +256,6 @@ private:
     /// </summary>
     void UpdateDialog() noexcept
     {
-//      SetDlgItemTextW(IDC_FILE_PATH, _Configuration._TemplateFilePath.c_str());
     }
 
 private:
