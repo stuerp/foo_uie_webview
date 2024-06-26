@@ -97,10 +97,10 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.1.5.0, 2024-06-xx
+v0.1.5.0, 2024-06-26-alpha1
 
 * New: Each instance of the component can have a name to easier distinguish between them.
-* New: The location of the EdgeView user data folder can be specified in the Preferences dialog.
+* New: The location of the WebView user data folder can be specified in the Preferences dialog.
   * Note: The existing folder will not be moved or deleted. The new location will only be used after restarting foobar2000.
 * New: Made the sample chunks from the foobar2000 visualisation stream available to Javascript.
 * Fixed: A last minute change (never a good thing) broke the support for multiple instances of the Preferences dialog box.

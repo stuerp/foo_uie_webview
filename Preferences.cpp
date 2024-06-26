@@ -1,5 +1,5 @@
 
-/** $VER: Preferences.cpp (2024.06.23) P. Stuer **/
+/** $VER: Preferences.cpp (2024.06.26) P. Stuer **/
 
 #include "pch.h"
 
@@ -165,7 +165,7 @@ private:
 
                 DirectoryPath.truncate_filename();
 
-                if (::uBrowseForFolder(m_hWnd, "Locate the EdgeView user data folder...", DirectoryPath))
+                if (::uBrowseForFolder(m_hWnd, "Locate the WebView user data folder...", DirectoryPath))
                 {
                     SetDlgItemTextW(IDC_USER_DATA_FOLDER_PATH, ::UTF8ToWide(DirectoryPath.c_str()).c_str());
 

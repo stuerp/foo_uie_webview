@@ -1,5 +1,5 @@
 
-/** $VER: WebView.cpp (2024.06.23) P. Stuer - Creates the WebView. **/
+/** $VER: WebView.cpp (2024.06.26) P. Stuer - Creates the WebView. **/
 
 #include "pch.h"
 
@@ -38,16 +38,16 @@ bool UIElement::GetWebViewVersion(std::wstring & versionString)
 /// </summary>
 void UIElement::CreateWebView()
 {
-    HRESULT hResult = ::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+    HRESULT hr = ::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
-    if (!SUCCEEDED(hResult))
-        throw Win32Exception(hResult, "Failed to initialize COM");
+    if (!SUCCEEDED(hr))
+        throw Win32Exception(hr, "Failed to initialize COM");
 
-    hResult = ::CreateCoreWebView2EnvironmentWithOptions(nullptr, _Configuration._UserDataFolderPath.c_str(), nullptr, Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>
+    hr = ::CreateCoreWebView2EnvironmentWithOptions(nullptr, _Configuration._UserDataFolderPath.c_str(), nullptr, Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>
     (
-        [this](HRESULT hResult, ICoreWebView2Environment * environment) -> HRESULT
+        [this](HRESULT hr, ICoreWebView2Environment * environment) -> HRESULT
         {
-            UNREFERENCED_PARAMETER(hResult);
+            UNREFERENCED_PARAMETER(hr);
 
             _Environment = environment;
 
@@ -91,19 +91,19 @@ void UIElement::CreateWebView()
 
                     // Set a mapping between a virtual host name and a folder path to make it available to web sites via that host name. (E.g. L"<img src="http://foo_vis_text.local/wv2.png"/>")
                     {
-                        wil::com_ptr<ICoreWebView2_3> WebView3 = _WebView.try_query<ICoreWebView2_3>();
+                        wil::com_ptr<ICoreWebView2_3> WebView03 = _WebView.try_query<ICoreWebView2_3>();
 
-                        if (WebView3 == nullptr)
+                        if (WebView03 == nullptr)
                             return E_NOINTERFACE;
 
-                        hResult = WebView3->SetVirtualHostNameToFolderMapping(_HostName, _Configuration._UserDataFolderPath.c_str(), COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
+                        hResult = WebView03->SetVirtualHostNameToFolderMapping(_HostName, _Configuration._UserDataFolderPath.c_str(), COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
                     }
 
                     // Add an event handler to add the host object before navigation starts. That way the host object is available when the scripts start running.
                     {
                         _WebView->add_NavigationStarting(Microsoft::WRL::Callback<ICoreWebView2NavigationStartingEventHandler>
                         (
-                            [this](ICoreWebView2 * webView, ICoreWebView2NavigationStartingEventArgs * args) -> HRESULT
+                            [this](ICoreWebView2 * webView, ICoreWebView2NavigationStartingEventArgs * eventArgs) -> HRESULT
                             {
                                 VARIANT RemoteObject = {};
 
@@ -122,15 +122,15 @@ void UIElement::CreateWebView()
                         ).Get(), &_NavigationStartingToken);
                     }
 
-                    // Add an event handler to known when navigation has completed.
+                    // Add an event handler to know when navigation has completed.
                     {
                         _WebView->add_NavigationCompleted(Microsoft::WRL::Callback<ICoreWebView2NavigationCompletedEventHandler>
                         (
-                            [this](ICoreWebView2* sender, ICoreWebView2NavigationCompletedEventArgs* args) -> HRESULT
+                            [this](ICoreWebView2 * webView, ICoreWebView2NavigationCompletedEventArgs * eventArgs) -> HRESULT
                             {
                                 BOOL Success;
 
-                                HRESULT hr = args->get_IsSuccess(&Success);
+                                HRESULT hr = eventArgs->get_IsSuccess(&Success);
 
                                 if (!SUCCEEDED(hr))
                                     return hr;
@@ -139,7 +139,7 @@ void UIElement::CreateWebView()
                                 {
                                     COREWEBVIEW2_WEB_ERROR_STATUS WebErrorStatus;
 
-                                    hr = args->get_WebErrorStatus(&WebErrorStatus);
+                                    hr = eventArgs->get_WebErrorStatus(&WebErrorStatus);
 
                                     if (WebErrorStatus == COREWEBVIEW2_WEB_ERROR_STATUS_DISCONNECTED)
                                     {
@@ -151,17 +151,18 @@ void UIElement::CreateWebView()
                                 _IsNavigationCompleted = true;
 
                                 return S_OK;
-                            }).Get(), &_NavigationCompletedToken);
+                            }
+                        ).Get(), &_NavigationCompletedToken);
                     }
 
                     // Add custom context menu items.
                     {
-                        wil::com_ptr<ICoreWebView2_11> WebView2_11 = _WebView.try_query<ICoreWebView2_11>();
+                        wil::com_ptr<ICoreWebView2_11> WebView11 = _WebView.try_query<ICoreWebView2_11>();
 
-                        if (WebView2_11 == nullptr)
+                        if (WebView11 == nullptr)
                             return E_NOINTERFACE;
 
-                        hResult = WebView2_11->add_ContextMenuRequested(Callback<ICoreWebView2ContextMenuRequestedEventHandler>
+                        hResult = WebView11->add_ContextMenuRequested(Callback<ICoreWebView2ContextMenuRequestedEventHandler>
                         (
                             [this](ICoreWebView2 * sender, ICoreWebView2ContextMenuRequestedEventArgs * eventArgs)
                             {
@@ -221,8 +222,8 @@ void UIElement::CreateWebView()
         }
     ).Get());
 
-    if (!SUCCEEDED(hResult))
-        throw Win32Exception(hResult, "Failed to create WebView");
+    if (!SUCCEEDED(hr))
+        throw Win32Exception(hr, "Failed to create WebView");
 }
 
 /// <summary>
@@ -232,9 +233,15 @@ void UIElement::DeleteWebView() noexcept
 {
     if (_WebView)
     {
+        wil::com_ptr<ICoreWebView2_11> WebView11 = _WebView.try_query<ICoreWebView2_11>();
+
+        if (WebView11 != nullptr)
+            WebView11->remove_ContextMenuRequested(_ContextMenuRequestedToken);
+
+        _WebView->remove_NavigationCompleted(_NavigationCompletedToken);
+
         _WebView->RemoveHostObjectFromScript(TEXT(STR_COMPONENT_BASENAME));
 
-        _WebView->remove_NavigationStarting(_NavigationCompletedToken);
         _WebView->remove_NavigationStarting(_NavigationStartingToken);
 
         _WebView = nullptr;
@@ -251,14 +258,14 @@ HRESULT UIElement::SetDarkMode(bool enabled) const noexcept
     if (_WebView == nullptr)
         return E_ILLEGAL_METHOD_CALL;
 
-    wil::com_ptr<ICoreWebView2_13> WebView2_13 = _WebView.try_query<ICoreWebView2_13>();
+    wil::com_ptr<ICoreWebView2_13> WebView13 = _WebView.try_query<ICoreWebView2_13>();
 
-    if (WebView2_13 == nullptr)
+    if (WebView13 == nullptr)
         return E_NOINTERFACE;
 
     wil::com_ptr<ICoreWebView2Profile> Profile;
 
-    HRESULT hr = WebView2_13->get_Profile(&Profile);
+    HRESULT hr = WebView13->get_Profile(&Profile);
 
     if (!SUCCEEDED(hr))
         return hr;

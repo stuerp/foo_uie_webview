@@ -212,6 +212,7 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
     <ClInclude Include="framework.h" />
     <ClInclude Include="HostObjectImpl.h" />
     <ClInclude Include="HostObject_h.h" />
+    <ClInclude Include="SharedBuffer.h" />
     <ClInclude Include="UIElementTracker.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PreferencesLayout.h" />
@@ -243,6 +244,7 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Rendering.cpp" />
+    <ClCompile Include="SharedBuffer.cpp" />
     <ClCompile Include="UIElementTracker.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

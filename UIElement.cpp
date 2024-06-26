@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.cpp (2024.06.12) P. Stuer **/
+/** $VER: UIElement.cpp (2024.06.26) P. Stuer **/
 
 #include "pch.h"
 
@@ -22,7 +22,7 @@
 /// <summary>
 /// Initializes a new instance.
 /// </summary>
-UIElement::UIElement() : m_bMsgHandled(FALSE), _Buffer()
+UIElement::UIElement() : m_bMsgHandled(FALSE)
 {
     playlist_callback_single_impl_base::set_callback_flags(flag_on_item_focus_change);
 }

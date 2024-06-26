@@ -15,7 +15,7 @@
 /// </summary>
 void UIElement::StartTimer() noexcept
 {
-    ::SetTimer(m_hWnd, (UINT_PTR) this, 1000 / (DWORD) 50, TimerCallback);
+    ::SetTimer(m_hWnd, (UINT_PTR) this, 1000 / (DWORD) 50, (TIMERPROC) TimerCallback);
 }
 
 /// <summary>
@@ -51,7 +51,7 @@ void UIElement::OnTimer() noexcept
 
     audio_chunk_impl Chunk;
 
-    const double WindowSize = 0.05; // in seconds
+    const double WindowSize = 0.10; // in seconds
     const double Offset     = PlaybackTime - (WindowSize / 2.);
 
     if (!_VisualisationStream->get_chunk_absolute(Chunk, Offset, WindowSize))
@@ -59,17 +59,18 @@ void UIElement::OnTimer() noexcept
 
     const audio_sample * Samples = Chunk.get_data();
 
-    size_t SampleCount = (uint32_t) Chunk.get_sample_count();
-    uint32_t ChannelCount = Chunk.get_channel_count();
+    size_t SampleCount = Chunk.get_sample_count();
     uint32_t SampleRate = Chunk.get_sample_rate();
+    uint32_t ChannelCount = Chunk.get_channel_count();
+    uint32_t ChannelConfig = Chunk.get_channel_config();
 
-    HRESULT hr = PostChunk(Samples, SampleCount, ChannelCount, SampleRate);
+    HRESULT hr = PostChunk(Samples, SampleCount, SampleRate, ChannelCount, ChannelConfig);
 
     if (!SUCCEEDED(hr))
         return;
 
     {
-        hr = _WebView->ExecuteScript(::FormatText(L"OnTimer(%d, %d, %d)", SampleCount, ChannelCount, SampleRate).c_str(), nullptr); // Silently continue
+        hr = _WebView->ExecuteScript(::FormatText(L"OnTimer(%d, %d, %d, %08X)", SampleCount, SampleRate, ChannelCount, ChannelConfig).c_str(), nullptr); // Silently continue
 
         if (!SUCCEEDED(hr))
         {
@@ -83,44 +84,15 @@ void UIElement::OnTimer() noexcept
 /// <summary>
 /// Posts a chunk to the script via a shared buffer.
 /// </summary>
-HRESULT UIElement::PostChunk(const audio_sample * samples, size_t sampleCount, uint32_t channelCount, uint32_t sampleRate) noexcept
+HRESULT UIElement::PostChunk(const audio_sample * samples, size_t sampleCount, uint32_t sampleRate, uint32_t channelCount, uint32_t channelConfig) noexcept
 {
-    const UINT64 Size = sizeof(audio_sample) * sampleCount;
+    HRESULT hr = _SharedBuffer.Ensure(_Environment, _WebView, sampleCount, sampleRate, channelCount, channelConfig);
 
-    if (_SharedBuffer == nullptr)
-    {
-        wil::com_ptr<ICoreWebView2Environment12> Environment;
-
-        HRESULT hr = _Environment->QueryInterface(IID_PPV_ARGS(&Environment));
-
-        if (!SUCCEEDED(hr))
-            return hr;
-
-        hr = Environment->CreateSharedBuffer(Size, &_SharedBuffer);
-
-        if (!SUCCEEDED(hr))
-            return hr;
-
-        hr = _SharedBuffer->get_Buffer(&_Buffer);
-
-        if (!SUCCEEDED(hr))
-            return hr;
-
-        _WebView17 = _WebView.try_query<ICoreWebView2_17>();
-
-        if (_WebView17 == nullptr)
-            return E_NOINTERFACE;
-
-        std::wstring AdditionalDataAsJson = ::FormatText(L"{\"SampleCount\":%d,\"ChannelCount\":%d,\"SampleRate\":%d}", (int) sampleCount, (int) channelCount, (int) sampleRate);
-
-        hr = _WebView17->PostSharedBufferToScript(_SharedBuffer.get(), COREWEBVIEW2_SHARED_BUFFER_ACCESS_READ_WRITE, AdditionalDataAsJson.c_str());
-
-        if (!SUCCEEDED(hr))
-            return hr;
-    }
-
-    if (_Buffer != nullptr)
-        ::memcpy(_Buffer, samples, Size);
+    if (SUCCEEDED(hr))
+        if (audio_sample_size == 64)
+            _SharedBuffer.Copy((const BYTE *) samples, sizeof(audio_sample) * sampleCount);
+        else
+            _SharedBuffer.Convert((const float *) samples, sampleCount);
 
     return S_OK;
 }

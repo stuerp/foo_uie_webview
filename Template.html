@@ -18,7 +18,7 @@ body
     padding: 0;
     font: 90% Calibri, Sans-serif;
     line-height: 1.2;
-    color: #555753; 
+    color: #555753;
 	background-color: #e0e0e0;
 }
 div
@@ -84,8 +84,21 @@ div
         Time: <span id="Time">?</span>s<br/>
         Volume: <span id="Volume">?</span>dBFS<br/>
     </p>
+    <span id="Timer"></span><br/>
+    <span id="SampleCount"></span> samples, <span id="SampleRate"></span>Hz, <span id="ChannelCount"></span> channels (<span id="ChannelConfig"></span>)<br/>
 </div>
 <script>
+window.onload = function ()
+{
+    window.chrome.webview.addEventListener("sharedbufferreceived", e =>
+    {
+        OnSharedBufferReceived(e);
+    });
+}
+
+let SharedBuffer;
+let Samples;
+
 // Called when playback is being initialized.
 function OnPlaybackStarting(command, paused)
 {
@@ -108,6 +121,12 @@ function OnPlaybackStop(reason)
     document.getElementById("StopReason").textContent = reason; // "User" / "EOF" / "Starting another" / "Shutting down"
 
     document.getElementById("Info").style.display = 'none';
+
+    if (SharedBuffer)
+    {
+        window.chrome.webview.releaseBuffer(SharedBuffer);
+        SharedBuffer = null;
+    }
 }
 
 // Called when the user seeks to a specific time.
@@ -197,14 +216,39 @@ function Refresh()
     document.getElementById("MIDI").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("['MIDI: '$info(midi_player)][, $info(midi_active_voices) voices '(peak ' $info(midi_peak_voices)')'][, extra percussion channel $info(midi_extra_percussion_channel)]");
 }
 
-let Chunk;
-
-function SharedBufferReceived(e)
+function OnSharedBufferReceived(e)
 {
-    if (e.additionalData) // && e.additionalData.SampleCount == "bufferType1")
+    if (SharedBuffer)
     {
-        Chunk = e.getBuffer();
+        window.chrome.webview.releaseBuffer(SharedBuffer);
+        SharedBuffer = null;
     }
+
+    if (!e.additionalData)
+        return;
+
+    SharedBuffer = e.getBuffer(); // as an ArrayBuffer
+
+    Samples = new Float64Array(SharedBuffer);
+
+    document.getElementById("SampleCount").textContent = e.additionalData.SampleCount;
+    document.getElementById("SampleRate").textContent = e.additionalData.SampleRate;
+    document.getElementById("ChannelCount").textContent = e.additionalData.ChannelCount;
+    document.getElementById("ChannelConfig").textContent = e.additionalData.ChannelConfig;
+}
+
+// Called when the visualisation timer ticks.
+function OnTimer(sampleCount, channelCount, sampleRate, channelConfig)
+{
+    var L = 0, R = 0;
+
+    for (i = 0; i < sampleCount; i += channelCount)
+    {
+        L = Math.max(L, Samples[0]);
+        R = Math.max(R, Samples[1]);
+    }
+
+    document.getElementById("Timer").textContent = Date.now() + ": " + sampleCount + " samples, " + sampleRate + "Hz, " + channelCount + " channels (" + ("00000000" + channelConfig.toString(16)).substr(-8) + "), Left: " + L.toFixed(3) + ", Right: " + R.toFixed(3);
 }
 </script>
 </body>

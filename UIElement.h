@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.h (2024.06.23) P. Stuer **/
+/** $VER: UIElement.h (2024.06.26) P. Stuer **/
 
 #pragma once
 
@@ -26,6 +26,7 @@
 #include <WebView2.h>
 
 #include "HostObjectImpl.h"
+#include "SharedBuffer.h"
 
 using namespace Microsoft::WRL;
 
@@ -169,7 +170,7 @@ private:
 
     void Initialize();
 
-    HRESULT PostChunk(const audio_sample * samples, size_t sampleCount, uint32_t channelCount, uint32_t sampleRate) noexcept;
+    HRESULT PostChunk(const audio_sample * samples, size_t sampleCount, uint32_t sampleRate, uint32_t channelCount, uint32_t channelConfig) noexcept;
 
 private:
     bool GetWebViewVersion(std::wstring & versionInfo);
@@ -191,7 +192,7 @@ private:
     void StartTimer() noexcept;
     void StopTimer() noexcept;
 
-    static void TimerCallback(HWND unnamedParam1, UINT unnamedParam2, UINT_PTR unnamedParam3, DWORD unnamedParam4) noexcept;
+    static void CALLBACK TimerCallback(HWND unnamedParam1, UINT unnamedParam2, UINT_PTR unnamedParam3, DWORD unnamedParam4) noexcept;
 
     void OnTimer() noexcept;
 
@@ -225,7 +226,5 @@ private:
     visualisation_stream_v2::ptr _VisualisationStream;
     double _LastPlaybackTime;
 
-    wil::com_ptr<ICoreWebView2_17> _WebView17;
-    wil::com_ptr<ICoreWebView2SharedBuffer> _SharedBuffer;
-    BYTE * _Buffer;
+    SharedBuffer _SharedBuffer;
 };
