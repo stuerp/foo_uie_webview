@@ -1,5 +1,5 @@
 
-/** $VER: SharedBuffer.cpp (2024.06.26) P. Stuer **/
+/** $VER: SharedBuffer.cpp (2024.07.03) P. Stuer **/
 
 #include "pch.h"
 
@@ -63,8 +63,9 @@ HRESULT SharedBuffer::Ensure(wil::com_ptr<ICoreWebView2Environment> & environmen
 /// </summary>
 void SharedBuffer::Release() noexcept
 {
-    _SampleRate = 0;
+    _ChannelConfig = 0;
     _ChannelCount = 0;
+    _SampleRate = 0;
     _SampleCount = 0;
 
     _Buffer = nullptr;

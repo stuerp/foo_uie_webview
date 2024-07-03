@@ -1,5 +1,5 @@
 
-/** $VER: DUIElement.h (2024.06.12) P. Stuer - Default User Interface support **/
+/** $VER: DUIElement.h (2024.07.03) P. Stuer - Default User Interface support **/
 
 #pragma once
 
@@ -43,6 +43,8 @@ public:
     {
         return !m_callback->is_edit_mode_enabled(); // Hide the WebView to allow the default foobar2000 context menu to appear in "Layout Edit" mode.
     }
+
+    void GetColors() noexcept override;
 
 protected:
     ui_element_instance_callback::ptr m_callback; // Don't rename this. BumpableElement uses it.

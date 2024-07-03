@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.h (2024.06.26) P. Stuer **/
+/** $VER: UIElement.h (2024.07.03) P. Stuer **/
 
 #pragma once
 
@@ -48,6 +48,8 @@ public:
     #pragma region CWindowImpl
 
     static CWndClassInfo & GetWndClassInfo();
+
+    void OnColorsChanged();
 
     static const UINT UM_WEB_VIEW_READY = WM_USER + 100;
     static const UINT UM_ASYNC          = WM_USER + 101;
@@ -118,6 +120,8 @@ protected:
 
         return guid;
     }
+
+    virtual void GetColors() noexcept = 0;
 
     virtual bool IsWebViewVisible() const noexcept = 0;
 
@@ -198,6 +202,9 @@ private:
 
 protected:
     configuration_t _Configuration;
+
+    COLORREF _ForegroundColor;
+    COLORREF _BackgroundColor;
 
 private:
     fb2k::CCoreDarkModeHooks _DarkMode;

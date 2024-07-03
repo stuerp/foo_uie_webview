@@ -1,5 +1,5 @@
 
-/** $VER: Preferences.cpp (2024.06.26) P. Stuer **/
+/** $VER: Preferences.cpp (2024.07.03) P. Stuer **/
 
 #include "pch.h"
 
@@ -83,6 +83,20 @@ public:
                 _Configuration._TemplateFilePath = Text;
         }
 
+        {
+            GetDlgItemTextW(IDC_WINDOW_SIZE, Text, _countof(Text));
+            _Configuration._WindowSize = (uint32_t) ::_wtoi(Text);
+        }
+
+        {
+            _Configuration._WindowSizeUnit = (WindowSizeUnit) ((CComboBox) GetDlgItem(IDC_WINDOW_SIZE_UNIT)).GetCurSel();
+        }
+
+        {
+            GetDlgItemTextW(IDC_REACTION_ALIGNMENT, Text, _countof(Text));
+            _Configuration._ReactionAlignment = ::_wtof(Text);
+        }
+
         UIElement * CurrentElement = _UIElementTracker.GetCurrentElement();
 
         if (CurrentElement != nullptr)
@@ -102,6 +116,7 @@ public:
         SetDlgItemTextW(IDC_USER_DATA_FOLDER_PATH, _Configuration._UserDataFolderPath.c_str());
         SetDlgItemTextW(IDC_FILE_PATH,             _Configuration._TemplateFilePath.c_str());
 
+        UpdateDialog();
         OnChanged();
     }
 
@@ -111,14 +126,15 @@ public:
     BEGIN_MSG_MAP_EX(Preferences)
         MSG_WM_INITDIALOG(OnInitDialog)
 
-        COMMAND_HANDLER_EX(IDC_NAME, EN_CHANGE, OnEditChange)
+        COMMAND_CODE_HANDLER_EX(CBN_SELCHANGE, OnSelectionChanged) // This also handles LBN_SELCHANGE
 
-        COMMAND_HANDLER_EX(IDC_USER_DATA_FOLDER_PATH, EN_CHANGE, OnEditChange)
         COMMAND_HANDLER_EX(IDC_USER_DATA_FOLDER_PATH_SELECT, BN_CLICKED, OnButtonClicked)
 
-        COMMAND_HANDLER_EX(IDC_FILE_PATH, EN_CHANGE, OnEditChange)
         COMMAND_HANDLER_EX(IDC_FILE_PATH_SELECT, BN_CLICKED, OnButtonClicked)
         COMMAND_HANDLER_EX(IDC_FILE_PATH_EDIT, BN_CLICKED, OnButtonClicked)
+
+        COMMAND_HANDLER_EX(IDC_WINDOW_SIZE, EN_CHANGE, OnEditChange)
+        COMMAND_HANDLER_EX(IDC_REACTION_ALIGNMENT, EN_CHANGE, OnEditChange)
     END_MSG_MAP()
 
 private:
@@ -133,7 +149,41 @@ private:
         SetDlgItemTextW(IDC_USER_DATA_FOLDER_PATH, _Configuration._UserDataFolderPath.c_str());
         SetDlgItemTextW(IDC_FILE_PATH, _Configuration._TemplateFilePath.c_str());
 
+        SetDlgItemTextW(IDC_WINDOW_SIZE, pfc::wideFromUTF8(pfc::format_int(_Configuration._WindowSize)));
+
+        {
+            auto w = (CComboBox) GetDlgItem(IDC_WINDOW_SIZE_UNIT);
+
+            w.ResetContent();
+
+            const WCHAR * Labels[] =
+            {
+                L"ms",
+                L"Samples"
+            };
+
+            assert(((size_t) WindowSizeUnit::Count == _countof(Labels)));
+
+            for (size_t i = 0; i < _countof(Labels); ++i)
+                w.AddString(Labels[i]);
+
+            w.SetCurSel((int) _Configuration._WindowSizeUnit);
+        }
+
+        SetDlgItemTextW(IDC_REACTION_ALIGNMENT, pfc::wideFromUTF8(pfc::format_float(_Configuration._ReactionAlignment, 0, 2)));
+
+        UpdateDialog();
+
         return FALSE;
+    }
+
+    /// <summary>
+    /// Handles an update of the selected item of a combo box.
+    /// </summary>
+    void OnSelectionChanged(UINT notificationCode, int id, CWindow w)
+    {
+        UpdateDialog();
+        OnChanged();
     }
 
     /// <summary>
@@ -141,9 +191,7 @@ private:
     /// </summary>
     void OnEditChange(UINT code, int id, CWindow) noexcept
     {
-        if (code != EN_CHANGE)
-            return;
-
+        UpdateDialog();
         OnChanged();
     }
 
@@ -248,7 +296,25 @@ private:
 
         GetDlgItemTextW(IDC_FILE_PATH, Text, _countof(Text));
 
-        return _Configuration._TemplateFilePath != Text;
+        if (_Configuration._TemplateFilePath != Text)
+            return true;
+
+        GetDlgItemTextW(IDC_WINDOW_SIZE, Text, _countof(Text));
+
+        if (_Configuration._WindowSize != (uint32_t) ::_wtoi(Text))
+            return true;
+
+        auto w = (CComboBox) GetDlgItem(IDC_WINDOW_SIZE_UNIT);
+
+        if (_Configuration._WindowSizeUnit != w.GetCurSel())
+            return true;
+
+        GetDlgItemTextW(IDC_REACTION_ALIGNMENT, Text, _countof(Text));
+
+        if (_Configuration._ReactionAlignment != ::_wtof(Text))
+            return true;
+
+        return false;
     }
 
     /// <summary>
@@ -256,6 +322,29 @@ private:
     /// </summary>
     void UpdateDialog() noexcept
     {
+        UpdateOffset();
+    }
+
+    /// <summary>
+    /// Updates the calculated offset value.
+    /// </summary>
+    void UpdateOffset() noexcept
+    {
+        WCHAR Text[16];
+
+        GetDlgItemTextW(IDC_WINDOW_SIZE, Text, _countof(Text));
+        uint32_t WindowSize = (uint32_t) ::_wtoi(Text);
+
+        GetDlgItemTextW(IDC_REACTION_ALIGNMENT, Text, _countof(Text));
+        double ReactionAlignment = ::_wtof(Text);
+
+        uint32_t Offset = (uint32_t) (WindowSize * (0.5 + ReactionAlignment));
+
+        auto w = (CComboBox) GetDlgItem(IDC_WINDOW_SIZE_UNIT);
+
+        const WCHAR * Format = (w.GetCurSel() == (int) WindowSizeUnit::Milliseconds) ? L"%dms" : L"%d samples";
+
+        SetDlgItemTextW(IDC_OFFSET, ::FormatText(Format, Offset).c_str());
     }
 
 private:

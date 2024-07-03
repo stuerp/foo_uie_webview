@@ -1,5 +1,5 @@
 
-/** $VER: WebView.cpp (2024.06.26) P. Stuer - Creates the WebView. **/
+/** $VER: WebView.cpp (2024.07.03) P. Stuer - Creates the WebView. **/
 
 #include "pch.h"
 
@@ -62,6 +62,15 @@ void UIElement::CreateWebView()
                         _Controller->get_CoreWebView2(&_WebView);
 
                         _Controller->put_IsVisible(TRUE);
+                    }
+
+                    {
+                        wil::com_ptr<ICoreWebView2Controller2> Controller2 = _Controller.try_query<ICoreWebView2Controller2>();
+
+                        #define GetAValue(rgba) (LOBYTE((rgba) >> 24))
+ 
+                       if (Controller2 != nullptr)
+                            Controller2->put_DefaultBackgroundColor({ GetAValue(_BackgroundColor), GetRValue(_BackgroundColor), GetGValue(_BackgroundColor), GetBValue(_BackgroundColor) });
                     }
 
                     (void) SetDarkMode(_DarkMode); // Ignore result.

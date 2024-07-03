@@ -1,5 +1,5 @@
 
-/** $VER: CUIElement.h (2024.06.12) P. Stuer - Columns User Interface support **/
+/** $VER: CUIElement.h (2024.07.03) P. Stuer - Columns User Interface support **/
 
 #pragma once
 
@@ -109,6 +109,8 @@ public:
         return true;
     }
 
+    void GetColors() noexcept override;
+
 private:
     window_host_ptr _Host;
     HWND _hParent;
@@ -185,8 +187,6 @@ public:
         if (Element != _Elements.end())
             _Elements.erase(Element);
     }
-
-    #pragma endregion
 };
 
 }

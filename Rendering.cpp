@@ -1,5 +1,5 @@
 
-/** $VER: Rendering.cpp (2024.06.23) P. Stuer **/
+/** $VER: Rendering.cpp (2024.07.03) P. Stuer **/
 
 #include "pch.h"
 
@@ -51,18 +51,18 @@ void UIElement::OnTimer() noexcept
 
     audio_chunk_impl Chunk;
 
-    const double WindowSize = 0.10; // in seconds
-    const double Offset     = PlaybackTime - (WindowSize / 2.);
+    size_t SampleCount = Chunk.get_sample_count();
+    uint32_t SampleRate = Chunk.get_sample_rate();
+    uint32_t ChannelCount = Chunk.get_channel_count();
+    uint32_t ChannelConfig = Chunk.get_channel_config();
+
+    const double WindowSize = _Configuration._WindowSize / ((_Configuration._WindowSizeUnit == WindowSizeUnit::Milliseconds) ? 1000. : (double) SampleRate); // in seconds
+    const double Offset     = PlaybackTime - (WindowSize * (0.5 + _Configuration._ReactionAlignment));
 
     if (!_VisualisationStream->get_chunk_absolute(Chunk, Offset, WindowSize))
         return;
 
     const audio_sample * Samples = Chunk.get_data();
-
-    size_t SampleCount = Chunk.get_sample_count();
-    uint32_t SampleRate = Chunk.get_sample_rate();
-    uint32_t ChannelCount = Chunk.get_channel_count();
-    uint32_t ChannelConfig = Chunk.get_channel_config();
 
     HRESULT hr = PostChunk(Samples, SampleCount, SampleRate, ChannelCount, ChannelConfig);
 
@@ -70,7 +70,7 @@ void UIElement::OnTimer() noexcept
         return;
 
     {
-        hr = _WebView->ExecuteScript(::FormatText(L"OnTimer(%d, %d, %d, %08X)", SampleCount, SampleRate, ChannelCount, ChannelConfig).c_str(), nullptr); // Silently continue
+        hr = _WebView->ExecuteScript(::FormatText(L"OnTimer(%d, %d, %d, %d)", SampleCount, SampleRate, ChannelCount, ChannelConfig).c_str(), nullptr); // Silently continue
 
         if (!SUCCEEDED(hr))
         {
@@ -90,7 +90,7 @@ HRESULT UIElement::PostChunk(const audio_sample * samples, size_t sampleCount, u
 
     if (SUCCEEDED(hr))
         if (audio_sample_size == 64)
-            _SharedBuffer.Copy((const BYTE *) samples, sizeof(audio_sample) * sampleCount);
+            _SharedBuffer.Copy((const BYTE *) samples, sizeof(audio_sample) * sampleCount * channelCount);
         else
             _SharedBuffer.Convert((const float *) samples, sampleCount);
 

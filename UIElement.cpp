@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.cpp (2024.06.26) P. Stuer **/
+/** $VER: UIElement.cpp (2024.07.03) P. Stuer **/
 
 #include "pch.h"
 
@@ -124,13 +124,24 @@ void UIElement::OnPaint(CDCHandle dc) noexcept
 
     GetClientRect(&cr);
 
+    HBRUSH Brush = ::CreateSolidBrush(_BackgroundColor);
+
+    ::FillRect(ps.hdc, &cr, Brush);
+
+    ::DeleteObject(Brush);
+
     HTHEME hTheme = ::OpenThemeData(m_hWnd, VSCLASS_TEXTSTYLE);
 
     const DWORD Format = DT_SINGLELINE | DT_CENTER | DT_VCENTER;
 
     if (hTheme != NULL)
     {
-        ::DrawThemeText(hTheme, ps.hdc, TEXT_BODYTEXT, 0, _Configuration._Name.c_str(), -1, Format, 0, &cr);
+        DTTOPTS Options = { sizeof(Options) };
+
+        Options.dwFlags = DTT_TEXTCOLOR;
+        Options.crText = _ForegroundColor;
+
+        ::DrawThemeTextEx(hTheme, ps.hdc, TEXT_BODYTEXT, 0, _Configuration._Name.c_str(), -1, Format, &cr, &Options);
 
         ::CloseThemeData(hTheme);
     }
@@ -206,6 +217,14 @@ LRESULT UIElement::OnAsync(UINT msg, WPARAM wParam, LPARAM lParam) noexcept
     delete task;
 
     return true;
+}
+
+/// <summary>
+/// Handles a change of the user interface colors.
+/// </summary>
+void UIElement::OnColorsChanged()
+{
+    GetColors();
 }
 
 /// <summary>

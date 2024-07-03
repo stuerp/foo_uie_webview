@@ -1,5 +1,5 @@
 
-/** $VER: DUIElement.cpp (2024.06.12) P. Stuer **/
+/** $VER: DUIElement.cpp (2024.07.03) P. Stuer **/
 
 #include "pch.h"
 
@@ -15,6 +15,8 @@
 DUIElement::DUIElement(ui_element_config::ptr data, ui_element_instance_callback::ptr callback) : m_callback(callback)
 {
     set_configuration(data);
+
+    GetColors();
 }
 
 /// <summary>
@@ -107,10 +109,12 @@ void DUIElement::notify(const GUID & what, t_size param1, const void * param2, t
     {
         SetWebViewVisibility(IsWebViewVisible());
     }
-/*
+    else
     if (what == ui_element_notify_colors_changed)
     {
+        GetColors();
     }
+/*
     else
     if (what == ui_element_notify_font_changed)
     {
@@ -120,6 +124,18 @@ void DUIElement::notify(const GUID & what, t_size param1, const void * param2, t
     {
     }
 */
+}
+
+/// <summary>
+/// Gets the colors.
+/// </summary>
+void DUIElement::GetColors() noexcept
+{
+    _ForegroundColor = (COLORREF) m_callback->query_std_color(ui_color_text);
+    _BackgroundColor = (COLORREF) m_callback->query_std_color(ui_color_background);
+
+    if (IsWindow())
+        Invalidate(TRUE);
 }
 
 static service_factory_single_t<ui_element_impl_visualisation<DUIElement>> _Factory;
