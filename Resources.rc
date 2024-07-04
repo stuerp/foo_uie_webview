@@ -1,5 +1,5 @@
 ﻿
-/** $VER: Resources.rc (2024.07.03) P. Stuer **/
+/** $VER: Resources.rc (2024.07.04) P. Stuer **/
 
 #include "Resources.h"
 
@@ -72,3 +72,5 @@ font 8, "Segoe UI", 400, 0, 1
 }
 
 IDR_CONTEXT_MENU_ICON rcdata "Main.ico"
+
+1 typelib "foo_vis_text.tlb"

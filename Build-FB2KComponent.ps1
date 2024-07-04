@@ -48,7 +48,7 @@ if ($Platform -eq 'x64')
 
         Copy-Item "$OutputPath/$TargetFileName"    -Destination "$PackagePath/x64" -Force -Verbose;
         Copy-Item "$OutputPath/WebView2Loader.dll" -Destination "$PackagePath/x64" -Force -Verbose;
-        Copy-Item "$OutputPath/$TargetName.tlb"    -Destination "$PackagePath/x64" -Force -Verbose;
+#       Copy-Item "$OutputPath/$TargetName.tlb"    -Destination "$PackagePath/x64" -Force -Verbose;
         Copy-Item "Template.html"                  -Destination "$PackagePath/x64/Default-Template.html" -Force -Verbose;
     }
 
@@ -66,7 +66,7 @@ if ($Platform -eq 'x64')
         Write-Host "Installing x64 component in foobar2000 64-bit profile...";
 
         Copy-Item "$PackagePath/x64/*.dll"                   -Destination "$ComponentPath/$TargetName" -Force -Verbose;
-        Copy-Item "$PackagePath/x64/$TargetName.tlb"         -Destination "$ComponentPath/$TargetName" -Force -Verbose;
+#       Copy-Item "$PackagePath/x64/$TargetName.tlb"         -Destination "$ComponentPath/$TargetName" -Force -Verbose;
         Copy-Item "$PackagePath/x64/Default-Template.html"   -Destination "$ComponentPath/$TargetName" -Force -Verbose;
     }
     else
@@ -88,7 +88,7 @@ elseif ($Platform -eq 'Win32')
         Write-Host "Copying $TargetFileName to `"$PackagePath`"...";
 
         Copy-Item "$OutputPath/$TargetFileName"    -Destination "$PackagePath" -Force -Verbose;
-        Copy-Item "$OutputPath/$TargetName.tlb"    -Destination "$PackagePath" -Force -Verbose;
+#       Copy-Item "$OutputPath/$TargetName.tlb"    -Destination "$PackagePath" -Force -Verbose;
         Copy-Item "$OutputPath/WebView2Loader.dll" -Destination "$PackagePath" -Force -Verbose;
         Copy-Item "Template.html"                  -Destination "$PackagePath/Default-Template.html" -Force -Verbose;
     }
@@ -107,7 +107,7 @@ elseif ($Platform -eq 'Win32')
         Write-Host "Installing x86 component in foobar2000 32-bit profile...";
 
         Copy-Item "$PackagePath/*.dll"                   -Destination "$ComponentPath/$TargetName" -Force -Verbose;
-        Copy-Item "$PackagePath/$TargetName.tlb"         -Destination "$ComponentPath/$TargetName" -Force -Verbose;
+#       Copy-Item "$PackagePath/$TargetName.tlb"         -Destination "$ComponentPath/$TargetName" -Force -Verbose;
         Copy-Item "$PackagePath/Default-Template.html"   -Destination "$ComponentPath/$TargetName" -Force -Verbose;
     }
     else

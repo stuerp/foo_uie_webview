@@ -115,7 +115,6 @@ STDMETHODIMP HostObject::GetTypeInfo(UINT typeInfoIndex, LCID lcid, ITypeInfo **
 
     if (_TypeLibrary == nullptr)
     {
-        // FIXME: The type library should be embedded in the resources of the component DLL, not a separate file.
         std::wstring TypeLibFilePath;
 
         HRESULT hr = GetTypeLibFilePath(TypeLibFilePath);
@@ -167,16 +166,16 @@ STDMETHODIMP HostObject::Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WOR
 /// </summary>
 HRESULT HostObject::GetTypeLibFilePath(std::wstring & filePath) noexcept
 {
-    wchar_t FilePath[MAX_PATH];
-
     HMODULE hModule = GetCurrentModule();
 
     if (hModule == NULL)
         return HRESULT_FROM_WIN32(::GetLastError());
 
+    wchar_t FilePath[MAX_PATH];
+
     if (::GetModuleFileNameW(hModule, FilePath, _countof(FilePath)) == 0)
         return HRESULT_FROM_WIN32(::GetLastError());
-
+/*
     HRESULT hr = ::PathCchRemoveFileSpec(FilePath, _countof(FilePath));
 
     if (!SUCCEEDED(hr))
@@ -186,7 +185,7 @@ HRESULT HostObject::GetTypeLibFilePath(std::wstring & filePath) noexcept
 
     if (!SUCCEEDED(hr))
         return hr;
-
+*/
     filePath = FilePath;
 
     return S_OK;
