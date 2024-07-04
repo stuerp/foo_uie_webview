@@ -128,7 +128,7 @@
 // Label
 #define X_D25   X_D24 + W_D24 + IX
 #define Y_D25   Y_D24
-#define W_D25   80
+#define W_D25   100
 #define H_D25   H_LBL
 
 #pragma endregion

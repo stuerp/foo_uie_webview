@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.cpp (2024.06.05) P. Stuer **/
+/** $VER: HostObjectImpl.cpp (2024.07.04) P. Stuer **/
 
 #include "pch.h"
 

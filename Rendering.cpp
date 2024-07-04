@@ -57,9 +57,9 @@ void UIElement::OnTimer() noexcept
     uint32_t ChannelConfig = Chunk.get_channel_config();
 
     const double WindowSize = _Configuration._WindowSize / ((_Configuration._WindowSizeUnit == WindowSizeUnit::Milliseconds) ? 1000. : (double) SampleRate); // in seconds
-    const double Offset     = PlaybackTime - (WindowSize * (0.5 + _Configuration._ReactionAlignment));
+    const double WindoOffset = PlaybackTime - (WindowSize * (0.5 + _Configuration._ReactionAlignment)); // in seconds
 
-    if (!_VisualisationStream->get_chunk_absolute(Chunk, Offset, WindowSize))
+    if (!_VisualisationStream->get_chunk_absolute(Chunk, WindoOffset, WindowSize))
         return;
 
     const audio_sample * Samples = Chunk.get_data();

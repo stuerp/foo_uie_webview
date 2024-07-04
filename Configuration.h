@@ -1,5 +1,5 @@
 ﻿
-/** $VER: Configuration.h (2024.07.03) P. Stuer **/
+/** $VER: Configuration.h (2024.07.04) P. Stuer **/
 
 #pragma once
 
@@ -43,5 +43,5 @@ public:
                                                                     // > 0: All samples are behind the playback (similar to VST audio analyzer plugins like Voxengo SPAN) with the last sample equal to the actual playback.
 
 private:
-    const int32_t _CurrentVersion = 2;
+    const int32_t _CurrentVersion = 3;
 };

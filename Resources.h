@@ -1,5 +1,5 @@
 
-/** $VER: Resources.h (2024.07.03) P. Stuer **/
+/** $VER: Resources.h (2024.07.04) P. Stuer **/
 
 #pragma once
 
@@ -73,6 +73,6 @@
 #define IDC_WINDOW_SIZE_UNIT                1022
 
 #define IDC_REACTION_ALIGNMENT              1030
-#define IDC_OFFSET                          1032
+#define IDC_WINDOW_OFFSET                   1032
 
 #define IDR_CONTEXT_MENU_ICON               2000

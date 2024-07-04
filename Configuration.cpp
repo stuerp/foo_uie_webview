@@ -1,5 +1,5 @@
 
-/** $VER: configuration_t.cpp (2024.07.03) P. Stuer **/
+/** $VER: configuration_t.cpp (2024.07.04) P. Stuer **/
 
 #include "pch.h"
 
@@ -121,6 +121,9 @@ void configuration_t::Read(stream_reader * reader, size_t size, abort_callback &
         // Version 3, v0.1.5.0-alpha2
         if (Version >= 3)
         {
+            reader->read_object_t(_WindowSize, abortHandler);
+            uint32_t Value; reader->read_object_t(Value, abortHandler); _WindowSizeUnit = (WindowSizeUnit) Value;
+            reader->read_object_t(_ReactionAlignment, abortHandler);
         }
     }
     catch (exception & ex)

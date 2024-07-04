@@ -1,5 +1,5 @@
 
-/** $VER: Preferences.cpp (2024.07.03) P. Stuer **/
+/** $VER: Preferences.cpp (2024.07.04) P. Stuer **/
 
 #include "pch.h"
 
@@ -27,13 +27,17 @@ class Preferences : public CDialogImpl<Preferences>, public preferences_page_ins
 public:
     Preferences(preferences_page_callback::ptr callback) : m_bMsgHandled(FALSE), _Callback(callback)
     {
-        UIElement * CurrentElement = _UIElementTracker.GetCurrentElement();
+        _CurrentElement = _UIElementTracker.GetCurrentElement();
 
-        if (CurrentElement != nullptr)
-            _Configuration = CurrentElement->GetConfiguration();
+        if (_CurrentElement != nullptr)
+            _Configuration = _CurrentElement->GetConfiguration();
     }
 
-    virtual ~Preferences() { }
+    virtual ~Preferences()
+    {
+        if (_CurrentElement != nullptr)
+            _CurrentElement->SetConfiguration(_Configuration);
+    }
 
     enum
     {
@@ -65,26 +69,24 @@ public:
         {
             GetDlgItemTextW(IDC_NAME, Text, _countof(Text));
 
-            if (_Configuration._Name != Text)
-                _Configuration._Name = Text;
+            _Configuration._Name = Text;
         }
 
         {
             GetDlgItemTextW(IDC_USER_DATA_FOLDER_PATH, Text, _countof(Text));
 
-            if (_Configuration._UserDataFolderPath != Text)
-                _Configuration._UserDataFolderPath = Text;
+            _Configuration._UserDataFolderPath = Text;
         }
 
         {
             GetDlgItemTextW(IDC_FILE_PATH, Text, _countof(Text));
 
-            if (_Configuration._TemplateFilePath != Text)
-                _Configuration._TemplateFilePath = Text;
+            _Configuration._TemplateFilePath = Text;
         }
 
         {
             GetDlgItemTextW(IDC_WINDOW_SIZE, Text, _countof(Text));
+
             _Configuration._WindowSize = (uint32_t) ::_wtoi(Text);
         }
 
@@ -94,6 +96,7 @@ public:
 
         {
             GetDlgItemTextW(IDC_REACTION_ALIGNMENT, Text, _countof(Text));
+
             _Configuration._ReactionAlignment = ::_wtof(Text);
         }
 
@@ -102,7 +105,7 @@ public:
         if (CurrentElement != nullptr)
             CurrentElement->SetConfiguration(_Configuration);
 
-        OnChanged(); // The flags have been updated.
+        OnChanged();
     }
 
     /// <summary>
@@ -112,11 +115,8 @@ public:
     {
         _Configuration.Reset();
 
-        SetDlgItemTextW(IDC_NAME,                  _Configuration._Name.c_str());
-        SetDlgItemTextW(IDC_USER_DATA_FOLDER_PATH, _Configuration._UserDataFolderPath.c_str());
-        SetDlgItemTextW(IDC_FILE_PATH,             _Configuration._TemplateFilePath.c_str());
+        InitializeControls();
 
-        UpdateDialog();
         OnChanged();
     }
 
@@ -145,9 +145,19 @@ private:
     {
         _DarkModeHooks.AddDialogWithControls(*this);
 
-        SetDlgItemTextW(IDC_NAME, _Configuration._Name.c_str());
+        InitializeControls();
+
+        return FALSE;
+    }
+
+    /// <summary>
+    /// Initializes the controls.
+    /// </summary>
+    void InitializeControls()
+    {
+        SetDlgItemTextW(IDC_NAME,                  _Configuration._Name.c_str());
         SetDlgItemTextW(IDC_USER_DATA_FOLDER_PATH, _Configuration._UserDataFolderPath.c_str());
-        SetDlgItemTextW(IDC_FILE_PATH, _Configuration._TemplateFilePath.c_str());
+        SetDlgItemTextW(IDC_FILE_PATH,             _Configuration._TemplateFilePath.c_str());
 
         SetDlgItemTextW(IDC_WINDOW_SIZE, pfc::wideFromUTF8(pfc::format_int(_Configuration._WindowSize)));
 
@@ -156,42 +166,32 @@ private:
 
             w.ResetContent();
 
-            const WCHAR * Labels[] =
-            {
-                L"ms",
-                L"Samples"
-            };
+            const WCHAR * Labels[] = { L"ms", L"samples" };
 
             assert(((size_t) WindowSizeUnit::Count == _countof(Labels)));
 
-            for (size_t i = 0; i < _countof(Labels); ++i)
-                w.AddString(Labels[i]);
+            for (auto Label : Labels)
+                w.AddString(Label);
 
             w.SetCurSel((int) _Configuration._WindowSizeUnit);
         }
 
         SetDlgItemTextW(IDC_REACTION_ALIGNMENT, pfc::wideFromUTF8(pfc::format_float(_Configuration._ReactionAlignment, 0, 2)));
-
-        UpdateDialog();
-
-        return FALSE;
     }
 
     /// <summary>
     /// Handles an update of the selected item of a combo box.
     /// </summary>
-    void OnSelectionChanged(UINT notificationCode, int id, CWindow w)
+    void OnSelectionChanged(UINT, int, CWindow) noexcept
     {
-        UpdateDialog();
         OnChanged();
     }
 
     /// <summary>
     /// Handles a textbox change.
     /// </summary>
-    void OnEditChange(UINT code, int id, CWindow) noexcept
+    void OnEditChange(UINT, int, CWindow) noexcept
     {
-        UpdateDialog();
         OnChanged();
     }
 
@@ -217,7 +217,6 @@ private:
                 {
                     SetDlgItemTextW(IDC_USER_DATA_FOLDER_PATH, ::UTF8ToWide(DirectoryPath.c_str()).c_str());
 
-                    UpdateDialog();
                     OnChanged();
                 }
                 break;
@@ -240,7 +239,6 @@ private:
                 {
                     SetDlgItemTextW(IDC_FILE_PATH, ::UTF8ToWide(FilePath.c_str()).c_str());
 
-                    UpdateDialog();
                     OnChanged();
                 }
                 break;
@@ -272,8 +270,24 @@ private:
     /// <summary>
     /// Tells the host that our state has changed to enable/disable the apply button appropriately.
     /// </summary>
-    void OnChanged() const noexcept
+    void OnChanged() noexcept
     {
+        WCHAR Text[16];
+
+        GetDlgItemTextW(IDC_WINDOW_SIZE, Text, _countof(Text));
+        uint32_t WindowSize = (uint32_t) ::_wtoi(Text);
+
+        GetDlgItemTextW(IDC_REACTION_ALIGNMENT, Text, _countof(Text));
+        double ReactionAlignment = ::_wtof(Text);
+
+        int32_t WindowOffset = (int32_t) (WindowSize * (0.5 + ReactionAlignment));
+
+        auto w = (CComboBox) GetDlgItem(IDC_WINDOW_SIZE_UNIT);
+
+        const WCHAR * Format = (w.GetCurSel() == (int) WindowSizeUnit::Milliseconds) ? L"%dms %s playback" : L"%d samples %s playback";
+
+        SetDlgItemTextW(IDC_WINDOW_OFFSET, ::FormatText(Format, ::abs(WindowOffset), (WindowOffset > 0) ? L"behind" : L"ahead of").c_str());
+
         _Callback->on_state_changed();
     }
 
@@ -317,41 +331,12 @@ private:
         return false;
     }
 
-    /// <summary>
-    /// Updates the appearance of the dialog according to the values of the settings.
-    /// </summary>
-    void UpdateDialog() noexcept
-    {
-        UpdateOffset();
-    }
-
-    /// <summary>
-    /// Updates the calculated offset value.
-    /// </summary>
-    void UpdateOffset() noexcept
-    {
-        WCHAR Text[16];
-
-        GetDlgItemTextW(IDC_WINDOW_SIZE, Text, _countof(Text));
-        uint32_t WindowSize = (uint32_t) ::_wtoi(Text);
-
-        GetDlgItemTextW(IDC_REACTION_ALIGNMENT, Text, _countof(Text));
-        double ReactionAlignment = ::_wtof(Text);
-
-        uint32_t Offset = (uint32_t) (WindowSize * (0.5 + ReactionAlignment));
-
-        auto w = (CComboBox) GetDlgItem(IDC_WINDOW_SIZE_UNIT);
-
-        const WCHAR * Format = (w.GetCurSel() == (int) WindowSizeUnit::Milliseconds) ? L"%dms" : L"%d samples";
-
-        SetDlgItemTextW(IDC_OFFSET, ::FormatText(Format, Offset).c_str());
-    }
-
 private:
     const preferences_page_callback::ptr _Callback;
 
     fb2k::CDarkModeHooks _DarkModeHooks;
 
+    UIElement * _CurrentElement;
     configuration_t _Configuration;
 };
 

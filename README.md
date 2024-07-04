@@ -97,15 +97,15 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.1.5.0-alpha2, 2024-07-03
+v0.1.5.0-alpha2, 2024-07-04
 
 * New: Each instance of the component can have a name to easier distinguish between them.
 * New: The location of the WebView user data folder can be specified in the Preferences dialog.
   * Note: The existing folder will not be moved or deleted. The new location will only be used after restarting foobar2000.
 * New: Made the sample chunks from the foobar2000 visualization stream available to JavaScript.
 * New: The component uses the DUI and CUI foreground and background color (alpha2).
-* New: The Window Size can be specified in milliseconds or samples (alpha2).
-* New: The reaction alignment can be specified (alpha2).
+* New: The window size can be specified in milliseconds or samples (alpha2).
+* New: The reaction alignment can be specified (alpha2) to position the window behind or ahead of the playback samples.
 * Fixed: A last-minute change (never a good thing) broke the support for multiple instances of the Preferences dialog box.
 * Fixed: Javascript example code (alpha2)
 * Fixed: Support for tracks with more than 2 channels was not implemented correctly (alpha2).
