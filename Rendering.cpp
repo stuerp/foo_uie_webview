@@ -51,26 +51,25 @@ void UIElement::OnTimer() noexcept
 
     audio_chunk_impl Chunk;
 
-    size_t SampleCount = Chunk.get_sample_count();
-    uint32_t SampleRate = Chunk.get_sample_rate();
-    uint32_t ChannelCount = Chunk.get_channel_count();
-    uint32_t ChannelConfig = Chunk.get_channel_config();
-
-    const double WindowSize = _Configuration._WindowSize / ((_Configuration._WindowSizeUnit == WindowSizeUnit::Milliseconds) ? 1000. : (double) SampleRate); // in seconds
+    const double WindowSize = _Configuration._WindowSize / ((_Configuration._WindowSizeUnit == WindowSizeUnit::Milliseconds) ? 1000. : (double) _SampleRate); // in seconds
     const double WindoOffset = PlaybackTime - (WindowSize * (0.5 + _Configuration._ReactionAlignment)); // in seconds
 
     if (!_VisualisationStream->get_chunk_absolute(Chunk, WindoOffset, WindowSize))
         return;
 
     const audio_sample * Samples = Chunk.get_data();
+    size_t SampleCount = Chunk.get_sample_count();
+    _SampleRate = Chunk.get_sample_rate();
+    uint32_t ChannelCount = Chunk.get_channel_count();
+    uint32_t ChannelConfig = Chunk.get_channel_config();
 
-    HRESULT hr = PostChunk(Samples, SampleCount, SampleRate, ChannelCount, ChannelConfig);
+    HRESULT hr = PostChunk(Samples, SampleCount, _SampleRate, ChannelCount, ChannelConfig);
 
     if (!SUCCEEDED(hr))
         return;
 
     {
-        hr = _WebView->ExecuteScript(::FormatText(L"OnTimer(%d, %d, %d, %d)", SampleCount, SampleRate, ChannelCount, ChannelConfig).c_str(), nullptr); // Silently continue
+        hr = _WebView->ExecuteScript(::FormatText(L"OnTimer(%d, %d, %d, %d)", SampleCount, _SampleRate, ChannelCount, ChannelConfig).c_str(), nullptr); // Silently continue
 
         if (!SUCCEEDED(hr))
         {

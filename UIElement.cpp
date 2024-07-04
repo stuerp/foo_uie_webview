@@ -430,6 +430,7 @@ void UIElement::on_playback_new_track(metadb_handle_ptr /*track*/)
         console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackNewTrack()").c_str());
 
     _LastPlaybackTime = 0.;
+    _SampleRate = 44100; // Temporary until we get the sample rate from the chunk.
 
     StartTimer();
 }

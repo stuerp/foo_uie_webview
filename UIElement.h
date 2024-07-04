@@ -232,6 +232,7 @@ private:
 
     visualisation_stream_v2::ptr _VisualisationStream;
     double _LastPlaybackTime;
+    uint32_t _SampleRate;
 
     SharedBuffer _SharedBuffer;
 };

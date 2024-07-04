@@ -98,7 +98,7 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
       <Message>Executing post-build script...</Message>
     </PostBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(IntDir)$(Platform)\$(TargetName)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(IntDir)</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -133,7 +133,7 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
       <Message>Executing post-build script...</Message>
     </PostBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(IntDir)$(Platform)\$(TargetName)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(IntDir)</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
