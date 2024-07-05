@@ -1,5 +1,5 @@
 
-/** $VER: CUIElement.h (2024.07.03) P. Stuer - Columns User Interface support **/
+/** $VER: CUIElement.h (2024.07.05) P. Stuer - Columns User Interface support **/
 
 #pragma once
 
@@ -35,7 +35,7 @@ public:
     /// </summary>
     void get_category(pfc::string_base & out) const final
     {
-        out = "Visualisations";
+        out = "Panels";
     }
 
     /// <summary>
@@ -137,14 +137,14 @@ public:
 
     virtual const GUID & get_client_guid() const
     {
-        static const GUID guid = GUID_UI_ELEMENT_CLIENT;
+        static const GUID guid = GUID_UI_ELEMENT;
 
         return guid;
    }
 
     virtual void get_name(pfc::string_base & out) const
     {
-        out = STR_COMPONENT_NAME "Client";
+        out = STR_COMPONENT_NAME;
     }
 
     /// <summary>

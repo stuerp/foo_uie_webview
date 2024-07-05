@@ -94,6 +94,8 @@ HRESULT UIElement::CreateWebView()
 
                         if (!SUCCEEDED(hr))
                             return hr;
+
+//                      _Controller->put_IsVisible(TRUE);
                     }
 
                     {
