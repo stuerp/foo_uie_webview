@@ -1,5 +1,5 @@
 
-/** $VER: Preferences.cpp (2024.07.04) P. Stuer **/
+/** $VER: Preferences.cpp (2024.07.05) P. Stuer **/
 
 #include "pch.h"
 
@@ -125,6 +125,10 @@ public:
     // WTL message map
     BEGIN_MSG_MAP_EX(Preferences)
         MSG_WM_INITDIALOG(OnInitDialog)
+
+        COMMAND_HANDLER_EX(IDC_NAME, EN_CHANGE, OnEditChange)
+        COMMAND_HANDLER_EX(IDC_USER_DATA_FOLDER_PATH, EN_CHANGE, OnEditChange)
+        COMMAND_HANDLER_EX(IDC_FILE_PATH, EN_CHANGE, OnEditChange)
 
         COMMAND_CODE_HANDLER_EX(CBN_SELCHANGE, OnSelectionChanged) // This also handles LBN_SELCHANGE
 

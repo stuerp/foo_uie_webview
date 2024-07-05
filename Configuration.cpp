@@ -1,5 +1,5 @@
 
-/** $VER: configuration_t.cpp (2024.07.04) P. Stuer **/
+/** $VER: configuration_t.cpp (2024.07.05) P. Stuer **/
 
 #include "pch.h"
 
@@ -20,11 +20,6 @@ using namespace stringcvt;
 #pragma comment(lib, "pathcch")
 
 #pragma hdrstop
-
-#pragma region Deprecated
-static constexpr GUID FilePathGUID = { 0x341c4082, 0x255b, 0x4a38, { 0x81, 0x53, 0x55, 0x43, 0x5a, 0xd2, 0xe8, 0xa5 }};
-cfg_string FilePathCfg(FilePathGUID, "");
-#pragma endregion
 
 /// <summary>
 /// Initializes a new instance.
@@ -51,9 +46,9 @@ void configuration_t::Reset() noexcept
 
         ::wcscpy_s(FilePath, _countof(FilePath), ::UTF8ToWide(Path.c_str()).c_str());
 
-        HRESULT hResult = ::PathCchAppend(FilePath, _countof(FilePath), L"Template.html");
+        HRESULT hr = ::PathCchAppend(FilePath, _countof(FilePath), L"Template.html");
 
-        if (SUCCEEDED(hResult))
+        if (SUCCEEDED(hr))
             _TemplateFilePath = FilePath;
         else
             ::wcscpy_s(FilePath, _countof(FilePath), L"Template.html");
@@ -95,16 +90,7 @@ void configuration_t::Read(stream_reader * reader, size_t size, abort_callback &
     {
         int32_t Version;
 
-        size_t Size = reader->read(&Version, sizeof(Version), abortHandler);
-
-        if ((Size != sizeof(Version)) || (Version > _CurrentVersion))
-        {
-            // One-time conversion from configuration variables to custom configuration handling.
-            if ((_CurrentVersion == 1) && !FilePathCfg.isEmpty())
-                _TemplateFilePath = pfc::wideFromUTF8(FilePathCfg.c_str());
-
-            return;
-        }
+        reader->read(&Version, sizeof(Version), abortHandler);
 
         pfc::string UTF8String;
 

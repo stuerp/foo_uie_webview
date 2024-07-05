@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.h (2024.07.03) P. Stuer **/
+/** $VER: UIElement.h (2024.07.05) P. Stuer **/
 
 #pragma once
 
@@ -154,6 +154,7 @@ private:
     LRESULT OnCreate(LPCREATESTRUCT cs) noexcept;
     void OnDestroy() noexcept;
     void OnSize(UINT nType, CSize size) noexcept;
+    BOOL OnEraseBackground(CDCHandle dc) noexcept;
     void OnPaint(CDCHandle dc) noexcept;
     LRESULT OnTemplateChanged(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
     LRESULT OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
@@ -163,6 +164,7 @@ private:
         MSG_WM_CREATE(OnCreate)
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_SIZE(OnSize)
+        MSG_WM_ERASEBKGND(OnEraseBackground)
         MSG_WM_PAINT(OnPaint)
 
         MESSAGE_HANDLER_EX(UM_TEMPLATE_CHANGED, OnTemplateChanged)
@@ -178,11 +180,14 @@ private:
 
 private:
     bool GetWebViewVersion(std::wstring & versionInfo);
-    void CreateWebView();
+    HRESULT CreateWebView();
+    HRESULT RecreateWebView() noexcept;
     void DeleteWebView() noexcept;
 
-    HRESULT CreateContextMenu(const wchar_t * itemLabel, const wchar_t * iconName) noexcept;
     HRESULT SetDarkMode(bool enabled) const noexcept;
+    HRESULT SetDefaultBackgroundColor() const noexcept;
+
+    HRESULT CreateContextMenu(const wchar_t * itemLabel, const wchar_t * iconName) noexcept;
 
     void InitializeFileWatcher();
     void InitializeWebView();
@@ -208,6 +213,7 @@ protected:
 
 private:
     fb2k::CCoreDarkModeHooks _DarkMode;
+    playback_control::ptr _PlaybackControl;
 
     std::wstring _ExpandedTemplateFilePath;
 
@@ -219,6 +225,7 @@ private:
     EventRegistrationToken _NavigationStartingToken = {};
     EventRegistrationToken _NavigationCompletedToken = {};
     EventRegistrationToken _ContextMenuRequestedToken = {};
+    EventRegistrationToken _BrowserProcessExitedToken = {};
 
     wil::com_ptr<HostObject> _HostObject;
 

@@ -50,10 +50,10 @@ DWORD WINAPI FileWatcher::ThreadProc(LPVOID lParam) noexcept
 
     wchar_t * FileName = ::PathFindFileNameW(DirectoryPath);
 
-    HRESULT hResult = ::PathCchRemoveFileSpec(DirectoryPath, _countof(DirectoryPath));
+    HRESULT hr = ::PathCchRemoveFileSpec(DirectoryPath, _countof(DirectoryPath));
 
-    if (!SUCCEEDED(hResult))
-        return (DWORD) hResult;
+    if (!SUCCEEDED(hr))
+        return (DWORD) hr;
 
     HANDLE hDirectory = ::CreateFileW(DirectoryPath, FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL);
 

@@ -24,6 +24,7 @@
     <ProjectGuid>{7910ac54-167e-476f-a481-a05aa8a11974}</ProjectGuid>
     <RootNamespace>foovistext</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>foo_uie_webview</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

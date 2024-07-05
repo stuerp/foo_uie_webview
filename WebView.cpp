@@ -1,11 +1,13 @@
 
-/** $VER: WebView.cpp (2024.07.03) P. Stuer - Creates the WebView. **/
+/** $VER: WebView.cpp (2024.07.05) P. Stuer - Creates the WebView. **/
 
 #include "pch.h"
 
 #include "UIElement.h"
 #include "Exceptions.h"
 #include "Encoding.h"
+
+#include <WebView2EnvironmentOptions.h>
 
 #include <pfc/string-conv-lite.h>
 #include <pfc/pathUtils.h>
@@ -21,9 +23,9 @@ bool UIElement::GetWebViewVersion(std::wstring & versionString)
 {
     LPWSTR VersionString = nullptr;
 
-    HRESULT hResult = ::GetAvailableCoreWebView2BrowserVersionString(nullptr, &VersionString);
+    HRESULT hr = ::GetAvailableCoreWebView2BrowserVersionString(nullptr, &VersionString);
 
-    if (!SUCCEEDED(hResult))
+    if (!SUCCEEDED(hr))
         return false;
 
     versionString = VersionString;
@@ -36,52 +38,77 @@ bool UIElement::GetWebViewVersion(std::wstring & versionString)
 /// <summary>
 /// Creates the WebView.
 /// </summary>
-void UIElement::CreateWebView()
+HRESULT UIElement::CreateWebView()
 {
     HRESULT hr = ::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
     if (!SUCCEEDED(hr))
         throw Win32Exception(hr, "Failed to initialize COM");
 
-    hr = ::CreateCoreWebView2EnvironmentWithOptions(nullptr, _Configuration._UserDataFolderPath.c_str(), nullptr, Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>
+    // Create the WebView options.
+    auto Options = Microsoft::WRL::Make<CoreWebView2EnvironmentOptions>();
+
+    if (_DarkMode)
+    {
+        hr = Options->put_AdditionalBrowserArguments(L"--enable-features=WebContentsForceDark:inversion_method/cielab_based/image_behavior/none");
+
+        if (!SUCCEEDED(hr))
+            console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to set additional browser arguments").c_str());
+    }
+
+    {
+        Microsoft::WRL::ComPtr<ICoreWebView2EnvironmentOptions8> Options8;
+
+        if (Options.As(&Options8) == S_OK)
+        {
+            const COREWEBVIEW2_SCROLLBAR_STYLE Style = COREWEBVIEW2_SCROLLBAR_STYLE_FLUENT_OVERLAY;
+
+            hr = Options8->put_ScrollBarStyle(Style); // See https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2environmentoptions8?view=webview2-1.0.2592.51
+
+            if (!SUCCEEDED(hr))
+                console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to set scroll bar style").c_str());
+        }
+    }
+
+    hr = ::CreateCoreWebView2EnvironmentWithOptions(nullptr, _Configuration._UserDataFolderPath.c_str(), Options.Get(), Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>
     (
         [this](HRESULT hr, ICoreWebView2Environment * environment) -> HRESULT
         {
-            UNREFERENCED_PARAMETER(hr);
+            if (environment == nullptr)
+                return hr;
 
             _Environment = environment;
 
             // Create a CoreWebView2Controller and get the associated CoreWebView2 whose parent is the main window.
-            environment->CreateCoreWebView2Controller(m_hWnd, Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>
+            hr = environment->CreateCoreWebView2Controller(m_hWnd, Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>
             (
-                [this](HRESULT hResult, ICoreWebView2Controller * controller) -> HRESULT
+                [this](HRESULT hr, ICoreWebView2Controller * controller) -> HRESULT
                 {
-                    if (controller != nullptr)
+                    if (controller == nullptr)
+                        return hr;
+
                     {
                         _Controller = controller;
-                        _Controller->get_CoreWebView2(&_WebView);
 
-                        _Controller->put_IsVisible(TRUE);
+                        hr = _Controller->get_CoreWebView2(&_WebView);
+
+                        if (!SUCCEEDED(hr))
+                            return hr;
                     }
 
                     {
-                        wil::com_ptr<ICoreWebView2Controller2> Controller2 = _Controller.try_query<ICoreWebView2Controller2>();
+                        SetDefaultBackgroundColor();
 
-                        #define GetAValue(rgba) (LOBYTE((rgba) >> 24))
- 
-                       if (Controller2 != nullptr)
-                            Controller2->put_DefaultBackgroundColor({ GetAValue(_BackgroundColor), GetRValue(_BackgroundColor), GetGValue(_BackgroundColor), GetBValue(_BackgroundColor) });
+                        (void) SetDarkMode(_DarkMode); // Ignore result.
                     }
-
-                    (void) SetDarkMode(_DarkMode); // Ignore result.
 
                     // Add a few settings.
                     {
                         wil::com_ptr<ICoreWebView2Settings> Settings;
 
-                        hResult = _WebView->get_Settings(&Settings);
+                        hr = _WebView->get_Settings(&Settings);
 
-                        if (SUCCEEDED(hResult))
+                        if (SUCCEEDED(hr))
                         {
                             Settings->put_IsScriptEnabled(TRUE);
                             Settings->put_AreDefaultScriptDialogsEnabled(TRUE);
@@ -98,14 +125,14 @@ void UIElement::CreateWebView()
                         _Controller->put_Bounds(Bounds);
                     }
 
-                    // Set a mapping between a virtual host name and a folder path to make it available to web sites via that host name. (E.g. L"<img src="http://foo_vis_text.local/wv2.png"/>")
+                    // Set a mapping between a virtual host name and a folder path to make it available to web sites via that host name. (E.g. L"<img src="http://foo_uie_webview.local/wv2.png"/>")
                     {
                         wil::com_ptr<ICoreWebView2_3> WebView03 = _WebView.try_query<ICoreWebView2_3>();
 
                         if (WebView03 == nullptr)
                             return E_NOINTERFACE;
 
-                        hResult = WebView03->SetVirtualHostNameToFolderMapping(_HostName, _Configuration._UserDataFolderPath.c_str(), COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
+                        hr = WebView03->SetVirtualHostNameToFolderMapping(_HostName, _Configuration._UserDataFolderPath.c_str(), COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
                     }
 
                     // Add an event handler to add the host object before navigation starts. That way the host object is available when the scripts start running.
@@ -171,7 +198,7 @@ void UIElement::CreateWebView()
                         if (WebView11 == nullptr)
                             return E_NOINTERFACE;
 
-                        hResult = WebView11->add_ContextMenuRequested(Callback<ICoreWebView2ContextMenuRequestedEventHandler>
+                        hr = WebView11->add_ContextMenuRequested(Callback<ICoreWebView2ContextMenuRequestedEventHandler>
                         (
                             [this](ICoreWebView2 * sender, ICoreWebView2ContextMenuRequestedEventArgs * eventArgs)
                             {
@@ -227,12 +254,14 @@ void UIElement::CreateWebView()
                 }
             ).Get());
 
-            return S_OK;
+            return hr;
         }
     ).Get());
 
     if (!SUCCEEDED(hr))
         throw Win32Exception(hr, "Failed to create WebView");
+
+    return hr;
 }
 
 /// <summary>
@@ -257,6 +286,50 @@ void UIElement::DeleteWebView() noexcept
     }
 
     _Controller = nullptr;
+    _Environment = nullptr;
+}
+
+/// <summary>
+/// Recreates the WebView.
+/// </summary>
+HRESULT UIElement::RecreateWebView() noexcept
+{
+    if (_Environment == nullptr)
+        return E_ILLEGAL_METHOD_CALL;
+
+    wil::com_ptr<ICoreWebView2Environment5> Environment5;
+
+    HRESULT hr = _Environment->QueryInterface(IID_PPV_ARGS(&Environment5));
+
+    if (!SUCCEEDED(hr))
+        return hr;
+
+    // Adds an event handler that gets called after all browser processes have terminated, after all resources have been released (including the user data folder).
+    hr = Environment5->add_BrowserProcessExited(Microsoft::WRL::Callback<ICoreWebView2BrowserProcessExitedEventHandler>
+    (
+        [this, Environment5](ICoreWebView2Environment * environment, ICoreWebView2BrowserProcessExitedEventArgs * eventArgs) -> HRESULT
+        {
+            HRESULT hr = Environment5->remove_BrowserProcessExited(_BrowserProcessExitedToken);
+
+            if (!SUCCEEDED(hr))
+                console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to remove BrowserProcessExited event handler").c_str());
+
+            CreateWebView();
+
+            return S_OK;
+        }
+    ).Get(), &_BrowserProcessExitedToken);
+
+    if (!SUCCEEDED(hr))
+    {
+        console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to add BrowserProcessExited event handler").c_str());
+
+        return hr;
+    }
+
+    DeleteWebView();
+
+    return S_OK;
 }
 
 /// <summary>
@@ -280,6 +353,23 @@ HRESULT UIElement::SetDarkMode(bool enabled) const noexcept
         return hr;
 
     return Profile->put_PreferredColorScheme(enabled ? COREWEBVIEW2_PREFERRED_COLOR_SCHEME_DARK : COREWEBVIEW2_PREFERRED_COLOR_SCHEME_LIGHT);
+}
+
+/// <summary>
+/// Sets the default background color.
+/// </summary>
+HRESULT UIElement::SetDefaultBackgroundColor() const noexcept
+{
+    if (_Controller == nullptr)
+        return E_ILLEGAL_METHOD_CALL;
+
+    wil::com_ptr<ICoreWebView2Controller2> Controller2 = _Controller.try_query<ICoreWebView2Controller2>();
+
+    if (Controller2 == nullptr)
+        return E_NOINTERFACE;
+
+    // Note: Semi-transparent background colors are not yet supported. (https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2controller2?view=webview2-1.0.2592.51#put_defaultbackgroundcolor)
+    return Controller2->put_DefaultBackgroundColor({ 255, GetRValue(_BackgroundColor), GetGValue(_BackgroundColor), GetBValue(_BackgroundColor) });
 }
 
 /// <summary>
@@ -346,6 +436,7 @@ HRESULT UIElement::CreateContextMenu(const wchar_t * itemLabel, const wchar_t * 
 
     return hr;
 }
+
 
 /// <summary>
 /// Creates a stream that contains the complete binary data of a Windows icon. The resource type is RT_RCDATA instead of RT_GROUP_ICON or RT_ICON.

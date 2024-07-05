@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.cpp (2024.07.03) P. Stuer **/
+/** $VER: UIElement.cpp (2024.07.05) P. Stuer **/
 
 #include "pch.h"
 
@@ -25,6 +25,8 @@
 UIElement::UIElement() : m_bMsgHandled(FALSE)
 {
     playlist_callback_single_impl_base::set_callback_flags(flag_on_item_focus_change);
+
+    _PlaybackControl = playback_control::get();
 }
 
 #pragma region User Interface
@@ -72,7 +74,7 @@ LRESULT UIElement::OnCreate(LPCREATESTRUCT cs) noexcept
     }
     catch (std::exception &)
     {
-        console::printf(STR_COMPONENT_BASENAME " failed to find create visualisation stream.");
+        console::printf(STR_COMPONENT_BASENAME " failed to create visualisation stream.");
     }
 
     return 0;
@@ -112,6 +114,24 @@ void UIElement::OnSize(UINT type, CSize size) noexcept
 }
 
 /// <summary>
+/// Handles the WM_ERASEBKGND message.
+/// </summary>
+BOOL UIElement::OnEraseBackground(CDCHandle dc) noexcept
+{
+    RECT cr;
+
+    GetClientRect(&cr);
+
+    HBRUSH Brush = ::CreateSolidBrush(_BackgroundColor);
+
+    ::FillRect(dc, &cr, Brush);
+
+    ::DeleteObject(Brush);
+
+    return TRUE;
+}
+
+/// <summary>
 /// Handles the WM_PAINT message.
 /// </summary>
 void UIElement::OnPaint(CDCHandle dc) noexcept
@@ -123,12 +143,6 @@ void UIElement::OnPaint(CDCHandle dc) noexcept
     RECT cr;
 
     GetClientRect(&cr);
-
-    HBRUSH Brush = ::CreateSolidBrush(_BackgroundColor);
-
-    ::FillRect(ps.hdc, &cr, Brush);
-
-    ::DeleteObject(Brush);
 
     HTHEME hTheme = ::OpenThemeData(m_hWnd, VSCLASS_TEXTSTYLE);
 
@@ -225,6 +239,11 @@ LRESULT UIElement::OnAsync(UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 void UIElement::OnColorsChanged()
 {
     GetColors();
+
+    RecreateWebView(); // There is no way (yet) to update the environment options of an existing WebView2 control so we delete and recreate it.
+
+    if (IsWindow())
+        Invalidate(TRUE);
 }
 
 /// <summary>
@@ -377,7 +396,7 @@ CWndClassInfo & UIElement::GetWndClassInfo()
             NULL, // Instance,
             NULL, // Icon
             NULL, // Cursor
-            (HBRUSH) COLOR_WINDOW, // Background brush
+            NULL, // Background brush
             NULL, // Menu
             TEXT(STR_WINDOW_CLASS_NAME), // Class name
             NULL // Small Icon

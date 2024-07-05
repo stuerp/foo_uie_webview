@@ -9,6 +9,8 @@
 
 namespace uie
 {
+#pragma region CUIElement
+
 /// <summary>
 /// Initializes a new instance.
 /// </summary>
@@ -78,12 +80,13 @@ void CUIElement::GetColors() noexcept
 
     _ForegroundColor = Helper.get_colour(cui::colours::colour_text);
     _BackgroundColor = Helper.get_colour(cui::colours::colour_background);
-
-    if (IsWindow())
-        Invalidate(TRUE);
 }
 
 static uie::window_factory<CUIElement> _WindowFactory;
+
+#pragma endregion
+
+#pragma region CUIColorClient
 
 void CUIColorClient::on_colour_changed(uint32_t changed_items_mask) const
 {
@@ -93,7 +96,11 @@ void CUIColorClient::on_colour_changed(uint32_t changed_items_mask) const
 
 void CUIColorClient::on_bool_changed(uint32_t changed_items_mask) const
 {
+    for (auto Iter : _Elements)
+        Iter->OnColorsChanged();
 }
 
 static cui::colours::client::factory<CUIColorClient> _CUIColorClientFactory;
+
+#pragma endregion
 }

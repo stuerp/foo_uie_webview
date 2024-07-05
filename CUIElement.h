@@ -137,14 +137,14 @@ public:
 
     virtual const GUID & get_client_guid() const
     {
-        static const GUID guid = GUID_UI_ELEMENT;
+        static const GUID guid = GUID_UI_ELEMENT_CLIENT;
 
         return guid;
    }
 
     virtual void get_name(pfc::string_base & out) const
     {
-        out = STR_COMPONENT_NAME;
+        out = STR_COMPONENT_NAME "Client";
     }
 
     /// <summary>
@@ -172,6 +172,9 @@ public:
 
     #pragma endregion
 
+    /// <summary>
+    /// Registers a CUIElement with this client.
+    /// </summary>
     static void Register(CUIElement * element)
     {
         if (element == nullptr)
@@ -180,6 +183,9 @@ public:
         _Elements.push_back(element);
     }
 
+    /// <summary>
+    /// Unregisters a CUIElement from this client.
+    /// </summary>
     static void Unregister(CUIElement * element)
     {
         auto Element = std::find(_Elements.begin(), _Elements.end(), element);

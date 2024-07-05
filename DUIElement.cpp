@@ -112,7 +112,7 @@ void DUIElement::notify(const GUID & what, t_size param1, const void * param2, t
     else
     if (what == ui_element_notify_colors_changed)
     {
-        GetColors();
+        OnColorsChanged();
     }
 /*
     else
@@ -133,9 +133,6 @@ void DUIElement::GetColors() noexcept
 {
     _ForegroundColor = (COLORREF) m_callback->query_std_color(ui_color_text);
     _BackgroundColor = (COLORREF) m_callback->query_std_color(ui_color_background);
-
-    if (IsWindow())
-        Invalidate(TRUE);
 }
 
 static service_factory_single_t<ui_element_impl_visualisation<DUIElement>> _Factory;
