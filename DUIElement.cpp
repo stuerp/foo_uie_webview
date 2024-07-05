@@ -1,5 +1,5 @@
 
-/** $VER: DUIElement.cpp (2024.07.03) P. Stuer **/
+/** $VER: DUIElement.cpp (2024.07.05) P. Stuer **/
 
 #include "pch.h"
 
@@ -32,7 +32,7 @@ void DUIElement::g_get_name(pfc::string_base & name)
 /// </summary>
 const char * DUIElement::g_get_description()
 {
-    return "Displays HTML-formatted content";
+    return "Provides access to a WebView2 control";
 }
 
 /// <summary>
@@ -48,7 +48,7 @@ GUID DUIElement::g_get_guid()
 /// </summary>
 GUID DUIElement::g_get_subclass()
 {
-    return ui_element_subclass_playback_visualisation;
+    return { }; // Don't display in the View menu.
 }
 
 /// <summary>

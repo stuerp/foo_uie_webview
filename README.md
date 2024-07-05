@@ -33,7 +33,6 @@ When you add a WebView panel to the foobar2000 user interface the following thin
 * The component tries to enable a supported WebView2 control. If no compatible WebView can be found the component will fail gracefully and report the error in the foobar2000 console.
 * A subdirectory called `foo_uie_webview` gets created in your foobar2000 profile directory. It will contain various state information used by WebView2.
 * The component looks by default for the HTML file `foo_uie_webview\Template.html` in your foobar2000 profile directory. The location of the template can be changed in the preference page of the component. A copy of the default template will be created in that location if the file does not exist when the component starts.
-* A menu item will be added to the `View / Visualizations` foobar2000 menu.
 * A `WebView` preferences page is added to Preferences dialog in the `Display` category.
 
 ### Preferences
@@ -108,6 +107,7 @@ v0.1.5.0-alpha3, 2024-07-05
 * New: Renamed the component to foo_uie_webview (alpha3).
   * The component GUID remains the same.
   * The settings are retained.
+  * Delete the "EBWebView" sub-directory of your user data folder to prevent caching problems.
 * Improved: Enabled more options in WebView2 to better support dark mode (alpha3).
 * Fixed: A last-minute change (never a good thing) broke the support for multiple instances of the Preferences dialog box.
 * Fixed: Javascript example code (alpha2)
