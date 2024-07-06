@@ -1,5 +1,5 @@
 
-/** $VER: WebView.cpp (2024.07.05) P. Stuer - Creates the WebView. **/
+/** $VER: WebView.cpp (2024.07.06) P. Stuer - Creates the WebView. **/
 
 #include "pch.h"
 
@@ -85,7 +85,7 @@ HRESULT UIElement::CreateWebView()
                 [this](HRESULT hr, ICoreWebView2Controller * controller) -> HRESULT
                 {
                     if (controller == nullptr)
-                        return hr;
+                        return E_INVALIDARG;
 
                     {
                         _Controller = controller;
@@ -93,9 +93,12 @@ HRESULT UIElement::CreateWebView()
                         hr = _Controller->get_CoreWebView2(&_WebView);
 
                         if (!SUCCEEDED(hr))
+                        {
+                            console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to get WebView from controller").c_str());
                             return hr;
+                        }
 
-//                      _Controller->put_IsVisible(TRUE);
+                        _Controller->put_IsVisible(TRUE); // Required for the brain-dead CUI.
                     }
 
                     {
@@ -135,6 +138,9 @@ HRESULT UIElement::CreateWebView()
                             return E_NOINTERFACE;
 
                         hr = WebView03->SetVirtualHostNameToFolderMapping(_HostName, _Configuration._UserDataFolderPath.c_str(), COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
+
+                        if (!SUCCEEDED(hr))
+                            console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to set virtual host name").c_str());
                     }
 
                     // Add an event handler to add the host object before navigation starts. That way the host object is available when the scripts start running.
@@ -153,6 +159,9 @@ HRESULT UIElement::CreateWebView()
                                 // This will replace the previous object with the new object. In our case this is the same object and everything is fine.
                                 HRESULT hr = _WebView->AddHostObjectToScript(TEXT(STR_COMPONENT_BASENAME), &RemoteObject);
 
+                                if (!SUCCEEDED(hr))
+                                    console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to add host object to script").c_str());
+
                                 RemoteObject.pdispVal->Release();
 
                                 return hr;
@@ -166,12 +175,15 @@ HRESULT UIElement::CreateWebView()
                         (
                             [this](ICoreWebView2 * webView, ICoreWebView2NavigationCompletedEventArgs * eventArgs) -> HRESULT
                             {
-                                BOOL Success;
+                                BOOL Success = TRUE;
 
                                 HRESULT hr = eventArgs->get_IsSuccess(&Success);
 
                                 if (!SUCCEEDED(hr))
+                                {
+                                    console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to get event status").c_str());
                                     return hr;
+                                }
 
                                 if (!Success)
                                 {
@@ -179,11 +191,16 @@ HRESULT UIElement::CreateWebView()
 
                                     hr = eventArgs->get_WebErrorStatus(&WebErrorStatus);
 
-                                    if (WebErrorStatus == COREWEBVIEW2_WEB_ERROR_STATUS_DISCONNECTED)
+                                    if (SUCCEEDED(hr))
                                     {
-                                        // Do something here if you want to handle a specific error case.
-                                        // In most cases this isn't necessary, because the WebView will display its own error page automatically.
+                                        if (WebErrorStatus == COREWEBVIEW2_WEB_ERROR_STATUS_DISCONNECTED)
+                                        {
+                                            // Do something here if you want to handle a specific error case.
+                                            // In most cases this isn't necessary, because the WebView will display its own error page automatically.
+                                        }
                                     }
+                                    else
+                                        console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to get web error status").c_str());
                                 }
 
                                 _IsNavigationCompleted = true;
@@ -211,7 +228,10 @@ HRESULT UIElement::CreateWebView()
                                 HRESULT hr = Args->get_ContextMenuTarget(&Target);
 
                                 if (!SUCCEEDED(hr))
+                                {
+                                    console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to get context menu target").c_str());
                                     return hr;
+                                }
 
                                 COREWEBVIEW2_CONTEXT_MENU_TARGET_KIND TargetKind;
 

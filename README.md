@@ -95,7 +95,7 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.1.5.0-alpha3, 2024-07-05
+v0.1.5.0-alpha4, 2024-07-06
 
 * New: Each instance of the component can have a name to easier distinguish between them.
 * New: The location of the WebView user data folder can be specified in the Preferences dialog.
@@ -113,6 +113,7 @@ v0.1.5.0-alpha3, 2024-07-05
 * Fixed: Javascript example code (alpha2)
 * Fixed: Support for tracks with more than 2 channels was not implemented correctly (alpha2).
 * Fixed: The background color of the WebView is now correctly and dynamically set (alpha3).
+* Fixed: WebView not appearing in CUI tabs (alpha4, Regression).
 
 v0.1.4.0, 2024-06-12
 
