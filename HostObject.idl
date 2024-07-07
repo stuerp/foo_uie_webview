@@ -1,13 +1,50 @@
 import "oaidl.idl";
 import "ocidl.idl";
 
-[uuid(0a7a4655-5660-47d0-8a37-98ae21399e57), version(0.1)]
+[uuid(0a7a4655-5660-47d0-8a37-98ae21399e57), version(0.2)]
 library HostObjectLibrary
 {
     //! [AddHostObjectInterface]
     [uuid(3a14c9c0-bc3e-453f-a314-4ce4a0ec81d8), object, local]
     interface IHostObject : IUnknown
     {
+        [propget] HRESULT ComponentVersion([out, retval] __int32 * version);
+        [propget] HRESULT ComponentVersionText([out, retval] BSTR * versionText);
+
+        HRESULT Print([in] BSTR text);
+
+        HRESULT Stop();
+        HRESULT Play([in] bool paused);
+        HRESULT Pause([in] bool paused);
+        HRESULT Previous();
+        HRESULT Next();
+        HRESULT Random();
+
+        HRESULT TogglePause();
+        HRESULT ToggleMute();
+        HRESULT ToggleStopAfterCurrent();
+
+        HRESULT VolumeUp();
+        HRESULT VolumeDown();
+
+        HRESULT Seek([in] double time);
+        HRESULT SeekDelta([in] double delta);
+
+        [propget] HRESULT IsPlaying([out, retval] bool * value);
+        [propget] HRESULT IsPaused([out, retval] bool * value);
+
+        [propget] HRESULT StopAfterCurrent([out, retval] bool * value);
+        [propput] HRESULT StopAfterCurrent([in] bool value);
+
+        [propget] HRESULT Length([out, retval] double * value);
+        [propget] HRESULT Position([out, retval] double * value);
+        [propget] HRESULT CanSeek([out, retval] bool * value);
+
+        [propget] HRESULT Volume([out, retval] double * value);
+        [propput] HRESULT Volume([in] double value);
+
+        [propget] HRESULT IsMuted([out, retval] bool * value);
+
         HRESULT GetFormattedText([in] BSTR text, [out, retval] BSTR * formattedText);
     };
 

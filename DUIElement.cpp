@@ -1,5 +1,5 @@
 
-/** $VER: DUIElement.cpp (2024.07.05) P. Stuer **/
+/** $VER: DUIElement.cpp (2024.07.07) P. Stuer **/
 
 #include "pch.h"
 
@@ -48,7 +48,7 @@ GUID DUIElement::g_get_guid()
 /// </summary>
 GUID DUIElement::g_get_subclass()
 {
-    return { }; // Don't display in the View menu.
+    return ui_element_subclass_utility;
 }
 
 /// <summary>
@@ -135,6 +135,6 @@ void DUIElement::GetColors() noexcept
     _BackgroundColor = (COLORREF) m_callback->query_std_color(ui_color_background);
 }
 
-static service_factory_single_t<ui_element_impl_visualisation<DUIElement>> _Factory;
+static service_factory_single_t<PopupDUIElement> _Factory;
 
 #pragma endregion

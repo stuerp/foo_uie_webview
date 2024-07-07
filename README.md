@@ -95,7 +95,7 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.1.5.0-alpha4, 2024-07-06
+v0.1.5.0-alpha5, 2024-07-07
 
 * New: Each instance of the component can have a name to easier distinguish between them.
 * New: The location of the WebView user data folder can be specified in the Preferences dialog.
@@ -108,6 +108,32 @@ v0.1.5.0-alpha4, 2024-07-06
   * The component GUID remains the same.
   * The settings are retained.
   * Delete the "EBWebView" sub-directory of your user data folder to prevent caching problems.
+* New: Added methods and properties to chrome.webview.hostObjects.sync.foo_uie_webview (alpha5):
+  * Properties
+    * ComponentVersion and ComponentVersionText: The version of this component as packed integer and as text.
+    * IsPlaying: Gets whether playback is active.
+    * IsPaused: Gets whether playback is active and in paused state.
+    * StopAfterCurrent: Gets or sets the stop-after-current-track option state.
+    * Length: Gets the length of the currently playing item, in seconds.
+    * Position: Gets the playback position within the currently playing item, in seconds.
+    * CanSeek: Gets whether currently playing track is seekable. If it's not, Seek/SeekDelta calls will be ignored.
+    * Volume: Gets or sets the playback volume in dBFS. Use 0 for full volume.
+    * IsMuted: Gets whether playback is muted.
+  * Methods
+    * Print(text): Prints text from JavaScript on the foobar2000 console.
+    * Stop(): Stops playback.
+    * Play(paused): Starts playback, paused or unpaused. If playback is already active, existing process is stopped first.
+    * Pause(paused): Pauses or resumes playback.
+    * Previous(): Plays the previous track from the current playlist according to the current playback order.
+    * Next(): Plays the next track from the current playlist according to the current playback order.
+    * Random(): Plays a random track from the current playlist (aka Shuffle).
+    * TogglePause(): Toggles the pause status.
+    * ToggleMute(): Toggles playback mute state.
+    * ToggleStopAfterCurrent(): Toggles the stop-after-current mode.
+    * VolumeUp(): Increases the volume with one step.
+    * VolumeDown(): Decreases the volume with one step.
+    * Seek(time): Seeks in the currently playing track to the specified time, in seconds.
+    * SeekDelta(delta): Seeks in the currently playing track forward or backwards by the specified delta time, in seconds.
 * Improved: Enabled more options in WebView2 to better support dark mode (alpha3).
 * Fixed: A last-minute change (never a good thing) broke the support for multiple instances of the Preferences dialog box.
 * Fixed: Javascript example code (alpha2)
