@@ -49,10 +49,3 @@ public:
 protected:
     ui_element_instance_callback::ptr m_callback; // Don't rename this. BumpableElement uses it.
 };
-
-/// <summary>
-/// Implements a Default UI element with support for a standalone version of our component and proper menu commands.
-/// </summary>
-class PopupDUIElement : public ui_element_impl_withpopup<DUIElement>
-{
-};

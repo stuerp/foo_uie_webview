@@ -1,5 +1,5 @@
 
-/** $VER: WebView.cpp (2024.07.06) P. Stuer - Creates the WebView. **/
+/** $VER: WebView.cpp (2024.07.07) P. Stuer - Creates the WebView. **/
 
 #include "pch.h"
 
@@ -45,7 +45,7 @@ HRESULT UIElement::CreateWebView()
     if (!SUCCEEDED(hr))
         throw Win32Exception(hr, "Failed to initialize COM");
 
-    // Create the WebView options.
+    // Create the environment options.
     auto Options = Microsoft::WRL::Make<CoreWebView2EnvironmentOptions>();
 
     if (_DarkMode)
@@ -53,7 +53,7 @@ HRESULT UIElement::CreateWebView()
         hr = Options->put_AdditionalBrowserArguments(L"--enable-features=WebContentsForceDark:inversion_method/cielab_based/image_behavior/none");
 
         if (!SUCCEEDED(hr))
-            console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to set additional browser arguments").c_str());
+            console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to set additional browser arguments").c_str());
     }
 
     {
@@ -66,7 +66,7 @@ HRESULT UIElement::CreateWebView()
             hr = Options8->put_ScrollBarStyle(Style); // See https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2environmentoptions8?view=webview2-1.0.2592.51
 
             if (!SUCCEEDED(hr))
-                console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to set scroll bar style").c_str());
+                console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to set scroll bar style").c_str());
         }
     }
 
@@ -79,8 +79,27 @@ HRESULT UIElement::CreateWebView()
 
             _Environment = environment;
 
+            // Create the controller options.
+            wil::com_ptr<ICoreWebView2Environment10> Environment10 = _Environment.try_query<ICoreWebView2Environment10>();
+
+            if (Environment10 == nullptr)
+                return E_NOINTERFACE;
+
+            wil::com_ptr<ICoreWebView2ControllerOptions> ControllerOptions;
+
+            hr = Environment10->CreateCoreWebView2ControllerOptions(&ControllerOptions);
+
+            if (!SUCCEEDED(hr))
+                return hr;
+
+            // Enable In Private mode.
+            hr = ControllerOptions->put_IsInPrivateModeEnabled(TRUE);
+
+            if (!SUCCEEDED(hr))
+                console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to enable In Private mode").c_str());
+
             // Create a CoreWebView2Controller and get the associated CoreWebView2 whose parent is the main window.
-            hr = environment->CreateCoreWebView2Controller(m_hWnd, Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>
+            hr = Environment10->CreateCoreWebView2ControllerWithOptions(m_hWnd, ControllerOptions.get(), Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>
             (
                 [this](HRESULT hr, ICoreWebView2Controller * controller) -> HRESULT
                 {
@@ -94,17 +113,27 @@ HRESULT UIElement::CreateWebView()
 
                         if (!SUCCEEDED(hr))
                         {
-                            console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to get WebView from controller").c_str());
+                            console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to get WebView from controller").c_str());
                             return hr;
                         }
 
                         _Controller->put_IsVisible(TRUE); // Required for the brain-dead CUI.
                     }
-
                     {
-                        SetDefaultBackgroundColor();
+                        hr = ClearBrowserData();
 
-                        (void) SetDarkMode(_DarkMode); // Ignore result.
+                        if (!SUCCEEDED(hr))
+                            console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to clear browser data").c_str());
+
+                        hr = SetDefaultBackgroundColor();
+
+                        if (!SUCCEEDED(hr))
+                            console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to set background color").c_str());
+
+                        hr = SetDarkMode(_DarkMode); // Ignore result.
+
+                        if (!SUCCEEDED(hr))
+                            console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to set theme colors").c_str());
                     }
 
                     // Add a few settings.
@@ -140,7 +169,7 @@ HRESULT UIElement::CreateWebView()
                         hr = WebView03->SetVirtualHostNameToFolderMapping(_HostName, _Configuration._UserDataFolderPath.c_str(), COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
 
                         if (!SUCCEEDED(hr))
-                            console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to set virtual host name").c_str());
+                            console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to set virtual host name").c_str());
                     }
 
                     // Add an event handler to add the host object before navigation starts. That way the host object is available when the scripts start running.
@@ -160,7 +189,7 @@ HRESULT UIElement::CreateWebView()
                                 HRESULT hr = _WebView->AddHostObjectToScript(TEXT(STR_COMPONENT_BASENAME), &RemoteObject);
 
                                 if (!SUCCEEDED(hr))
-                                    console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to add host object to script").c_str());
+                                    console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to add host object to script").c_str());
 
                                 RemoteObject.pdispVal->Release();
 
@@ -181,7 +210,7 @@ HRESULT UIElement::CreateWebView()
 
                                 if (!SUCCEEDED(hr))
                                 {
-                                    console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to get event status").c_str());
+                                    console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to get event status").c_str());
                                     return hr;
                                 }
 
@@ -200,7 +229,7 @@ HRESULT UIElement::CreateWebView()
                                         }
                                     }
                                     else
-                                        console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to get web error status").c_str());
+                                        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to get web error status").c_str());
                                 }
 
                                 _IsNavigationCompleted = true;
@@ -229,7 +258,7 @@ HRESULT UIElement::CreateWebView()
 
                                 if (!SUCCEEDED(hr))
                                 {
-                                    console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to get context menu target").c_str());
+                                    console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to get context menu target").c_str());
                                     return hr;
                                 }
 
@@ -279,9 +308,6 @@ HRESULT UIElement::CreateWebView()
             return hr;
         }
     ).Get());
-
-    if (!SUCCEEDED(hr))
-        throw Win32Exception(hr, "Failed to create WebView");
 
     return hr;
 }
@@ -334,7 +360,7 @@ HRESULT UIElement::RecreateWebView() noexcept
             HRESULT hr = Environment5->remove_BrowserProcessExited(_BrowserProcessExitedToken);
 
             if (!SUCCEEDED(hr))
-                console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to remove BrowserProcessExited event handler").c_str());
+                console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to remove BrowserProcessExited event handler").c_str());
 
             CreateWebView();
 
@@ -344,7 +370,7 @@ HRESULT UIElement::RecreateWebView() noexcept
 
     if (!SUCCEEDED(hr))
     {
-        console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to add BrowserProcessExited event handler").c_str());
+        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to add BrowserProcessExited event handler").c_str());
 
         return hr;
     }
@@ -459,6 +485,41 @@ HRESULT UIElement::CreateContextMenu(const wchar_t * itemLabel, const wchar_t * 
     return hr;
 }
 
+/// <summary>
+/// Clears all browser data.
+/// </summary>
+HRESULT UIElement::ClearBrowserData() const noexcept
+{
+    if (_WebView == nullptr)
+        return E_ILLEGAL_METHOD_CALL;
+
+    wil::com_ptr<ICoreWebView2_13> WebView13 = _WebView.try_query<ICoreWebView2_13>();
+
+    if (WebView13 == nullptr)
+        return E_NOINTERFACE;
+
+    wil::com_ptr<ICoreWebView2Profile> Profile;
+
+    HRESULT hr = WebView13->get_Profile(&Profile);
+
+    if (!SUCCEEDED(hr))
+        return hr;
+
+    auto Profile4 = Profile.try_query<ICoreWebView2Profile4>();
+
+    hr = Profile4->ClearBrowsingDataAll(Callback<ICoreWebView2ClearBrowsingDataCompletedHandler>
+    (
+        [](HRESULT hr) -> HRESULT
+        {
+            if (!SUCCEEDED(hr))
+                console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to clear browsing data").c_str());
+
+            return S_OK;
+        }
+    ).Get());
+
+    return hr;
+}
 
 /// <summary>
 /// Creates a stream that contains the complete binary data of a Windows icon. The resource type is RT_RCDATA instead of RT_GROUP_ICON or RT_ICON.

@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.h (2024.07.05) P. Stuer **/
+/** $VER: UIElement.h (2024.07.07) P. Stuer **/
 
 #pragma once
 
@@ -180,6 +180,7 @@ private:
 
 private:
     bool GetWebViewVersion(std::wstring & versionInfo);
+
     HRESULT CreateWebView();
     HRESULT RecreateWebView() noexcept;
     void DeleteWebView() noexcept;
@@ -188,6 +189,7 @@ private:
     HRESULT SetDefaultBackgroundColor() const noexcept;
 
     HRESULT CreateContextMenu(const wchar_t * itemLabel, const wchar_t * iconName) noexcept;
+    HRESULT ClearBrowserData() const noexcept;
 
     void InitializeFileWatcher();
     void InitializeWebView();

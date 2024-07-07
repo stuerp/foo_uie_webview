@@ -24,7 +24,7 @@ body
     font: 90% Calibri, Sans-serif;
     line-height: 1.2;
     color: #555753;
-/*  background-color: #e0e0e0; *//* Don't set a background color to use the background of the panel */
+/*  background-color: #e0e0e0; *//* Don't set a background color to use the theme background color of the foobar2000 panel */
 }
 div
 { 
@@ -277,6 +277,7 @@ function Refresh()
     RefreshProperties();
 }
 
+// Refreshes the content of the property elements.
 function RefreshProperties()
 {
     document.getElementById("IsPlaying").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.IsPlaying ? 'True' : 'False';
@@ -351,6 +352,7 @@ function OnTimer(sampleCount, sampleRate, channelCount, channelConfig)
     document.getElementById("Timer").textContent = Date.now() + ": " + sampleCount + " samples, " + sampleRate + "Hz, " + channelCount + " channels (0x" + ("00000000" + channelConfig.toString(16)).toUpperCase().slice(-8) + "), Left: " + L.toFixed(2) + "%, Right: " + R.toFixed(2) + "%";
 }
 
+// Converts the channel configuration mask to text.
 function GetChannelConfigurationText(channelConfig)
 {
     var ChannelNames =

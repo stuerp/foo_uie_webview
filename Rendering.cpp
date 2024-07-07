@@ -73,7 +73,7 @@ void UIElement::OnTimer() noexcept
 
         if (!SUCCEEDED(hr))
         {
-            console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnTimer()").c_str());
+            console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnTimer()").c_str());
 
             StopTimer();
         }

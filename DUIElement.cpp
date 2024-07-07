@@ -135,6 +135,6 @@ void DUIElement::GetColors() noexcept
     _BackgroundColor = (COLORREF) m_callback->query_std_color(ui_color_background);
 }
 
-static service_factory_single_t<PopupDUIElement> _Factory;
+static service_factory_single_t<ui_element_impl_withpopup<DUIElement>> _Factory;
 
 #pragma endregion

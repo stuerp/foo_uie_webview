@@ -42,12 +42,12 @@ LRESULT UIElement::OnCreate(LPCREATESTRUCT cs) noexcept
 
     if (!GetWebViewVersion(WebViewVersion))
     {
-        console::printf(STR_COMPONENT_BASENAME " failed to find a compatible WebView component.");
+        console::print(STR_COMPONENT_BASENAME " failed to find a compatible WebView component.");
 
         return 1;
     }
 
-    console::printf(STR_COMPONENT_BASENAME " is using WebView %s.", WideToUTF8(WebViewVersion).c_str());
+    console::print(STR_COMPONENT_BASENAME " is using WebView %s.", WideToUTF8(WebViewVersion).c_str());
 
     _HostObject = Microsoft::WRL::Make<HostObject>
     (
@@ -59,7 +59,10 @@ LRESULT UIElement::OnCreate(LPCREATESTRUCT cs) noexcept
 
     Initialize();
 
-    CreateWebView();
+    HRESULT hr = CreateWebView();
+
+    if (!SUCCEEDED(hr))
+        console::print(STR_COMPONENT_BASENAME " failed to create WebView control.");
 
     InitializeFileWatcher();
 
@@ -74,7 +77,7 @@ LRESULT UIElement::OnCreate(LPCREATESTRUCT cs) noexcept
     }
     catch (std::exception &)
     {
-        console::printf(STR_COMPONENT_BASENAME " failed to create visualisation stream.");
+        console::print(STR_COMPONENT_BASENAME " failed to create visualisation stream.");
     }
 
     return 0;
@@ -256,7 +259,7 @@ void UIElement::Initialize()
         {
             // Create the user data directory.
             if (!::CreateDirectoryW(_Configuration._UserDataFolderPath.c_str(), nullptr))
-                console::printf(::GetErrorMessage(::GetLastError(), ::FormatText(STR_COMPONENT_BASENAME " failed to create user data folder \"%s\"", ::WideToUTF8(_Configuration._UserDataFolderPath).c_str())).c_str());
+                console::print(::GetErrorMessage(::GetLastError(), ::FormatText(STR_COMPONENT_BASENAME " failed to create user data folder \"%s\"", ::WideToUTF8(_Configuration._UserDataFolderPath).c_str())).c_str());
         }
     }
 
@@ -290,7 +293,7 @@ void UIElement::Initialize()
             return;
 
         if (!::CopyFileW(DefaultFilePath, _ExpandedTemplateFilePath.c_str(), TRUE))
-            console::printf(::GetErrorMessage(::GetLastError(), ::FormatText(STR_COMPONENT_BASENAME " failed to create default template file \"%s\"", ::WideToUTF8(_ExpandedTemplateFilePath).c_str())).c_str());
+            console::print(::GetErrorMessage(::GetLastError(), ::FormatText(STR_COMPONENT_BASENAME " failed to create default template file \"%s\"", ::WideToUTF8(_ExpandedTemplateFilePath).c_str())).c_str());
     }
 }
 
@@ -307,7 +310,7 @@ void UIElement::InitializeFileWatcher()
     }
     catch (std::exception & e)
     {
-        throw ComponentException(::FormatText("Failed to start file system watcher: %s", e.what()));
+        console::print(::FormatText(STR_COMPONENT_BASENAME " failed to start file system watcher: %s", e.what()).c_str());
     }
 }
 
@@ -326,9 +329,12 @@ void UIElement::InitializeWebView()
 
     if (!SUCCEEDED(hr))
     {
-        (void)_WebView->Navigate(L"about:blank");
+        console::print(::GetErrorMessage(hr, ::FormatText(STR_COMPONENT_BASENAME " failed to navigate to template \"%s\"", ::WideToUTF8(_ExpandedTemplateFilePath))).c_str());
 
-        throw Win32Exception(hr, ::FormatText(STR_COMPONENT_BASENAME " failed to navigate to template \"%s\"", ::WideToUTF8(_ExpandedTemplateFilePath).c_str()));
+        hr = _WebView->Navigate(L"about:blank");
+
+        if (!SUCCEEDED(hr))
+            console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to navigate to about:blank").c_str());
     }
 
     on_playback_new_track(nullptr);
@@ -432,7 +438,7 @@ void UIElement::on_playback_starting(play_control::t_track_command command, bool
     HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnPlaybackStarting(\"%s\", %s)", CommandName, (paused ? L"true" : L"false")).c_str(), nullptr);
 
     if (!SUCCEEDED(hr))
-        console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackStarting()").c_str());
+        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackStarting()").c_str());
 }
 
 /// <summary>
@@ -446,7 +452,7 @@ void UIElement::on_playback_new_track(metadb_handle_ptr /*track*/)
     HRESULT hr = _WebView->ExecuteScript(L"OnPlaybackNewTrack()", nullptr);
 
     if (!SUCCEEDED(hr))
-        console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackNewTrack()").c_str());
+        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackNewTrack()").c_str());
 
     _LastPlaybackTime = 0.;
     _SampleRate = 44100; // Temporary until we get the sample rate from the chunk.
@@ -476,7 +482,7 @@ void UIElement::on_playback_stop(play_control::t_stop_reason reason)
     HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnPlaybackStop(\"%s\")", Reason).c_str(), nullptr);
 
     if (!SUCCEEDED(hr))
-        console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackStop()").c_str());
+        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackStop()").c_str());
 }
 
 /// <summary>
@@ -490,7 +496,7 @@ void UIElement::on_playback_seek(double time)
     HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnPlaybackSeek(%f)", time).c_str(), nullptr);
 
     if (!SUCCEEDED(hr))
-        console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackSeek()").c_str());
+        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackSeek()").c_str());
 }
 
 /// <summary>
@@ -504,7 +510,7 @@ void UIElement::on_playback_pause(bool paused)
     HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnPlaybackPause(%s)", (paused ? L"true" : L"false")).c_str(), nullptr);
 
     if (!SUCCEEDED(hr))
-        console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackPause()").c_str());
+        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackPause()").c_str());
 }
 
 /// <summary>
@@ -518,7 +524,7 @@ void UIElement::on_playback_edited(metadb_handle_ptr hTrack)
     HRESULT hr = _WebView->ExecuteScript(L"OnPlaybackEdited()", nullptr);
 
     if (!SUCCEEDED(hr))
-        console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackEdited()").c_str());
+        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackEdited()").c_str());
 }
 
 /// <summary>
@@ -532,7 +538,7 @@ void UIElement::on_playback_dynamic_info(const file_info & fileInfo)
     HRESULT hr = _WebView->ExecuteScript(L"OnPlaybackDynamicInfo()", nullptr);
 
     if (!SUCCEEDED(hr))
-        console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackDynamicInfo()").c_str());
+        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackDynamicInfo()").c_str());
 }
 
 /// <summary>
@@ -546,7 +552,7 @@ void UIElement::on_playback_dynamic_info_track(const file_info & fileInfo)
     HRESULT hr = _WebView->ExecuteScript(L"OnPlaybackDynamicTrackInfo()", nullptr);
 
     if (!SUCCEEDED(hr))
-        console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackDynamicTrackInfo()").c_str());
+        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackDynamicTrackInfo()").c_str());
 }
 
 /// <summary>
@@ -560,7 +566,7 @@ void UIElement::on_playback_time(double time)
     HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnPlaybackTime(%f)", time).c_str(), nullptr);
 
     if (!SUCCEEDED(hr))
-        console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackTime()").c_str());
+        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackTime()").c_str());
 }
 
 /// <summary>
@@ -574,7 +580,7 @@ void UIElement::on_volume_change(float newValue) // in dBFS
     HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnVolumeChange(%f)", (double) newValue).c_str(), nullptr);
 
     if (!SUCCEEDED(hr))
-        console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnVolumeChange()").c_str());
+        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnVolumeChange()").c_str());
 }
 
 #pragma endregion
@@ -592,7 +598,7 @@ void UIElement::on_item_focus_change(t_size fromIndex, t_size toIndex)
     HRESULT hr = _WebView->ExecuteScript(L"OnPlaylistFocusedItemChanged()", nullptr);
 
     if (!SUCCEEDED(hr))
-        console::printf(GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaylistFocusedItemChanged()").c_str());
+        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaylistFocusedItemChanged()").c_str());
 }
 
 #pragma endregion
