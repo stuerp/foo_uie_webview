@@ -134,7 +134,7 @@ v0.1.5.6, 2024-07-08
     * VolumeDown(): Decreases the volume with one step.
     * Seek(time): Seeks in the currently playing track to the specified time, in seconds.
     * SeekDelta(delta): Seeks in the currently playing track forward or backwards by the specified delta time, in seconds.
-* New: Each instance of the component uses it's own browser profile.
+* New: Each instance of the component uses its own browser profile.
 * Improved: WebView is a Utility panel again and can be shown as a popup (alpha5).
 * Improved: Enabled more options in WebView2 to better support dark mode (alpha3).
 * Fixed: A last-minute change (never a good thing) broke the support for multiple instances of the Preferences dialog box.

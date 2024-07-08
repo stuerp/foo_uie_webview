@@ -293,7 +293,7 @@ HRESULT UIElement::CreateWebView()
                                     hr = eventArgs->get_WebErrorStatus(&WebErrorStatus);
 
                                     if (SUCCEEDED(hr))
-                                        console::print(::GetWebViewErrorMessage(WebErrorStatus, STR_COMPONENT_BASENAME " failed to navigate").c_str());
+                                        console::print(::GetWebViewErrorMessage(WebErrorStatus, STR_COMPONENT_BASENAME " failed to complete navigation").c_str());
                                     else
                                         console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to get web error status").c_str());
                                 }
