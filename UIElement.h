@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.h (2024.06.12) P. Stuer **/
+/** $VER: UIElement.h (2024.07.08) P. Stuer **/
 
 #pragma once
 
@@ -15,6 +15,7 @@
 #include <SDK/play_callback.h>
 #include <SDK/playlist.h>
 #include <SDK/ui_element.h>
+#include <SDK/vis.h>
 
 #include <pfc/string_conv.h>
 #include <pfc/string-conv-lite.h>
@@ -25,6 +26,7 @@
 #include <WebView2.h>
 
 #include "HostObjectImpl.h"
+#include "SharedBuffer.h"
 
 using namespace Microsoft::WRL;
 
@@ -46,6 +48,8 @@ public:
     #pragma region CWindowImpl
 
     static CWndClassInfo & GetWndClassInfo();
+
+    void OnColorsChanged();
 
     static const UINT UM_WEB_VIEW_READY = WM_USER + 100;
     static const UINT UM_ASYNC          = WM_USER + 101;
@@ -117,6 +121,8 @@ protected:
         return guid;
     }
 
+    virtual void GetColors() noexcept = 0;
+
     virtual bool IsWebViewVisible() const noexcept = 0;
 
     virtual void SetWebViewVisibility(bool visible) noexcept;
@@ -148,6 +154,7 @@ private:
     LRESULT OnCreate(LPCREATESTRUCT cs) noexcept;
     void OnDestroy() noexcept;
     void OnSize(UINT nType, CSize size) noexcept;
+    BOOL OnEraseBackground(CDCHandle dc) noexcept;
     void OnPaint(CDCHandle dc) noexcept;
     LRESULT OnTemplateChanged(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
     LRESULT OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
@@ -157,6 +164,7 @@ private:
         MSG_WM_CREATE(OnCreate)
         MSG_WM_DESTROY(OnDestroy)
         MSG_WM_SIZE(OnSize)
+        MSG_WM_ERASEBKGND(OnEraseBackground)
         MSG_WM_PAINT(OnPaint)
 
         MESSAGE_HANDLER_EX(UM_TEMPLATE_CHANGED, OnTemplateChanged)
@@ -168,13 +176,21 @@ private:
 
     void Initialize();
 
+    HRESULT PostChunk(const audio_sample * samples, size_t sampleCount, uint32_t sampleRate, uint32_t channelCount, uint32_t channelConfig) noexcept;
+
 private:
     bool GetWebViewVersion(std::wstring & versionInfo);
-    void CreateWebView();
+
+    HRESULT CreateWebView();
+    HRESULT RecreateWebView() noexcept;
     void DeleteWebView() noexcept;
 
-    HRESULT CreateContextMenu(const wchar_t * itemLabel, const wchar_t * iconName) noexcept;
     HRESULT SetDarkMode(bool enabled) const noexcept;
+    HRESULT SetDefaultBackgroundColor() const noexcept;
+
+    HRESULT CreateContextMenu(const wchar_t * itemLabel, const wchar_t * iconName) noexcept;
+    HRESULT ClearBrowserData() const noexcept;
+    HRESULT RequestBrowserProfileDeletion() const noexcept;
 
     void InitializeFileWatcher();
     void InitializeWebView();
@@ -185,13 +201,23 @@ private:
 
     void OnConfigurationChanged() noexcept;
 
+    void StartTimer() noexcept;
+    void StopTimer() noexcept;
+
+    static void CALLBACK TimerCallback(HWND unnamedParam1, UINT unnamedParam2, UINT_PTR unnamedParam3, DWORD unnamedParam4) noexcept;
+
+    void OnTimer() noexcept;
+
 protected:
     configuration_t _Configuration;
 
+    COLORREF _ForegroundColor;
+    COLORREF _BackgroundColor;
+
 private:
     fb2k::CCoreDarkModeHooks _DarkMode;
+    playback_control::ptr _PlaybackControl;
 
-    std::wstring _UserDataFolderPath;
     std::wstring _ExpandedTemplateFilePath;
 
     wil::com_ptr<ICoreWebView2Environment> _Environment;
@@ -200,9 +226,23 @@ private:
     wil::com_ptr<ICoreWebView2ContextMenuItem> _ContextSubMenu;
 
     EventRegistrationToken _NavigationStartingToken = {};
+    EventRegistrationToken _NavigationCompletedToken = {};
     EventRegistrationToken _ContextMenuRequestedToken = {};
+    EventRegistrationToken _BrowserProcessExitedToken = {};
 
     wil::com_ptr<HostObject> _HostObject;
 
+    bool _IsNavigationCompleted;
+
     FileWatcher _FileWatcher;
+
+    PTP_TIMER _ThreadPoolTimer;
+    bool _IsFrozen;
+    bool _IsHidden;
+
+    visualisation_stream_v2::ptr _VisualisationStream;
+    double _LastPlaybackTime;
+    uint32_t _SampleRate;
+
+    SharedBuffer _SharedBuffer;
 };

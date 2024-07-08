@@ -1,5 +1,5 @@
 
-/** $VER: CUIElement.h (2024.06.12) P. Stuer - Columns User Interface support **/
+/** $VER: CUIElement.h (2024.07.05) P. Stuer - Columns User Interface support **/
 
 #pragma once
 
@@ -35,7 +35,7 @@ public:
     /// </summary>
     void get_category(pfc::string_base & out) const final
     {
-        out = "Visualisations";
+        out = "Panels";
     }
 
     /// <summary>
@@ -109,6 +109,8 @@ public:
         return true;
     }
 
+    void GetColors() noexcept override;
+
 private:
     window_host_ptr _Host;
     HWND _hParent;
@@ -170,6 +172,9 @@ public:
 
     #pragma endregion
 
+    /// <summary>
+    /// Registers a CUIElement with this client.
+    /// </summary>
     static void Register(CUIElement * element)
     {
         if (element == nullptr)
@@ -178,6 +183,9 @@ public:
         _Elements.push_back(element);
     }
 
+    /// <summary>
+    /// Unregisters a CUIElement from this client.
+    /// </summary>
     static void Unregister(CUIElement * element)
     {
         auto Element = std::find(_Elements.begin(), _Elements.end(), element);
@@ -185,8 +193,6 @@ public:
         if (Element != _Elements.end())
             _Elements.erase(Element);
     }
-
-    #pragma endregion
 };
 
 }

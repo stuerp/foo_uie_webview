@@ -16,6 +16,7 @@
     <ClInclude Include="Support.h" />
     <ClInclude Include="Configuration.h" />
     <ClInclude Include="UIElementTracker.h" />
+    <ClInclude Include="SharedBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -33,6 +34,8 @@
     <ClCompile Include="Support.cpp" />
     <ClCompile Include="Configuration.cpp" />
     <ClCompile Include="UIElementTracker.cpp" />
+    <ClCompile Include="Rendering.cpp" />
+    <ClCompile Include="SharedBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources.rc" />

@@ -1,5 +1,5 @@
 
-/** $VER: Resources.h (2024.06.12) P. Stuer **/
+/** $VER: Resources.h (2024.07.07) P. Stuer **/
 
 #pragma once
 
@@ -8,24 +8,24 @@
 
 #define NUM_FILE_MAJOR          0
 #define NUM_FILE_MINOR          1
-#define NUM_FILE_PATCH          4
-#define NUM_FILE_PRERELEASE     0
+#define NUM_FILE_PATCH          5
+#define NUM_FILE_PRERELEASE     6
 
 #define NUM_PRODUCT_MAJOR       0
 #define NUM_PRODUCT_MINOR       1
-#define NUM_PRODUCT_PATCH       4
-#define NUM_PRODUCT_PRERELEASE  0
+#define NUM_PRODUCT_PATCH       5
+#define NUM_PRODUCT_PRERELEASE  6
 
 /** Component specific **/
 
-#define STR_COMPONENT_NAME          "Text Visualizer"
+#define STR_COMPONENT_NAME          "WebView"
 #define STR_COMPONENT_VERSION       TOSTRING(NUM_FILE_MAJOR) "." TOSTRING(NUM_FILE_MINOR) "." TOSTRING(NUM_FILE_PATCH) "." TOSTRING(NUM_FILE_PRERELEASE)
-#define STR_COMPONENT_BASENAME      "foo_vis_text"
+#define STR_COMPONENT_BASENAME      "foo_uie_webview"
 #define STR_COMPONENT_FILENAME      STR_COMPONENT_BASENAME ".dll"
 #define STR_COMPONENT_COMPANY_NAME  ""
 #define STR_COMPONENT_COPYRIGHT     "Copyright (c) 2024 P. Stuer. All rights reserved."
 #define STR_COMPONENT_COMMENTS      ""
-#define STR_COMPONENT_DESCRIPTION   "A text visualizer for foobar2000"
+#define STR_COMPONENT_DESCRIPTION   "A WebView2 wrapper for foobar2000"
 #define STR_COMPONENT_COMMENT       ""
 
 /** Generic **/
@@ -58,18 +58,21 @@
 
 /** Configuration **/
 
-#define IDD_PREFERENCES         101
+#define IDD_PREFERENCES                      101
 
-#define IDC_FILE_PATH           1000
-#define IDC_FILE_PATH_SELECT    1002
-#define IDC_FILE_PATH_EDIT      1004
+#define IDC_NAME                            1000
 
-#define IDC_PLAYBACK_STARTING   1010
-#define IDC_PLAYBACK_NEW_TRACK  1020
-#define IDC_PLAYBACK_STOP       1030
-#define IDC_PLAYBACK_SEEK       1040
-#define IDC_PLAYBACK_PAUSE      1050
-#define IDC_PLAYBACK_TIME       1060
-#define IDC_VOLUME_CHANGE       1070
+#define IDC_USER_DATA_FOLDER_PATH           1002
+#define IDC_USER_DATA_FOLDER_PATH_SELECT    1004
 
-#define IDR_CONTEXT_MENU_ICON   2000
+#define IDC_FILE_PATH                       1006
+#define IDC_FILE_PATH_SELECT                1008
+#define IDC_FILE_PATH_EDIT                  1010
+
+#define IDC_WINDOW_SIZE                     1020
+#define IDC_WINDOW_SIZE_UNIT                1022
+
+#define IDC_REACTION_ALIGNMENT              1030
+#define IDC_WINDOW_OFFSET                   1032
+
+#define IDR_CONTEXT_MENU_ICON               2000

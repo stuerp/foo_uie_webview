@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <style>
+:root
+{
+    color-scheme: light dark; /* Opt the entire page into the user's color scheme preferences */
+}
+
 html
 {
     margin: 0;
@@ -18,8 +23,8 @@ body
     padding: 0;
     font: 90% Calibri, Sans-serif;
     line-height: 1.2;
-    color: #555753; 
-	background-color: #e0e0e0;
+    color: #555753;
+/*  background-color: #e0e0e0; *//* Don't set a background color to use the theme background color of the foobar2000 panel */
 }
 div
 { 
@@ -76,22 +81,93 @@ div
     <span id="Medium"></span><br/>
     <span id="Comment"></span><br/>
     <span id="MIDI"></span><br/>
-    <p style="display: none">
+    <p style="display: flow">
         <strong>Events</strong><br/>
-        Starting: <span id="Starting">?</span><br/>
-        Paused: <span id="Paused">?</span><br/>
-        Stop: <span id="StopReason">?</span><br/>
-        Time: <span id="Time">?</span>s<br/>
-        Volume: <span id="Volume">?</span>dBFS<br/>
+        OnStarting: <span id="Starting">?</span><br/>
+        OnPaused: <span id="Paused">?</span><br/>
+        OnStop: <span id="StopReason">?</span><br/>
+        OnSeek: <span id="Time">?</span>s<br/>
+        OnVolumeChange: <span id="Volume">?</span>dBFS<br/>
     </p>
+    <p>
+        <strong>Properties</strong><br/>
+        foo_uie_webview <span id="VersionText"></span> (<span id="Version"></span>)<br/>
+        Volume: <span id="Volume2">?</span>dBFS<br/>
+        IsPlaying: <span id="IsPlaying">?</span><br/>
+        IsPaused: <span id="IsPaused">?</span><br/>
+        StopAfterCurrent: <span id="StopAfterCurrent">?</span><br/>
+        Length: <span id="Length">?</span><br/>
+        Position: <span id="Position">?</span><br/>
+        CanSeek: <span id="CanSeek">?</span><br/>
+    </p>
+    <p>
+    <div id="Controls">
+        <button id="Stop" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.Stop(); RefreshProperties();"></button>
+        <button id="Play" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.Play(false); RefreshProperties();"></button>
+        <button id="Pause" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.TogglePause(); RefreshProperties();"></button>
+        <button id="Prev" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.Previous(); RefreshProperties();"></button>
+        <button id="Next" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.Next(); RefreshProperties();"></button>
+        <button id="Random" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.Random(); RefreshProperties();"></button>
+        <button id="VolumeDown" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.VolumeDown(); RefreshProperties();"></button>
+        <button id="VolumeUp" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.VolumeUp(); RefreshProperties();"></button>
+        <button id="Mute" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.ToggleMute(); RefreshProperties();"></button>
+        <button id="Seek" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.Seek(Math.random() * chrome.webview.hostObjects.sync.foo_uie_webview.Length); RefreshProperties();">Seek</button>
+        <button id="Delta" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.SeekDelta((Math.random() - 0.5) * 5.0); RefreshProperties();">Delta</button>
+        <br/>
+        <input type="checkbox" id="ToggleStopAfterCurrent" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.ToggleStopAfterCurrent(); RefreshProperties();"/><label for="ToggleStopAfterCurrent">Stop after current item</label>
+    </div>
+    </p>
+    <div>Timestamp: <span id="Timestamp"></span>, <span id="SampleCount"></span> samples, <span id="SampleRate"></span>Hz, <span id="ChannelCount"></span> channels (<span id="ChannelConfig"></span>)<br/>
+    <span id="Timer"></span><br/>
+    </div>
 </div>
-<script>
+<script type="text/javascript">
+var WebView;
+
+window.onload = function()
+{
+    window.chrome.webview.addEventListener("sharedbufferreceived", e =>
+    {
+        chrome.webview.hostObjects.sync.foo_uie_webview.Print("foo_uie_webview JavaScript says hello.");
+
+        document.getElementById("VersionText").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.ComponentVersionText;
+
+        var Version = chrome.webview.hostObjects.sync.foo_uie_webview.ComponentVersion;
+
+        document.getElementById("Version").textContent = 'v' + ((Version >> 24) & 255) + '.' + ((Version >> 16) & 255) + '.' + ((Version >> 8) & 255) + '.' + (Version & 255);
+
+        document.getElementById("Volume2").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.Volume;
+
+        chrome.webview.hostObjects.sync.foo_uie_webview.Volume = 0;
+
+        document.getElementById("Stop").textContent = '\u23F9';
+        document.getElementById("Play").textContent = '\u23F5';
+        document.getElementById("Pause").textContent = '\u23F8';
+        document.getElementById("Prev").textContent = '\u23EE';
+        document.getElementById("Next").textContent = '\u23ED';
+        document.getElementById("Random").textContent = '\u{1F500}';
+        document.getElementById("VolumeDown").textContent = '\u{1F509}';
+        document.getElementById("VolumeUp").textContent = '\u{1F50A}';
+        document.getElementById("Mute").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.IsMuted ? '\u{1F508}' : '\u{1F507}';
+
+        document.getElementById("ToggleStopAfterCurrent").checked = chrome.webview.hostObjects.sync.foo_uie_webview.StopAfterCurrent;
+
+        OnSharedBufferReceived(e);
+    });
+
+    Refresh();
+}
+
+let SharedBuffer;
+let Samples;
+
 // Called when playback is being initialized.
 function OnPlaybackStarting(command, paused)
 {
     document.getElementById("Info").style.display = 'inline';
-
     document.getElementById("Starting").textContent = command + " (" + (paused ? "Paused" : "Playing") + ")";
+
+    RefreshProperties();
 }
 
 // Called when playback advances to a new track.
@@ -105,9 +181,10 @@ function OnPlaybackNewTrack()
 // Called when playback stops.
 function OnPlaybackStop(reason)
 {
+//  document.getElementById("Info").style.display = 'none';
     document.getElementById("StopReason").textContent = reason; // "User" / "EOF" / "Starting another" / "Shutting down"
 
-    document.getElementById("Info").style.display = 'none';
+    RefreshProperties();
 }
 
 // Called when the user seeks to a specific time.
@@ -120,6 +197,8 @@ function OnPlaybackSeek(time)
 function OnPlaybackPause(paused)
 {
     document.getElementById("Paused").textContent = paused; // true / false
+
+    RefreshProperties();
 }
 
 // Called when the currently played file gets edited.
@@ -144,8 +223,7 @@ function OnPlaybackDynamicTrackInfo()
 function OnPlaybackTime(time)
 {
     document.getElementById("Time").textContent = time; // in seconds
-
-    document.getElementById("TrackTime").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%playback_time%[/%length%]]");
+    document.getElementById("TrackTime").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%playback_time%[/%length%]]");
 }
 
 // Called when the user changes the volume.
@@ -163,38 +241,141 @@ function OnPlaylistFocusedItemChanged()
 // Refreshes the content of all elements.
 function Refresh()
 {
-    document.getElementById("Album").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%album%[: %subtitle%]]");
-    document.getElementById("AlbumArtist").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%album artist%]");
-    document.getElementById("AlbumDate").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%album recorded%]['/'%album released%]");
-    document.getElementById("AlbumPublisher").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%publisher%[' ('%album country%')']]");
-    document.getElementById("AlbumGenre").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%album genre%]");
+    document.getElementById("Album").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%album%[: %subtitle%]]");
+    document.getElementById("AlbumArtist").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%album artist%]");
+    document.getElementById("AlbumDate").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%album recorded%]['/'%album released%]");
+    document.getElementById("AlbumPublisher").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%publisher%[' ('%album country%')']]");
+    document.getElementById("AlbumGenre").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%album genre%]");
 
-    document.getElementById("TrackTitle").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("%title%[' ['%remix%']']");
-    document.getElementById("TrackArtist").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%artist%]");
-    document.getElementById("TrackCountry").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[' ('%country%')']");
-    document.getElementById("TrackFeaturing").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("['ft. '%featuring%]");
-    document.getElementById("TrackDate").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%date%]");
-    document.getElementById("TrackNumber").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%tracknumber%[/%totaltracks%]]");
-    document.getElementById("TrackGenre").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("%genre%[/%subgenre%]");
-    document.getElementById("TrackLanguage").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[ %language%]");
+    document.getElementById("TrackTitle").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("%title%[' ['%remix%']']");
+    document.getElementById("TrackArtist").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%artist%]");
+    document.getElementById("TrackCountry").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[' ('%country%')']");
+    document.getElementById("TrackFeaturing").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['ft. '%featuring%]");
+    document.getElementById("TrackDate").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%date%]");
+    document.getElementById("TrackNumber").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%tracknumber%[/%totaltracks%]]");
+    document.getElementById("TrackGenre").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("%genre%[/%subgenre%]");
+    document.getElementById("TrackLanguage").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[ %language%]");
 
-    document.getElementById("TrackTime").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("[%playback_time%[/%length%]]");
+    document.getElementById("TrackTime").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%playback_time%[/%length%]]");
 
-    document.getElementById("TrackCodec").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("%codec_long%[, $info(codec_profile)], $caps($info(encoding))");
-    document.getElementById("TrackInfo").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("%samplerate%Hz, %bitrate% kbps[, $info(bitspersample) bit], $caps(%channels%)[, $caps($info(channel_mode))]");
+    document.getElementById("TrackCodec").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("%codec_long%[, $info(codec_profile)], $caps($info(encoding))");
+    document.getElementById("TrackInfo").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("%samplerate%Hz, %bitrate% kbps[, $info(bitspersample) bit], $caps(%channels%)[, $caps($info(channel_mode))]");
 
-    document.getElementById("TrackComposer").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("['Composer: '%composer%]");
-    document.getElementById("TrackLyricist").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("['Lyricist: '%lyricist%]");
-    document.getElementById("TrackComposed").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("['Composed in: ' %composed%]");
-    document.getElementById("TrackConductor").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("['Conductor: '%conductor%]");
-    document.getElementById("TrackOrchestra").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("['Orchestra: '%orchestra%]");
-    document.getElementById("TrackArranger").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("['Arranger: ' %arranger%]");
+    document.getElementById("TrackComposer").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Composer: '%composer%]");
+    document.getElementById("TrackLyricist").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Lyricist: '%lyricist%]");
+    document.getElementById("TrackComposed").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Composed in: ' %composed%]");
+    document.getElementById("TrackConductor").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Conductor: '%conductor%]");
+    document.getElementById("TrackOrchestra").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Orchestra: '%orchestra%]");
+    document.getElementById("TrackArranger").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Arranger: ' %arranger%]");
 
-    document.getElementById("OriginalAlbum").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("['Original Album: '%original album%]");
+    document.getElementById("OriginalAlbum").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Original Album: '%original album%]");
 
-    document.getElementById("Medium").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("['Medium: '%medium%]");
-    document.getElementById("Comment").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("['Comments: '%comment%]");
-    document.getElementById("MIDI").textContent = chrome.webview.hostObjects.sync.foo_vis_text.GetFormattedText("['MIDI: '$info(midi_player)][, $info(midi_active_voices) voices '(peak ' $info(midi_peak_voices)')'][, extra percussion channel $info(midi_extra_percussion_channel)]");
+    document.getElementById("Medium").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Medium: '%medium%]");
+    document.getElementById("Comment").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Comments: '%comment%]");
+    document.getElementById("MIDI").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['MIDI: '$info(midi_player)][, $info(midi_active_voices) voices '(peak ' $info(midi_peak_voices)')'][, extra percussion channel $info(midi_extra_percussion_channel)]");
+
+    RefreshProperties();
+}
+
+// Refreshes the content of the property elements.
+function RefreshProperties()
+{
+    document.getElementById("IsPlaying").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.IsPlaying ? 'True' : 'False';
+    document.getElementById("IsPaused").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.IsPaused ? 'True' : 'False';
+    document.getElementById("StopAfterCurrent").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.StopAfterCurrent ? 'True' : 'False';
+
+    document.getElementById("Length").textContent = (Math.round(chrome.webview.hostObjects.sync.foo_uie_webview.Length * 100) / 100).toFixed(2) + 's';
+    document.getElementById("CanSeek").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.CanSeek ? 'True' : 'False';
+
+    document.getElementById("Mute").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.IsMuted ? '\u{1F508}' :  '\u{1F507}';
+}
+
+// Called when the shared buffer does not exist yet or when the channel configuration changes.
+function OnSharedBufferReceived(e)
+{
+    if (SharedBuffer)
+    {
+        window.chrome.webview.releaseBuffer(SharedBuffer);
+        SharedBuffer = null;
+        Samples = null;
+    }
+
+    if (!e.additionalData)
+        return;
+
+    SharedBuffer = e.getBuffer(); // as an ArrayBuffer
+    Samples = new Float64Array(SharedBuffer);
+
+    document.getElementById("Timestamp").textContent = Date.now();
+    document.getElementById("SampleCount").textContent = e.additionalData.SampleCount;
+    document.getElementById("SampleRate").textContent = e.additionalData.SampleRate;
+    document.getElementById("ChannelCount").textContent = e.additionalData.ChannelCount;
+    document.getElementById("ChannelConfig").textContent = GetChannelConfigurationText(e.additionalData.ChannelConfig);
+}
+
+// Called when the visualisation timer ticks.
+function OnTimer(sampleCount, sampleRate, channelCount, channelConfig)
+{
+    document.getElementById("Position").textContent = (Math.round(chrome.webview.hostObjects.sync.foo_uie_webview.Position * 100) / 100).toFixed(2) + 's';
+
+    var L = 0, R = 0;
+
+    if (Samples && Samples.length >= 2)
+    {
+        for (i = 0; i < sampleCount; i += channelCount)
+        {
+            if ((channelConfig & 3) == 3) // Front Left + Front Right
+            {
+                L = Math.max(L, Samples[i]);
+                R = Math.max(R, Samples[i + 1]);
+            }
+            else
+            if ((channelConfig & 4) == 4) // Front Center (Mono)
+            {
+                L = R = Math.max(L, Samples[i]);
+            }
+        }
+    }
+    else
+        document.getElementById("Timer").textContent = "N/A";
+
+    const NormalizeValue = (value) =>
+    {
+        const dB = 20 * Math.log10(value);
+
+        return Math.min(Math.max((dB + 60) / 60, 0.0), 1.0);
+    };
+
+    L = NormalizeValue(L);
+    R = NormalizeValue(R);
+
+    document.getElementById("Timer").textContent = Date.now() + ": " + sampleCount + " samples, " + sampleRate + "Hz, " + channelCount + " channels (0x" + ("00000000" + channelConfig.toString(16)).toUpperCase().slice(-8) + "), Left: " + L.toFixed(2) + "%, Right: " + R.toFixed(2) + "%";
+}
+
+// Converts the channel configuration mask to text.
+function GetChannelConfigurationText(channelConfig)
+{
+    var ChannelNames =
+    [
+        "FL", "FR", "FC",
+        "LFE",
+        "BL", "BR", 
+        "FCL", "FCR",
+        "BC", "SL", "SR", "TC",
+        "TFL", "TFC", "TFR", "TBL", "TBC", "TBR",
+    ];
+
+    return ChannelNames.filter
+    (
+        function(x)
+        {
+            var b = (channelConfig & 1);
+
+            channelConfig >>= 1;
+
+            return b;
+        }
+    ).join(" / ");
 }
 </script>
 </body>

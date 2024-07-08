@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.cpp (2024.06.05) P. Stuer **/
+/** $VER: HostObjectImpl.cpp (2024.07.07) P. Stuer **/
 
 #include "pch.h"
 
@@ -23,6 +23,369 @@
 /// </summary>
 HostObject::HostObject(HostObject::RunCallbackAsync runCallbackAsync) : _RunCallbackAsync(runCallbackAsync)
 {
+    _PlaybackControl = playback_control::get();
+}
+
+/// <summary>
+/// Gets the version of the component as packed integer.
+/// </summary>
+STDMETHODIMP HostObject::get_ComponentVersion(__int32 * version)
+{
+    if (version == nullptr)
+        return E_INVALIDARG;
+
+    *version = (NUM_PRODUCT_MAJOR << 24) | (NUM_PRODUCT_MINOR << 16) | (NUM_PRODUCT_PATCH << 8) | NUM_PRODUCT_PRERELEASE;
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the version of the component as a string.
+/// </summary>
+STDMETHODIMP HostObject::get_ComponentVersionText(BSTR * versionText)
+{
+    if (versionText == nullptr)
+        return E_INVALIDARG;
+
+    *versionText = ::SysAllocString(TEXT(STR_COMPONENT_VERSION));
+
+    return S_OK;
+}
+
+/// <summary>
+/// Prints the specified text on the foobar2000 console.
+/// </summary>
+STDMETHODIMP HostObject::Print(BSTR text)
+{
+    if (text == nullptr)
+        return E_INVALIDARG;
+
+    console::print(pfc::utf8FromWide((const wchar_t *) text).c_str());
+
+    return S_OK;
+}
+
+/// <summary>
+/// Stops playback.
+/// </summary>
+STDMETHODIMP HostObject::Stop()
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    _PlaybackControl->stop();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Starts playback, paused or unpaused. If playback is already active, existing process is stopped first.
+/// </summary>
+STDMETHODIMP HostObject::Play(BOOL paused)
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    _PlaybackControl->start(playback_control::track_command_play, paused);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Pauses or resumes playback.
+/// </summary>
+STDMETHODIMP HostObject::Pause(BOOL paused)
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    _PlaybackControl->pause(paused);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Plays the previous track from the current playlist according to the current playback order.
+/// </summary>
+STDMETHODIMP HostObject::Previous()
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    _PlaybackControl->start(playback_control::track_command_prev);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Plays the next track from the current playlist according to the current playback order.
+/// </summary>
+STDMETHODIMP HostObject::Next()
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    _PlaybackControl->start(playback_control::track_command_next);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Plays a random track from the current playlist (aka Shuffle).
+/// </summary>
+STDMETHODIMP HostObject::Random()
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    _PlaybackControl->start(playback_control::track_command_rand);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Toggles the pause status.
+/// </summary>
+STDMETHODIMP HostObject::TogglePause()
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    _PlaybackControl->pause(!_PlaybackControl->is_paused());
+
+    return S_OK;
+}
+
+/// <summary>
+/// Toggles playback mute state.
+/// </summary>
+STDMETHODIMP HostObject::ToggleMute()
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    _PlaybackControl->volume_mute_toggle();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Toggles the stop-after-current mode.
+/// </summary>
+STDMETHODIMP HostObject::ToggleStopAfterCurrent()
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    _PlaybackControl->set_stop_after_current(!_PlaybackControl->get_stop_after_current());
+
+    return S_OK;
+}
+
+/// <summary>
+/// Increases the volume with one step.
+/// </summary>
+STDMETHODIMP HostObject::VolumeUp()
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    _PlaybackControl->volume_up();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Decreases the volume with one step.
+/// </summary>
+STDMETHODIMP HostObject::VolumeDown()
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    _PlaybackControl->volume_down();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Seeks in the currently playing track to the specified time, in seconds.
+/// </summary>
+STDMETHODIMP HostObject::Seek(double time)
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    _PlaybackControl->playback_seek(time);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Seeks in the currently playing track forward or backwards by the specified delta time, in seconds.
+/// </summary>
+STDMETHODIMP HostObject::SeekDelta(double delta)
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    _PlaybackControl->playback_seek_delta(delta);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets whether playback is active.
+/// </summary>
+STDMETHODIMP HostObject::get_IsPlaying(BOOL * isPlaying)
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    if (isPlaying == nullptr)
+        return E_INVALIDARG;
+
+    *isPlaying = _PlaybackControl->is_playing();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets whether playback is active and in paused state.
+/// </summary>
+STDMETHODIMP HostObject::get_IsPaused(BOOL * isPaused)
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    if (isPaused == nullptr)
+        return E_INVALIDARG;
+
+    *isPaused = _PlaybackControl->is_paused();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the stop-after-current-track option state.
+/// </summary>
+STDMETHODIMP HostObject::get_StopAfterCurrent(BOOL * stopAfterCurrent)
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    if (stopAfterCurrent == nullptr)
+        return E_INVALIDARG;
+
+    *stopAfterCurrent = _PlaybackControl->get_stop_after_current();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Sets the stop-after-current-track option state.
+/// </summary>
+STDMETHODIMP HostObject::put_StopAfterCurrent(BOOL stopAfterCurrent)
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    _PlaybackControl->set_stop_after_current(stopAfterCurrent);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the length of the currently playing item, in seconds.
+/// </summary>
+STDMETHODIMP HostObject::get_Length(double * length)
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    if (length == nullptr)
+        return E_INVALIDARG;
+
+    *length = _PlaybackControl->playback_get_length_ex();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the playback position within the currently playing track, in seconds.
+/// </summary>
+STDMETHODIMP HostObject::get_Position(double * position)
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    if (position == nullptr)
+        return E_INVALIDARG;
+
+    *position = _PlaybackControl->playback_get_position();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets whether currently played track is seekable. If it's not, playback_seek/playback_seek_delta calls will be ignored.
+/// </summary>
+STDMETHODIMP HostObject::get_CanSeek(BOOL * canSeek)
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    if (canSeek == nullptr)
+        return E_INVALIDARG;
+
+    *canSeek = _PlaybackControl->playback_can_seek();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the playback volume.
+/// </summary>
+STDMETHODIMP HostObject::get_Volume(double * volume)
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    if (volume == nullptr)
+        return E_INVALIDARG;
+
+    *volume = (double) _PlaybackControl->get_volume();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Sets the playback volume.
+/// </summary>
+STDMETHODIMP HostObject::put_Volume(double volume)
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    _PlaybackControl->set_volume((float) volume);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets whether playback is muted.
+/// </summary>
+STDMETHODIMP HostObject::get_IsMuted(BOOL * isMuted)
+{
+    if (_PlaybackControl == nullptr)
+        return E_UNEXPECTED;
+
+    if (isMuted == nullptr)
+        return E_INVALIDARG;
+
+    *isMuted = _PlaybackControl->is_muted();
+
+    return S_OK;
 }
 
 /// <summary>
@@ -30,6 +393,9 @@ HostObject::HostObject(HostObject::RunCallbackAsync runCallbackAsync) : _RunCall
 /// </summary>
 STDMETHODIMP HostObject::GetFormattedText(BSTR text, BSTR * formattedText)
 {
+    if ((text == nullptr) || (formattedText == nullptr))
+        return E_INVALIDARG;
+
     t_size PlaylistIndex = ~0u;
     t_size ItemIndex = ~0u;
 
@@ -115,7 +481,6 @@ STDMETHODIMP HostObject::GetTypeInfo(UINT typeInfoIndex, LCID lcid, ITypeInfo **
 
     if (_TypeLibrary == nullptr)
     {
-        // FIXME: The type library should be embedded in the resources of the component DLL, not a separate file.
         std::wstring TypeLibFilePath;
 
         HRESULT hr = GetTypeLibFilePath(TypeLibFilePath);
@@ -167,16 +532,16 @@ STDMETHODIMP HostObject::Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WOR
 /// </summary>
 HRESULT HostObject::GetTypeLibFilePath(std::wstring & filePath) noexcept
 {
-    wchar_t FilePath[MAX_PATH];
-
     HMODULE hModule = GetCurrentModule();
 
     if (hModule == NULL)
         return HRESULT_FROM_WIN32(::GetLastError());
 
+    wchar_t FilePath[MAX_PATH];
+
     if (::GetModuleFileNameW(hModule, FilePath, _countof(FilePath)) == 0)
         return HRESULT_FROM_WIN32(::GetLastError());
-
+/*
     HRESULT hr = ::PathCchRemoveFileSpec(FilePath, _countof(FilePath));
 
     if (!SUCCEEDED(hr))
@@ -186,7 +551,7 @@ HRESULT HostObject::GetTypeLibFilePath(std::wstring & filePath) noexcept
 
     if (!SUCCEEDED(hr))
         return hr;
-
+*/
     filePath = FilePath;
 
     return S_OK;

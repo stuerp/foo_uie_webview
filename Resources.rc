@@ -1,5 +1,5 @@
 ﻿
-/** $VER: Resources.rc (2024.06.02) P. Stuer **/
+/** $VER: Resources.rc (2024.07.05) P. Stuer **/
 
 #include "Resources.h"
 
@@ -50,20 +50,27 @@ IDD_PREFERENCES dialogex 0, 0, 0, 0
 style DS_SETFONT | WS_CHILD
 font 8, "Segoe UI", 400, 0, 1
 {
-    ltext       "Template File Path", IDC_STATIC,           X_D11, Y_D11 + 2, W_D11, H_D11
-    edittext                          IDC_FILE_PATH,        X_D12, Y_D12,     W_D12, H_D12, ES_AUTOHSCROLL
-    pushbutton  "...",                IDC_FILE_PATH_SELECT, X_D13, Y_D13,     W_D13, H_D13
-    pushbutton  "&Edit",              IDC_FILE_PATH_EDIT,   X_D14, Y_D14,     W_D14, H_D14
+    rtext       "Name:",                    IDC_STATIC,                         X_D11, Y_D11 + 2, W_D11, H_D11
+    edittext                                IDC_NAME,                           X_D12, Y_D12,     W_D12, H_D12, ES_AUTOHSCROLL
 
-/*
-    groupbox "Callbacks", IDC_STATIC, X_D20, Y_D20, W_D20, H_D20, BS_GROUPBOX, WS_EX_TRANSPARENT
+    ltext       "User data folder path",    IDC_STATIC,                         X_D13, Y_D13 + 2, W_D13, H_D13
+    edittext                                IDC_USER_DATA_FOLDER_PATH,          X_D14, Y_D14,     W_D14, H_D14, ES_AUTOHSCROLL
+    pushbutton  "...",                      IDC_USER_DATA_FOLDER_PATH_SELECT,   X_D15, Y_D15,     W_D15, H_D15
 
-        ltext       "Called when playback is being initialized", IDC_STATIC, X_D21, Y_D21 + 2, W_D21, H_D21
-        edittext    IDC_PLAYBACK_STARTING, X_D22, Y_D22, W_D22, H_D22, ES_AUTOHSCROLL
+    ltext       "Template file path",       IDC_STATIC,                         X_D16, Y_D16 + 2, W_D16, H_D16
+    edittext                                IDC_FILE_PATH,                      X_D17, Y_D17,     W_D17, H_D17, ES_AUTOHSCROLL
+    pushbutton  "...",                      IDC_FILE_PATH_SELECT,               X_D18, Y_D18,     W_D18, H_D18
+    pushbutton  "&Edit",                    IDC_FILE_PATH_EDIT,                 X_D19, Y_D19,     W_D19, H_D19
 
-        ltext       "Called when playback advances to a new track", IDC_STATIC, X_D23, Y_D23 + 2, W_D23, H_D23
-        edittext    IDC_PLAYBACK_NEW_TRACK, X_D24, Y_D24, W_D24, H_D24, ES_AUTOHSCROLL
-*/
+    rtext       "Window size:",             IDC_STATIC,                         X_D20, Y_D20 + 2, W_D20, H_D20
+    edittext                                IDC_WINDOW_SIZE,                    X_D21, Y_D21,     W_D21, H_D21, ES_RIGHT | ES_AUTOHSCROLL | WS_TABSTOP
+    combobox                                IDC_WINDOW_SIZE_UNIT,               X_D22, Y_D22,     W_D22, H_D22, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+
+    rtext       "Reaction alignment:"       IDC_STATIC,                         X_D23, Y_D23 + 2, W_D23, H_D23
+    edittext                                IDC_REACTION_ALIGNMENT              X_D24, Y_D24,     W_D24, H_D24, ES_RIGHT | ES_AUTOHSCROLL | WS_TABSTOP
+    ltext       "",                         IDC_WINDOW_OFFSET,                  X_D25, Y_D25 + 2, W_D25, H_D25
 }
 
 IDR_CONTEXT_MENU_ICON rcdata "Main.ico"
+
+1 typelib "foo_uie_webview.tlb"

@@ -1,5 +1,5 @@
 
-/** $VER: CUIElement.cpp (2024.06.12) P. Stuer **/
+/** $VER: CUIElement.cpp (2024.07.03) P. Stuer **/
 
 #include "pch.h"
 
@@ -9,11 +9,14 @@
 
 namespace uie
 {
+#pragma region CUIElement
+
 /// <summary>
 /// Initializes a new instance.
 /// </summary>
 CUIElement::CUIElement()
 {
+    GetColors();
 }
 
 /// <summary>
@@ -68,15 +71,36 @@ void CUIElement::destroy_window()
     _Host.release();
 }
 
+/// <summary>
+/// Gets the colors.
+/// </summary>
+void CUIElement::GetColors() noexcept
+{
+    cui::colours::helper Helper(pfc::guid_null);
+
+    _ForegroundColor = Helper.get_colour(cui::colours::colour_text);
+    _BackgroundColor = Helper.get_colour(cui::colours::colour_background);
+}
+
 static uie::window_factory<CUIElement> _WindowFactory;
+
+#pragma endregion
+
+#pragma region CUIColorClient
 
 void CUIColorClient::on_colour_changed(uint32_t changed_items_mask) const
 {
+    for (auto Iter : _Elements)
+        Iter->OnColorsChanged();
 }
 
 void CUIColorClient::on_bool_changed(uint32_t changed_items_mask) const
 {
+    for (auto Iter : _Elements)
+        Iter->OnColorsChanged();
 }
 
 static cui::colours::client::factory<CUIColorClient> _CUIColorClientFactory;
+
+#pragma endregion
 }

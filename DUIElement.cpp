@@ -1,5 +1,5 @@
 
-/** $VER: DUIElement.cpp (2024.06.12) P. Stuer **/
+/** $VER: DUIElement.cpp (2024.07.07) P. Stuer **/
 
 #include "pch.h"
 
@@ -15,6 +15,8 @@
 DUIElement::DUIElement(ui_element_config::ptr data, ui_element_instance_callback::ptr callback) : m_callback(callback)
 {
     set_configuration(data);
+
+    GetColors();
 }
 
 /// <summary>
@@ -30,7 +32,7 @@ void DUIElement::g_get_name(pfc::string_base & name)
 /// </summary>
 const char * DUIElement::g_get_description()
 {
-    return "Displays HTML-formatted content";
+    return "Provides access to a WebView2 control";
 }
 
 /// <summary>
@@ -46,7 +48,7 @@ GUID DUIElement::g_get_guid()
 /// </summary>
 GUID DUIElement::g_get_subclass()
 {
-    return ui_element_subclass_playback_visualisation;
+    return ui_element_subclass_utility;
 }
 
 /// <summary>
@@ -107,10 +109,12 @@ void DUIElement::notify(const GUID & what, t_size param1, const void * param2, t
     {
         SetWebViewVisibility(IsWebViewVisible());
     }
-/*
+    else
     if (what == ui_element_notify_colors_changed)
     {
+        OnColorsChanged();
     }
+/*
     else
     if (what == ui_element_notify_font_changed)
     {
@@ -122,6 +126,15 @@ void DUIElement::notify(const GUID & what, t_size param1, const void * param2, t
 */
 }
 
-static service_factory_single_t<ui_element_impl_visualisation<DUIElement>> _Factory;
+/// <summary>
+/// Gets the colors.
+/// </summary>
+void DUIElement::GetColors() noexcept
+{
+    _ForegroundColor = (COLORREF) m_callback->query_std_color(ui_color_text);
+    _BackgroundColor = (COLORREF) m_callback->query_std_color(ui_color_background);
+}
+
+static service_factory_single_t<ui_element_impl_withpopup<DUIElement>> _Factory;
 
 #pragma endregion
