@@ -1,9 +1,9 @@
 
 # foo_uie_webview
 
-[foo_uie_webview](https://github.com/stuerp/foo_uie_webview/releases) is a [foobar2000](https://www.foobar2000.org/) component that exposes the [Microsoft Edge WebView2](https://learn.microsoft.com/en-us/microsoft-edge/webview2/) control as UI panel. The component started as foo_vis_text.
+[foo_uie_webview](https://github.com/stuerp/foo_uie_webview/releases) is a [foobar2000](https://www.foobar2000.org/) component that exposes the [Microsoft WebView2](https://learn.microsoft.com/en-us/microsoft-edge/webview2/) control as UI panel. The component started as foo_vis_text.
 
-It takes an HTML file that receives playback notifications from foobar2000. The panel can react to those notifications and adjust its output using Javascript code.
+It takes an HTML file that receives playback notifications from foobar2000. The panel can react to those notifications and adjust its output using JavaScript code.
 
 ## Features
 
@@ -192,7 +192,7 @@ v0.1.0.0, 2024-06-02, *"Scratchin' the itch"*
 * Home page: [https://github.com/stuerp/foo_uie_webview](https://github.com/stuerp/foo_uie_webview)
 * Repository: [https://github.com/stuerp/foo_uie_webview.git](https://github.com/stuerp/foo_uie_webview.git)
 * Issue tracker: [https://github.com/stuerp/foo_uie_webview/issues](https://github.com/stuerp/foo_uie_webview/issues)
-* Wiki: [https://wiki.hydrogenaud.io/index.php?title=Foobar2000:Components/Text_Visualizer_(foo_uie_webview)](https://wiki.hydrogenaud.io/index.php?title=Foobar2000:Components/Text_Visualizer_(foo_uie_webview)).
+* Wiki: [https://wiki.hydrogenaud.io/index.php?title=Foobar2000:Components/WebView_(foo_uie_webview)](https://wiki.hydrogenaud.io/index.php?title=Foobar2000:Components/WebView_(foo_uie_webview)).
 
 ## License
 
