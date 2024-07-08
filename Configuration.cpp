@@ -1,5 +1,5 @@
 
-/** $VER: configuration_t.cpp (2024.07.05) P. Stuer **/
+/** $VER: configuration_t.cpp (2024.07.08) P. Stuer **/
 
 #include "pch.h"
 
@@ -26,6 +26,18 @@ using namespace stringcvt;
 /// </summary>
 configuration_t::configuration_t()
 {
+    {
+        GUID Guid;
+
+        (void) ::CoCreateGuid(&Guid);
+
+        wchar_t ProfileName[64];
+
+        ::swprintf_s(ProfileName, _countof(ProfileName), TEXT(STR_COMPONENT_BASENAME) L"-%08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X", (int) Guid.Data1, (int) Guid.Data2, (int) Guid.Data3, Guid.Data4[0], Guid.Data4[1], Guid.Data4[2], Guid.Data4[3], Guid.Data4[4], Guid.Data4[5], Guid.Data4[6], Guid.Data4[7]);
+
+        _ProfileName = ProfileName;
+    }
+
     Reset();
 }
 
@@ -76,6 +88,8 @@ configuration_t & configuration_t::operator=(const configuration_t & other)
     _WindowSizeUnit = other._WindowSizeUnit;
     _ReactionAlignment = other._ReactionAlignment;
 
+    _ProfileName = other._ProfileName;
+
     return *this;
 }
 
@@ -111,6 +125,12 @@ void configuration_t::Read(stream_reader * reader, size_t size, abort_callback &
             uint32_t Value; reader->read_object_t(Value, abortHandler); _WindowSizeUnit = (WindowSizeUnit) Value;
             reader->read_object_t(_ReactionAlignment, abortHandler);
         }
+
+        // Version 4, v0.1.5.6
+        if (Version >= 4)
+        {
+            reader->read_string(UTF8String, abortHandler); _ProfileName = pfc::wideFromUTF8(UTF8String);
+        }
     }
     catch (exception & ex)
     {
@@ -140,6 +160,9 @@ void configuration_t::Write(stream_writer * writer, abort_callback & abortHandle
         writer->write_object_t(_WindowSize, abortHandler);
         uint32_t Value = (uint32_t) _WindowSizeUnit; writer->write_object_t(Value, abortHandler);
         writer->write_object_t(_ReactionAlignment, abortHandler);
+
+        // Version 4, v0.1.5.6
+        UTF8String = pfc::utf8FromWide(_ProfileName.c_str()); writer->write_string(UTF8String, abortHandler);
     }
     catch (exception & ex)
     {

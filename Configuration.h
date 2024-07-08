@@ -1,5 +1,5 @@
 ﻿
-/** $VER: Configuration.h (2024.07.04) P. Stuer **/
+/** $VER: Configuration.h (2024.07.08) P. Stuer **/
 
 #pragma once
 
@@ -42,6 +42,8 @@ public:
                                                                     //   0: The first half of samples are behind the actual playback and the second half are ahead of it (just like original foo_musical_spectrum and basically any get_spectrum_absolute() visualizations
                                                                     // > 0: All samples are behind the playback (similar to VST audio analyzer plugins like Voxengo SPAN) with the last sample equal to the actual playback.
 
+    std::wstring _ProfileName;
+
 private:
-    const int32_t _CurrentVersion = 3;
+    const int32_t _CurrentVersion = 4;
 };

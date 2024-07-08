@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.h (2024.07.07) P. Stuer **/
+/** $VER: UIElement.h (2024.07.08) P. Stuer **/
 
 #pragma once
 
@@ -190,6 +190,7 @@ private:
 
     HRESULT CreateContextMenu(const wchar_t * itemLabel, const wchar_t * iconName) noexcept;
     HRESULT ClearBrowserData() const noexcept;
+    HRESULT RequestBrowserProfileDeletion() const noexcept;
 
     void InitializeFileWatcher();
     void InitializeWebView();

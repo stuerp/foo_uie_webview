@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.cpp (2024.07.05) P. Stuer **/
+/** $VER: UIElement.cpp (2024.07.08) P. Stuer **/
 
 #include "pch.h"
 
@@ -47,7 +47,7 @@ LRESULT UIElement::OnCreate(LPCREATESTRUCT cs) noexcept
         return 1;
     }
 
-    console::print(STR_COMPONENT_BASENAME " is using WebView %s.", WideToUTF8(WebViewVersion).c_str());
+    console::printf(STR_COMPONENT_BASENAME " is using WebView %s.", WideToUTF8(WebViewVersion).c_str());
 
     _HostObject = Microsoft::WRL::Make<HostObject>
     (
@@ -329,7 +329,7 @@ void UIElement::InitializeWebView()
 
     if (!SUCCEEDED(hr))
     {
-        console::print(::GetErrorMessage(hr, ::FormatText(STR_COMPONENT_BASENAME " failed to navigate to template \"%s\"", ::WideToUTF8(_ExpandedTemplateFilePath))).c_str());
+        console::print(::GetErrorMessage(hr, ::FormatText(STR_COMPONENT_BASENAME " failed to navigate to template \"%s\"", ::WideToUTF8(_ExpandedTemplateFilePath).c_str())).c_str());
 
         hr = _WebView->Navigate(L"about:blank");
 
