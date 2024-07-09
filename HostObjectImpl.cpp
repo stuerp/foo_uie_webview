@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.cpp (2024.07.07) P. Stuer **/
+/** $VER: HostObjectImpl.cpp (2024.07.09) P. Stuer **/
 
 #include "pch.h"
 
@@ -15,6 +15,7 @@
 #include <SDK/playlist.h>
 #include <SDK/ui.h>
 #include <SDK/contextmenu.h>
+#include <SDK/album_art.h>
 
 #include <pfc/string-conv-lite.h>
 
@@ -455,6 +456,53 @@ HRESULT HostObject::GetTrackIndex(t_size & playlistIndex, t_size & itemIndex) no
         if (itemIndex == ~0u)
             return E_FAIL;
     }
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the specified artwork of the currently selected item in the current playlist.
+/// </summary>
+STDMETHODIMP HostObject::GetArtwork(BSTR type, BSTR * image)
+{
+    if (type == nullptr)
+        return E_INVALIDARG;
+/*
+    auto aanm = now_playing_album_art_notify_manager::get();
+
+    if (aanm != nullptr)
+    {
+        album_art_data_ptr aad = aanm->current();
+
+        if (aad.is_valid())
+            hr = _Artwork.Initialize((uint8_t *) aad->data(), aad->size());
+    }
+*/
+    if (::_wcsicmp(type, L"front") == 0)
+    {
+    }
+    else
+    if (::_wcsicmp(type, L"back") == 0)
+    {
+    }
+    else
+    if (::_wcsicmp(type, L"disc") == 0)
+    {
+    }
+    else
+    if (::_wcsicmp(type, L"icon") == 0)
+    {
+    }
+    else
+    if (::_wcsicmp(type, L"artist") == 0)
+    {
+    }
+    else
+        return E_INVALIDARG;
+
+    const wchar_t * Text = LR"({ "width": 2, "height": 2, "bytes": [ 1, 2, 3, 4 ] })";
+
+    *image = ::SysAllocString(Text);
 
     return S_OK;
 }

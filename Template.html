@@ -224,6 +224,10 @@ function OnPlaybackTime(time)
 {
     document.getElementById("Time").textContent = time; // in seconds
     document.getElementById("TrackTime").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%playback_time%[/%length%]]");
+
+    var Image = JSON.parse(chrome.webview.hostObjects.sync.foo_uie_webview.GetArtwork("front")); // "back", "disc", "icon", "artist"
+
+    chrome.webview.hostObjects.sync.foo_uie_webview.Print(Image.bytes[3]);
 }
 
 // Called when the user changes the volume.

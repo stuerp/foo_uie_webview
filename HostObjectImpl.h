@@ -80,6 +80,8 @@ public:
 
     STDMETHODIMP GetFormattedText(BSTR text, BSTR * formattedText) override;
 
+    STDMETHODIMP GetArtwork(BSTR type, BSTR * image) override;
+
     #pragma endregion
 
     #pragma region IDispatch
