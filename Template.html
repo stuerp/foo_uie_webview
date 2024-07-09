@@ -47,6 +47,11 @@ div
 {
     font-weight: 800;
 }
+img
+{
+    max-width: 100%;
+    height: auto;
+}
 </style>
 </head>
 <body>
@@ -81,6 +86,7 @@ div
     <span id="Medium"></span><br/>
     <span id="Comment"></span><br/>
     <span id="MIDI"></span><br/>
+    <img id="Artwork" width="256px" height="256px"/>
     <p style="display: flow">
         <strong>Events</strong><br/>
         OnStarting: <span id="Starting">?</span><br/>
@@ -176,6 +182,9 @@ function OnPlaybackNewTrack()
     document.getElementById("Info").style.display = 'inline';
 
     Refresh()
+
+//  document.getElementById("Artwork").src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
+    document.getElementById("Artwork").src = chrome.webview.hostObjects.sync.foo_uie_webview.GetArtwork("front"); // "back", "disc", "icon", "artist"
 }
 
 // Called when playback stops.
@@ -224,10 +233,6 @@ function OnPlaybackTime(time)
 {
     document.getElementById("Time").textContent = time; // in seconds
     document.getElementById("TrackTime").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%playback_time%[/%length%]]");
-
-    var Image = JSON.parse(chrome.webview.hostObjects.sync.foo_uie_webview.GetArtwork("front")); // "back", "disc", "icon", "artist"
-
-    chrome.webview.hostObjects.sync.foo_uie_webview.Print(Image.bytes[3]);
 }
 
 // Called when the user changes the volume.

@@ -8,8 +8,11 @@
 #include <pathcch.h>
 #pragma comment(lib, "pathcch")
 
+#pragma comment(lib, "crypt32")
+
 #include "Support.h"
 #include "Resources.h"
+#include "Encoding.h"
 
 #include <SDK/titleformat.h>
 #include <SDK/playlist.h>
@@ -465,46 +468,109 @@ HRESULT HostObject::GetTrackIndex(t_size & playlistIndex, t_size & itemIndex) no
 /// </summary>
 STDMETHODIMP HostObject::GetArtwork(BSTR type, BSTR * image)
 {
+    *image = nullptr;
+
     if (type == nullptr)
         return E_INVALIDARG;
-/*
-    auto aanm = now_playing_album_art_notify_manager::get();
 
-    if (aanm != nullptr)
-    {
-        album_art_data_ptr aad = aanm->current();
+    GUID AlbumArtId;
 
-        if (aad.is_valid())
-            hr = _Artwork.Initialize((uint8_t *) aad->data(), aad->size());
-    }
-*/
     if (::_wcsicmp(type, L"front") == 0)
     {
+        AlbumArtId = album_art_ids::cover_front;
     }
     else
     if (::_wcsicmp(type, L"back") == 0)
     {
+        AlbumArtId = album_art_ids::cover_back;
     }
     else
     if (::_wcsicmp(type, L"disc") == 0)
     {
+        AlbumArtId = album_art_ids::disc;
     }
     else
     if (::_wcsicmp(type, L"icon") == 0)
     {
+        AlbumArtId = album_art_ids::icon;
     }
     else
     if (::_wcsicmp(type, L"artist") == 0)
     {
+        AlbumArtId = album_art_ids::artist;
     }
     else
         return E_INVALIDARG;
 
-    const wchar_t * Text = LR"({ "width": 2, "height": 2, "bytes": [ 1, 2, 3, 4 ] })";
+    album_art_data::ptr aad;
 
-    *image = ::SysAllocString(Text);
+    try
+    {
+        metadb_handle_ptr Handle;
 
-    return S_OK;
+        if (!_PlaybackControl->get_now_playing(Handle))
+            return E_FAIL;
+
+        metadb_handle_list Handles;
+
+        Handles.add_item(Handle);
+
+        pfc::list_t<GUID> GUIDs;
+
+        GUIDs.add_item(album_art_ids::cover_front);
+
+        static_api_ptr_t<album_art_manager_v3> Manager;
+        abort_callback_dummy AbortCallback;
+
+        album_art_extractor_instance_v2::ptr Extractor = Manager->open_v3(Handles, GUIDs, nullptr, AbortCallback);
+
+        Extractor->query(AlbumArtId, aad, AbortCallback);
+    }
+    catch (...)
+    {
+        return E_FAIL;
+    }
+
+    if (!aad.is_valid())
+        return E_FAIL;
+
+    const WCHAR * MIMEType = nullptr;
+
+    const BYTE * p = (const BYTE *) aad->data();
+
+    if (p[0] == 0x89 && p[1] == 0x50 && p[2] == 0x4E && p[3] == 0x47)
+        MIMEType = L"image/png";
+    else
+    if (p[0] == 0xFF && p[1] == 0xD8)
+        MIMEType = L"image/jpeg";
+    else
+    if (p[0] == 0x47 && p[1] == 0x49 && p[2] == 0x46)
+        MIMEType = L"image/gif";
+
+    if (MIMEType == nullptr)
+        return E_FAIL;
+
+    // Convert the image data to base64.
+    const DWORD Flags = CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF;
+
+    DWORD Size = 0;
+
+    if (!::CryptBinaryToStringW(p, (DWORD) aad->size(), Flags, nullptr, &Size))
+        return E_FAIL;
+
+    Size += 16 + (DWORD) ::wcslen(MIMEType);
+
+    WCHAR * Base64 = new WCHAR[Size];
+
+    ::swprintf_s(Base64, Size, L"data:%s;base64,", MIMEType);
+
+    // Create the result.
+    if (::CryptBinaryToStringW(p, (DWORD) aad->size(), Flags, Base64 + ::wcslen(Base64), &Size))
+        *image = ::SysAllocString(Base64);
+
+    delete[] Base64;
+
+    return (*image != nullptr) ? S_OK : E_FAIL;
 }
 
 #pragma region IDispatch

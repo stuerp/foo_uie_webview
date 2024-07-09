@@ -95,6 +95,12 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
+v0.1.6.1, 2024-07-09
+
+* New:
+  * Methods
+    * GetArtwork(): Gets the embedded artwork (front / back / disc / icon / artist) from the current playing item (alpha1). 
+
 v0.1.6.0, 2024-07-09
 
 * New: Added a setting to clear the browsing data on startup or not.
