@@ -74,7 +74,7 @@ void configuration_t::Reset() noexcept
     _WindowSizeUnit = WindowSizeUnit::Milliseconds;
     _ReactionAlignment = 0.25;
 
-    _ClearOnStartup = ClearOnStartup::All;
+    _ClearOnStartup = ClearOnStartup::None;
 }
 
 /// <summary>
