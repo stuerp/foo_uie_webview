@@ -1,16 +1,31 @@
 ﻿
-/** $VER: Configuration.h (2024.07.08) P. Stuer **/
+/** $VER: Configuration.h (2024.07.09) P. Stuer **/
 
 #pragma once
 
 #include "pch.h"
 
-enum WindowSizeUnit
+enum WindowSizeUnit : uint32_t
 {
     Milliseconds = 0,
     Samples,
 
     Count
+};
+
+enum ClearOnStartup : uint32_t
+{
+    None = 0,
+
+    BrowsingHistory,
+    DownloadHistory,
+    Cookies,
+    Cache,
+    Passwords,
+    Autofill,
+    SitePermissions,
+
+    All = (uint32_t) ~0,
 };
 
 /// <summary>
@@ -43,7 +58,8 @@ public:
                                                                     // > 0: All samples are behind the playback (similar to VST audio analyzer plugins like Voxengo SPAN) with the last sample equal to the actual playback.
 
     std::wstring _ProfileName;
+    ClearOnStartup _ClearOnStartup;
 
 private:
-    const int32_t _CurrentVersion = 4;
+    const int32_t _CurrentVersion = 5;
 };

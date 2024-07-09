@@ -391,8 +391,6 @@ HRESULT UIElement::CreateWebView()
 /// </summary>
 void UIElement::DeleteWebView() noexcept
 {
-    ClearBrowserData();
-
     if (_WebView)
     {
         wil::com_ptr<ICoreWebView2_11> WebView11 = _WebView.try_query<ICoreWebView2_11>();
@@ -596,6 +594,9 @@ HRESULT UIElement::CreateContextMenu(const wchar_t * itemLabel, const wchar_t * 
 /// </summary>
 HRESULT UIElement::ClearBrowserData() const noexcept
 {
+    if (_Configuration._ClearOnStartup == ClearOnStartup::None)
+        return S_OK;
+
     if (_WebView == nullptr)
         return E_ILLEGAL_METHOD_CALL;
 

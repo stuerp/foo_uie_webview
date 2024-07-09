@@ -1,5 +1,5 @@
 
-/** $VER: configuration_t.cpp (2024.07.08) P. Stuer **/
+/** $VER: configuration_t.cpp (2024.07.09) P. Stuer **/
 
 #include "pch.h"
 
@@ -73,6 +73,8 @@ void configuration_t::Reset() noexcept
     _WindowSize = 100; // ms
     _WindowSizeUnit = WindowSizeUnit::Milliseconds;
     _ReactionAlignment = 0.25;
+
+    _ClearOnStartup = ClearOnStartup::All;
 }
 
 /// <summary>
@@ -90,11 +92,13 @@ configuration_t & configuration_t::operator=(const configuration_t & other)
 
     _ProfileName = other._ProfileName;
 
+    _ClearOnStartup = other._ClearOnStartup;
+ 
     return *this;
 }
 
 /// <summary>
-/// Reads this instance with the specified reader. (CUI version)
+/// Reads this instance with the specified reader.
 /// </summary>
 void configuration_t::Read(stream_reader * reader, size_t size, abort_callback & abortHandler, bool isPreset) noexcept
 {
@@ -131,6 +135,12 @@ void configuration_t::Read(stream_reader * reader, size_t size, abort_callback &
         {
             reader->read_string(UTF8String, abortHandler); _ProfileName = pfc::wideFromUTF8(UTF8String);
         }
+
+        // Version 5, v0.1.6.0
+        if (Version >= 5)
+        {
+            uint32_t Value; reader->read_object_t(Value, abortHandler); _ClearOnStartup = (ClearOnStartup) Value;
+        }
     }
     catch (exception & ex)
     {
@@ -141,7 +151,7 @@ void configuration_t::Read(stream_reader * reader, size_t size, abort_callback &
 }
 
 /// <summary>
-/// Writes this instance to the specified writer. (CUI version)
+/// Writes this instance to the specified writer.
 /// </summary>
 void configuration_t::Write(stream_writer * writer, abort_callback & abortHandler, bool isPreset) const noexcept
 {
@@ -163,6 +173,9 @@ void configuration_t::Write(stream_writer * writer, abort_callback & abortHandle
 
         // Version 4, v0.1.5.6
         UTF8String = pfc::utf8FromWide(_ProfileName.c_str()); writer->write_string(UTF8String, abortHandler);
+
+        // Version 5, v0.1.6.0
+        Value = (uint32_t) _ClearOnStartup; writer->write_object_t(Value, abortHandler);
     }
     catch (exception & ex)
     {
