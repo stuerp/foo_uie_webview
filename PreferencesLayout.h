@@ -1,27 +1,27 @@
 
-/** $VER: PreferencesLayout.h (2024.07.03) **/
+/** $VER: PreferencesLayout.h (2024.07.09) **/
 
 #pragma once
 
-#define W_A00    332 // Dialog width as set by foobar2000, in dialog units
-#define H_A00    288 // Dialog height as set by foobar2000, in dialog units
+#define W_A00   332 // Dialog width as set by foobar2000, in dialog units
+#define H_A00   288 // Dialog height as set by foobar2000, in dialog units
 
-#define H_LBL        8 // Label
+#define H_LBL     8 // Label
 
-#define W_BTN       50 // Button
-#define H_BTN       14 // Button
+#define W_BTN    50 // Button
+#define H_BTN    14 // Button
 
-#define H_EBX       14 // Edit box
-#define H_CBX       14 // Combo box
+#define H_EBX    14 // Edit box
+#define H_CBX    14 // Combo box
 
-#define W_CHB       10 // Check box
-#define H_CHB       10 // Check box
+#define W_CHB    10 // Check box
+#define H_CHB    10 // Check box
 
-#define DX           7
-#define DY           7
+#define DX        7
+#define DY        7
 
-#define IX           4 // Spacing between two related controls
-#define IY           3
+#define IX        4 // Spacing between two related controls
+#define IY        3
 
 #pragma region Name
 
@@ -132,3 +132,9 @@
 #define H_D25   H_LBL
 
 #pragma endregion
+
+// Checkbox: Clear browsing data on startup
+#define X_D26   0
+#define Y_D26   Y_D24 + H_D24 + IY
+#define W_D26   160
+#define H_D26   H_LBL

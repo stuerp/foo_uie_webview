@@ -1,5 +1,5 @@
 
-/** $VER: Resources.h (2024.07.07) P. Stuer **/
+/** $VER: Resources.h (2024.07.09) P. Stuer **/
 
 #pragma once
 
@@ -8,13 +8,13 @@
 
 #define NUM_FILE_MAJOR          0
 #define NUM_FILE_MINOR          1
-#define NUM_FILE_PATCH          5
-#define NUM_FILE_PRERELEASE     6
+#define NUM_FILE_PATCH          6
+#define NUM_FILE_PRERELEASE     0
 
 #define NUM_PRODUCT_MAJOR       0
 #define NUM_PRODUCT_MINOR       1
-#define NUM_PRODUCT_PATCH       5
-#define NUM_PRODUCT_PRERELEASE  6
+#define NUM_PRODUCT_PATCH       6
+#define NUM_PRODUCT_PRERELEASE  0
 
 /** Component specific **/
 
@@ -74,5 +74,7 @@
 
 #define IDC_REACTION_ALIGNMENT              1030
 #define IDC_WINDOW_OFFSET                   1032
+
+#define IDC_CLEAR_BROWSING_DATA             1040
 
 #define IDR_CONTEXT_MENU_ICON               2000

@@ -95,6 +95,10 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
+v0.1.6.0, 2024-07-09
+
+* New: Added a setting to clear the browsing data on startup or not.
+
 v0.1.5.6, 2024-07-08
 
 * New: Each instance of the component can have a name to easier distinguish between them.

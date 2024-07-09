@@ -1,5 +1,5 @@
 
-/** $VER: Preferences.cpp (2024.07.05) P. Stuer **/
+/** $VER: Preferences.cpp (2024.07.09) P. Stuer **/
 
 #include "pch.h"
 
@@ -100,6 +100,8 @@ public:
             _Configuration._ReactionAlignment = ::_wtof(Text);
         }
 
+        _Configuration._ClearOnStartup = (SendDlgItemMessageW(IDC_CLEAR_BROWSING_DATA, BM_GETCHECK) == BST_CHECKED) ? ClearOnStartup::All : ClearOnStartup::None;
+
         UIElement * CurrentElement = _UIElementTracker.GetCurrentElement();
 
         if (CurrentElement != nullptr)
@@ -133,6 +135,7 @@ public:
         COMMAND_CODE_HANDLER_EX(CBN_SELCHANGE, OnSelectionChanged) // This also handles LBN_SELCHANGE
 
         COMMAND_HANDLER_EX(IDC_USER_DATA_FOLDER_PATH_SELECT, BN_CLICKED, OnButtonClicked)
+        COMMAND_HANDLER_EX(IDC_CLEAR_BROWSING_DATA, BN_CLICKED, OnButtonClicked)
 
         COMMAND_HANDLER_EX(IDC_FILE_PATH_SELECT, BN_CLICKED, OnButtonClicked)
         COMMAND_HANDLER_EX(IDC_FILE_PATH_EDIT, BN_CLICKED, OnButtonClicked)
@@ -181,6 +184,8 @@ private:
         }
 
         SetDlgItemTextW(IDC_REACTION_ALIGNMENT, pfc::wideFromUTF8(pfc::format_float(_Configuration._ReactionAlignment, 0, 2)));
+
+        SendDlgItemMessageW(IDC_CLEAR_BROWSING_DATA, BM_SETCHECK, (WPARAM) (_Configuration._ClearOnStartup == ClearOnStartup::All ? BST_CHECKED : BST_UNCHECKED));
     }
 
     /// <summary>
@@ -267,7 +272,10 @@ private:
             }
 
             default:
+            {
+                OnChanged();
                 break;
+            }
         }
     }
 
@@ -324,12 +332,15 @@ private:
 
         auto w = (CComboBox) GetDlgItem(IDC_WINDOW_SIZE_UNIT);
 
-        if (_Configuration._WindowSizeUnit != w.GetCurSel())
+        if (_Configuration._WindowSizeUnit != (uint32_t) w.GetCurSel())
             return true;
 
         GetDlgItemTextW(IDC_REACTION_ALIGNMENT, Text, _countof(Text));
 
         if (_Configuration._ReactionAlignment != ::_wtof(Text))
+            return true;
+
+        if (SendDlgItemMessageW(IDC_CLEAR_BROWSING_DATA, BM_GETCHECK) != (_Configuration._ClearOnStartup == ClearOnStartup::All ? BST_CHECKED : BST_UNCHECKED))
             return true;
 
         return false;
