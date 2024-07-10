@@ -1,5 +1,5 @@
 
-/** $VER: Resources.h (2024.07.09) P. Stuer **/
+/** $VER: Resources.h (2024.07.10) P. Stuer **/
 
 #pragma once
 
@@ -9,17 +9,17 @@
 #define NUM_FILE_MAJOR          0
 #define NUM_FILE_MINOR          1
 #define NUM_FILE_PATCH          6
-#define NUM_FILE_PRERELEASE     1
+#define NUM_FILE_PRERELEASE     2
 
 #define NUM_PRODUCT_MAJOR       0
 #define NUM_PRODUCT_MINOR       1
 #define NUM_PRODUCT_PATCH       6
-#define NUM_PRODUCT_PRERELEASE  1
+#define NUM_PRODUCT_PRERELEASE  2
 
 /** Component specific **/
 
 #define STR_COMPONENT_NAME          "WebView"
-#define STR_COMPONENT_VERSION       TOSTRING(NUM_FILE_MAJOR) "." TOSTRING(NUM_FILE_MINOR) "." TOSTRING(NUM_FILE_PATCH) "." TOSTRING(NUM_FILE_PRERELEASE) "-alpha1"
+#define STR_COMPONENT_VERSION       TOSTRING(NUM_FILE_MAJOR) "." TOSTRING(NUM_FILE_MINOR) "." TOSTRING(NUM_FILE_PATCH) "." TOSTRING(NUM_FILE_PRERELEASE) "-alpha2"
 #define STR_COMPONENT_BASENAME      "foo_uie_webview"
 #define STR_COMPONENT_FILENAME      STR_COMPONENT_BASENAME ".dll"
 #define STR_COMPONENT_COMPANY_NAME  ""

@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.cpp (2024.07.09) P. Stuer **/
+/** $VER: HostObjectImpl.cpp (2024.07.10) P. Stuer **/
 
 #include "pch.h"
 
@@ -18,7 +18,6 @@
 #include <SDK/playlist.h>
 #include <SDK/ui.h>
 #include <SDK/contextmenu.h>
-#include <SDK/album_art.h>
 
 #include <pfc/string-conv-lite.h>
 
@@ -468,7 +467,7 @@ HRESULT HostObject::GetTrackIndex(t_size & playlistIndex, t_size & itemIndex) no
 /// </summary>
 STDMETHODIMP HostObject::GetArtwork(BSTR type, BSTR * image)
 {
-    *image = nullptr;
+    *image = ::SysAllocString(L""); // Return an empty string by default and in case of an error.
 
     if (type == nullptr)
         return E_INVALIDARG;
@@ -500,7 +499,7 @@ STDMETHODIMP HostObject::GetArtwork(BSTR type, BSTR * image)
         AlbumArtId = album_art_ids::artist;
     }
     else
-        return E_INVALIDARG;
+        return S_OK;
 
     album_art_data::ptr aad;
 
@@ -509,46 +508,51 @@ STDMETHODIMP HostObject::GetArtwork(BSTR type, BSTR * image)
         metadb_handle_ptr Handle;
 
         if (!_PlaybackControl->get_now_playing(Handle))
-            return E_FAIL;
+            return S_OK;
 
         metadb_handle_list Handles;
 
         Handles.add_item(Handle);
 
-        pfc::list_t<GUID> GUIDs;
+        pfc::list_t<GUID> AlbumArtIds;
 
-        GUIDs.add_item(album_art_ids::cover_front);
+        AlbumArtIds.add_item(AlbumArtId);
 
         static_api_ptr_t<album_art_manager_v3> Manager;
+
         abort_callback_dummy AbortCallback;
 
-        album_art_extractor_instance_v2::ptr Extractor = Manager->open_v3(Handles, GUIDs, nullptr, AbortCallback);
+        album_art_extractor_instance_v2::ptr Extractor = Manager->open_v3(Handles, AlbumArtIds, nullptr, AbortCallback);
 
-        Extractor->query(AlbumArtId, aad, AbortCallback);
+        if (!Extractor->query(AlbumArtId, aad, AbortCallback))
+            return S_OK;
     }
     catch (...)
     {
-        return E_FAIL;
+        return S_OK;
     }
 
     if (!aad.is_valid())
-        return E_FAIL;
+        return S_OK;
 
     const WCHAR * MIMEType = nullptr;
 
     const BYTE * p = (const BYTE *) aad->data();
 
-    if (p[0] == 0x89 && p[1] == 0x50 && p[2] == 0x4E && p[3] == 0x47)
-        MIMEType = L"image/png";
-    else
-    if (p[0] == 0xFF && p[1] == 0xD8)
+    if ((aad->size() > 2) && p[0] == 0xFF && p[1] == 0xD8)
         MIMEType = L"image/jpeg";
     else
-    if (p[0] == 0x47 && p[1] == 0x49 && p[2] == 0x46)
+    if ((aad->size() > 15) && (p[0] == 'R' && p[1] == 'I' && p[2] == 'F' && p[3] == 'F') && (::memcmp(p + 8, "WEBPVP8", 7) == 0))
+        MIMEType = L"image/webp";
+    else
+    if ((aad->size() > 4) && p[0] == 0x89 && p[1] == 0x50 && p[2] == 0x4E && p[3] == 0x47)
+        MIMEType = L"image/png";
+    else
+    if ((aad->size() > 3) && p[0] == 0x47 && p[1] == 0x49 && p[2] == 0x46)
         MIMEType = L"image/gif";
 
     if (MIMEType == nullptr)
-        return E_FAIL;
+        return S_OK;
 
     // Convert the image data to base64.
     const DWORD Flags = CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF;
@@ -556,21 +560,28 @@ STDMETHODIMP HostObject::GetArtwork(BSTR type, BSTR * image)
     DWORD Size = 0;
 
     if (!::CryptBinaryToStringW(p, (DWORD) aad->size(), Flags, nullptr, &Size))
-        return E_FAIL;
+        return S_OK;
 
     Size += 16 + (DWORD) ::wcslen(MIMEType);
 
     WCHAR * Base64 = new WCHAR[Size];
 
+    if (Base64 == nullptr)
+        return S_OK;
+
     ::swprintf_s(Base64, Size, L"data:%s;base64,", MIMEType);
 
     // Create the result.
     if (::CryptBinaryToStringW(p, (DWORD) aad->size(), Flags, Base64 + ::wcslen(Base64), &Size))
+    {
+        ::SysFreeString(*image); // Free the empty string.
+
         *image = ::SysAllocString(Base64);
+    }
 
     delete[] Base64;
 
-    return (*image != nullptr) ? S_OK : E_FAIL;
+    return S_OK;
 }
 
 #pragma region IDispatch

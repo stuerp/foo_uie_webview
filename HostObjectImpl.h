@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.h (2024.07.07) P. Stuer **/
+/** $VER: HostObjectImpl.h (2024.07.10) P. Stuer **/
 
 #pragma once
 
@@ -21,6 +21,7 @@
 #include "HostObject_h.h"
 
 #include <SDK/playback_control.h>
+#include <SDK/album_art.h>
 
 class HostObject : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, IHostObject, IDispatch>
 {
@@ -104,4 +105,37 @@ private:
     RunCallbackAsync _RunCallbackAsync;
 
     service_ptr_t<playback_control> _PlaybackControl;
+
+    /// <summary>
+    /// Represents an Album Art Manager configuration to allow overriding the default configuration in this component (see album_art_manager_v3::open_v3)
+    /// </summary>
+    class album_art_manager_config_t : public album_art_manager_config
+    {
+    public:
+        album_art_manager_config_t() { };
+
+        album_art_manager_config_t(const album_art_manager_config_t &) = delete;
+        album_art_manager_config_t(const album_art_manager_config_t &&) = delete;
+        album_art_manager_config_t & operator=(const album_art_manager_config_t &) = delete;
+        album_art_manager_config_t & operator=(album_art_manager_config_t &&) = delete;
+
+        virtual ~album_art_manager_config_t() { };
+
+        virtual bool get_external_pattern(pfc::string_base & out, const GUID & albumArtType) override
+        {
+            return false;
+        }
+
+        virtual bool use_embedded_pictures() override
+        {
+            return true;
+        }
+
+        virtual bool use_fallbacks() override
+        {
+            return true;
+        }
+    };
+
+    service_ptr_t<album_art_manager_config_t> _AlbumArtManagerConfig = new service_impl_t<album_art_manager_config_t>;
 };

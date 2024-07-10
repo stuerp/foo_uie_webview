@@ -95,11 +95,14 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.1.6.1, 2024-07-09
+v0.1.6.2, 2024-07-10
 
 * New:
   * Methods
-    * GetArtwork(): Gets the embedded artwork (front / back / disc / icon / artist) from the current playing item (alpha1). 
+    * GetArtwork(): Gets the embedded artwork (front / back / disc / icon / artist) from the current playing item (alpha1).
+      * Fixed support for other artwork type (alpha2, regression).
+      * Added support for WebP images (alpha2).
+      * Always returns an empty data URI in case of an error or if the specified artwork type is not availabe.
 
 v0.1.6.0, 2024-07-09
 
