@@ -9,17 +9,17 @@
 #define NUM_FILE_MAJOR          0
 #define NUM_FILE_MINOR          1
 #define NUM_FILE_PATCH          6
-#define NUM_FILE_PRERELEASE     2
+#define NUM_FILE_PRERELEASE     3
 
 #define NUM_PRODUCT_MAJOR       0
 #define NUM_PRODUCT_MINOR       1
 #define NUM_PRODUCT_PATCH       6
-#define NUM_PRODUCT_PRERELEASE  2
+#define NUM_PRODUCT_PRERELEASE  3
 
 /** Component specific **/
 
 #define STR_COMPONENT_NAME          "WebView"
-#define STR_COMPONENT_VERSION       TOSTRING(NUM_FILE_MAJOR) "." TOSTRING(NUM_FILE_MINOR) "." TOSTRING(NUM_FILE_PATCH) "." TOSTRING(NUM_FILE_PRERELEASE) "-alpha2"
+#define STR_COMPONENT_VERSION       TOSTRING(NUM_FILE_MAJOR) "." TOSTRING(NUM_FILE_MINOR) "." TOSTRING(NUM_FILE_PATCH) "." TOSTRING(NUM_FILE_PRERELEASE) "-alpha3"
 #define STR_COMPONENT_BASENAME      "foo_uie_webview"
 #define STR_COMPONENT_FILENAME      STR_COMPONENT_BASENAME ".dll"
 #define STR_COMPONENT_COMPANY_NAME  ""
@@ -54,7 +54,9 @@
 
 /** Messages **/
 
-#define UM_TEMPLATE_CHANGED     WM_USER + 1
+#define UM_TEMPLATE_CHANGED     WM_USER + 100
+#define UM_WEB_VIEW_READY       WM_USER + 101
+#define UM_ASYNC                WM_USER + 102
 
 /** Configuration **/
 
@@ -76,5 +78,8 @@
 #define IDC_WINDOW_OFFSET                   1032
 
 #define IDC_CLEAR_BROWSING_DATA             1040
+#define IDC_IN_PRIVATE_MODE                 1042
+
+#define IDC_WARNING                         9999
 
 #define IDR_CONTEXT_MENU_ICON               2000

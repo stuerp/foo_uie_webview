@@ -1,5 +1,5 @@
 ﻿
-/** $VER: Resources.rc (2024.07.09) P. Stuer **/
+/** $VER: Resources.rc (2024.07.10) P. Stuer **/
 
 #include "Resources.h"
 
@@ -71,6 +71,9 @@ font 8, "Segoe UI", 400, 0, 1
     ltext       "",                                 IDC_WINDOW_OFFSET,                  X_D25, Y_D25 + 2, W_D25, H_D25
 
     control     "Clear browsing data on startup",   IDC_CLEAR_BROWSING_DATA, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, X_D26, Y_D26, W_D26, H_D26
+    control     "In Private mode",                  IDC_IN_PRIVATE_MODE,     "Button", BS_AUTOCHECKBOX | WS_TABSTOP, X_D27, Y_D27, W_D27, H_D27
+
+    ltext       "Please restart foobar2000 to activate changed settings", IDC_WARNING,  X_D99, Y_D99, W_D99, H_D99, NOT WS_VISIBLE
 }
 
 IDR_CONTEXT_MENU_ICON rcdata "Main.ico"

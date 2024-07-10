@@ -1,5 +1,5 @@
 ﻿
-/** $VER: Configuration.h (2024.07.09) P. Stuer **/
+/** $VER: Configuration.h (2024.07.10) P. Stuer **/
 
 #pragma once
 
@@ -59,7 +59,8 @@ public:
 
     std::wstring _ProfileName;
     ClearOnStartup _ClearOnStartup;
+    bool _InPrivateMode;
 
 private:
-    const int32_t _CurrentVersion = 5;
+    const int32_t _CurrentVersion = 6;
 };

@@ -1,5 +1,5 @@
 
-/** $VER: WebView.cpp (2024.07.08) P. Stuer - Creates the WebView. **/
+/** $VER: WebView.cpp (2024.07.10) P. Stuer - Creates the WebView. **/
 
 #include "pch.h"
 
@@ -121,7 +121,7 @@ HRESULT UIElement::CreateWebView()
                     return hr;
                 }
 
-                // Enable In Private mode.
+                if (_Configuration._InPrivateMode)
                 {
                     hr = ControllerOptions->put_IsInPrivateModeEnabled(TRUE);
 
