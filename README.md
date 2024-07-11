@@ -97,6 +97,7 @@ To create the component first build the x86 configuration and next the x64 confi
 
 v0.1.6.3, 2024-07-xx
 
+* New: In Private mode can be enabled in the Preferences dialog (alpha3).
 * New:
   * Methods
     * GetArtwork(): Gets the embedded artwork (front / back / disc / icon / artist) from the current playing item (alpha1).
@@ -104,6 +105,7 @@ v0.1.6.3, 2024-07-xx
       * Added support for WebP images (alpha2).
       * Always returns an empty data URI in case of an error or if the specified artwork type is not availabe (alpha2).
       * The album art search patterns are used first. If no matching file can be found, the embedded artwork gets queried (alpha3).
+* Changed: Updated the WebView2 SDK to the latest version (alpha3).
 
 v0.1.6.0, 2024-07-09
 

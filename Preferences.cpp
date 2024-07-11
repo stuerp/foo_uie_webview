@@ -1,5 +1,5 @@
 
-/** $VER: Preferences.cpp (2024.07.10) P. Stuer **/
+/** $VER: Preferences.cpp (2024.07.11) P. Stuer **/
 
 #include "pch.h"
 
@@ -30,7 +30,11 @@ public:
         _CurrentElement = _UIElementTracker.GetCurrentElement();
 
         if (_CurrentElement != nullptr)
+        {
             _Configuration = _CurrentElement->GetConfiguration();
+
+            _ActiveConfiguration = _Configuration;
+        }
     }
 
     virtual ~Preferences()
@@ -130,6 +134,8 @@ public:
     BEGIN_MSG_MAP_EX(Preferences)
         MSG_WM_INITDIALOG(OnInitDialog)
 
+        MSG_WM_CTLCOLORSTATIC(OnCtlColorStatic)
+
         COMMAND_HANDLER_EX(IDC_NAME, EN_CHANGE, OnEditChange)
         COMMAND_HANDLER_EX(IDC_USER_DATA_FOLDER_PATH, EN_CHANGE, OnEditChange)
         COMMAND_HANDLER_EX(IDC_FILE_PATH, EN_CHANGE, OnEditChange)
@@ -198,6 +204,20 @@ private:
     void OnSelectionChanged(UINT, int, CWindow) noexcept
     {
         OnChanged();
+    }
+
+    /// <summary>
+    /// Handles a WM_CTLCOLORSTATIC message.
+    /// </summary>
+    HBRUSH OnCtlColorStatic(CDCHandle dc, CStatic label)
+    {
+        if (label.GetDlgCtrlID() != IDC_WARNING)
+            return NULL;
+
+        ::SetTextColor(dc, ::GetSysColor(COLOR_INFOTEXT));
+        ::SetBkColor(dc, ::GetSysColor(COLOR_INFOBK));
+
+        return ::GetSysColorBrush(COLOR_INFOBK);
     }
 
     /// <summary>
@@ -312,6 +332,8 @@ private:
     /// </summary>
     bool HasChanged() noexcept
     {
+        GetDlgItem(IDC_WARNING).ShowWindow((_ActiveConfiguration._InPrivateMode != (SendDlgItemMessageW(IDC_IN_PRIVATE_MODE, BM_GETCHECK) == BST_CHECKED)) ? SW_SHOW : SW_HIDE);
+
         wchar_t Text[MAX_PATH];
 
         GetDlgItemTextW(IDC_NAME, Text, _countof(Text));
@@ -348,13 +370,7 @@ private:
             return true;
 
         if (SendDlgItemMessageW(IDC_IN_PRIVATE_MODE, BM_GETCHECK) != (_Configuration._InPrivateMode ? BST_CHECKED : BST_UNCHECKED))
-        {
-            GetDlgItem(IDC_WARNING).ShowWindow(SW_SHOW);
-
             return true;
-        }
-        else
-            GetDlgItem(IDC_WARNING).ShowWindow(SW_HIDE);
 
         return false;
     }
@@ -365,7 +381,7 @@ private:
     fb2k::CDarkModeHooks _DarkModeHooks;
 
     UIElement * _CurrentElement;
-    configuration_t _Configuration;
+    configuration_t _Configuration, _ActiveConfiguration;
 };
 
 #pragma region PreferencesPage

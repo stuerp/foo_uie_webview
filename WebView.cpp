@@ -1,5 +1,5 @@
 
-/** $VER: WebView.cpp (2024.07.10) P. Stuer - Creates the WebView. **/
+/** $VER: WebView.cpp (2024.07.11) P. Stuer - Creates the WebView. **/
 
 #include "pch.h"
 
@@ -391,53 +391,60 @@ HRESULT UIElement::CreateWebView()
 /// </summary>
 void UIElement::DeleteWebView() noexcept
 {
-    if (_WebView)
+    try
     {
-        wil::com_ptr<ICoreWebView2_11> WebView11 = _WebView.try_query<ICoreWebView2_11>();
-
-        if (WebView11 != nullptr)
-            WebView11->remove_ContextMenuRequested(_ContextMenuRequestedToken);
-
-        _WebView->remove_NavigationCompleted(_NavigationCompletedToken);
-
-        _WebView->RemoveHostObjectFromScript(TEXT(STR_COMPONENT_BASENAME));
-
-        _WebView->remove_NavigationStarting(_NavigationStartingToken);
-
-        _WebView = nullptr;
-    }
-
-    _Controller = nullptr;
-
-    if (_Environment != nullptr)
-    {
-        wil::com_ptr<ICoreWebView2Environment5> Environment5;
-
-        HRESULT hr = _Environment->QueryInterface(IID_PPV_ARGS(&Environment5));
-
-        if (SUCCEEDED(hr))
+        if (_WebView)
         {
-            // Adds an event handler that gets called after all browser processes have terminated, after all resources have been released (including the user data folder).
-            hr = Environment5->add_BrowserProcessExited(Microsoft::WRL::Callback<ICoreWebView2BrowserProcessExitedEventHandler>
-            (
-                [this, Environment5](ICoreWebView2Environment * environment, ICoreWebView2BrowserProcessExitedEventArgs * eventArgs) -> HRESULT
-                {
-                    HRESULT hr = Environment5->remove_BrowserProcessExited(_BrowserProcessExitedToken);
+            wil::com_ptr<ICoreWebView2_11> WebView11 = _WebView.try_query<ICoreWebView2_11>();
 
-                    if (!SUCCEEDED(hr))
-                        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to remove BrowserProcessExited event handler").c_str());
+            if (WebView11 != nullptr)
+                WebView11->remove_ContextMenuRequested(_ContextMenuRequestedToken);
 
-                    console::print(STR_COMPONENT_BASENAME " has terminated all browser processes.");
+            _WebView->remove_NavigationCompleted(_NavigationCompletedToken);
 
-                    return S_OK;
-                }
-            ).Get(), &_BrowserProcessExitedToken);
+            _WebView->RemoveHostObjectFromScript(TEXT(STR_COMPONENT_BASENAME));
 
-            if (!SUCCEEDED(hr))
-                console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to add BrowserProcessExited event handler").c_str());
+            _WebView->remove_NavigationStarting(_NavigationStartingToken);
+
+            _WebView = nullptr;
         }
 
-        _Environment = nullptr;
+        _Controller = nullptr;
+
+        if (_Environment != nullptr)
+        {
+            wil::com_ptr<ICoreWebView2Environment5> Environment5;
+
+            HRESULT hr = _Environment->QueryInterface(IID_PPV_ARGS(&Environment5));
+
+            if (SUCCEEDED(hr))
+            {
+                // Adds an event handler that gets called after all browser processes have terminated, after all resources have been released (including the user data folder).
+                hr = Environment5->add_BrowserProcessExited(Microsoft::WRL::Callback<ICoreWebView2BrowserProcessExitedEventHandler>
+                (
+                    [this, Environment5](ICoreWebView2Environment * environment, ICoreWebView2BrowserProcessExitedEventArgs * eventArgs) -> HRESULT
+                    {
+                        HRESULT hr = Environment5->remove_BrowserProcessExited(_BrowserProcessExitedToken);
+
+                        if (!SUCCEEDED(hr))
+                            console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to remove BrowserProcessExited event handler").c_str());
+
+                        console::print(STR_COMPONENT_BASENAME " has terminated all browser processes.");
+
+                        return S_OK;
+                    }
+                ).Get(), &_BrowserProcessExitedToken);
+
+                if (!SUCCEEDED(hr))
+                    console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to add BrowserProcessExited event handler").c_str());
+            }
+
+            _Environment = nullptr;
+        }
+    }
+    catch (const std::exception & e)
+    {
+        console::print(STR_COMPONENT_BASENAME " caught an exception during WebView2 deletion: ", e.what());
     }
 }
 
@@ -725,25 +732,25 @@ std::string GetWebViewErrorMessage(COREWEBVIEW2_WEB_ERROR_STATUS status, const s
 {
     const char * Messages[] =
     {
-        /* Unknown */                                   "An unknown error occurred.",
-        /* CertificateCommonNameIsIncorrect */          "The SSL certificate common name does not match the web address.",
-        /* CertificateExpired */                        "The SSL certificate has expired."
-        /* ClientCertificateContainsErrors */           "The SSL client certificate contains errors.",
-        /* CertificateRevoked */                        "The SSL certificate has been revoked.",
-        /* CertificateIsInvalid */                      "The SSL certificate is not valid.",
-        /* ServerUnreachable */                         "The host is unreachable.",
-        /* Timeout */                                   "The connection has timed out.",
-        /* ErrorHttpInvalidServerResponse */            "The server returned an invalid or unrecognized response.",
-        /* ConnectionAborted */                         "The connection was stopped.",
-        /* ConnectionReset */                           "The connection was reset.",
-        /* Disconnected */                              "The Internet connection has been lost.",
-        /* CannotConnect */                             "A connection to the destination was not established.",
-        /* HostNameNotResolved */                       "The provided host name was not able to be resolved.",
-        /* OperationCanceled */                         "The operation was canceled.",
-        /* RedirectFailed */                            "The request redirect failed.",
-        /* UnexpectedError */                           "An unexpected error occurred.",
-        /* ValidAuthenticationCredentialsRequired */    "The user is prompted with a login, waiting on user action.",
-        /* ValidProxyAuthenticationRequired */          "The user lacks proper authentication credentials for a proxy server.",
+        /* Unknown */                                   "An unknown error occurred",
+        /* CertificateCommonNameIsIncorrect */          "The SSL certificate common name does not match the web address",
+        /* CertificateExpired */                        "The SSL certificate has expired"
+        /* ClientCertificateContainsErrors */           "The SSL client certificate contains errors",
+        /* CertificateRevoked */                        "The SSL certificate has been revoked",
+        /* CertificateIsInvalid */                      "The SSL certificate is not valid",
+        /* ServerUnreachable */                         "The host is unreachable",
+        /* Timeout */                                   "The connection has timed out",
+        /* ErrorHttpInvalidServerResponse */            "The server returned an invalid or unrecognized response",
+        /* ConnectionAborted */                         "The connection was stopped",
+        /* ConnectionReset */                           "The connection was reset",
+        /* Disconnected */                              "The Internet connection has been lost",
+        /* CannotConnect */                             "A connection to the destination was not established",
+        /* HostNameNotResolved */                       "The provided host name was not able to be resolved",
+        /* OperationCanceled */                         "The operation was canceled",
+        /* RedirectFailed */                            "The request redirect failed",
+        /* UnexpectedError */                           "An unexpected error occurred",
+        /* ValidAuthenticationCredentialsRequired */    "The user is prompted with a login, waiting on user action",
+        /* ValidProxyAuthenticationRequired */          "The user lacks proper authentication credentials for a proxy server",
     };
 
     return ::FormatText("%s: %s (%d)", errorMessage.c_str(), (((size_t) status  < _countof(Messages)) ? Messages[(size_t) status] : "Invalid web error status"), (int) status);
