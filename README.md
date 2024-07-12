@@ -95,9 +95,9 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.1.6.3, 2024-07-xx
+v0.1.6.3, 2024-07-12
 
-* New: In Private mode can be enabled in the Preferences dialog (alpha3).
+* New: In Private mode can be enabled in the Preferences dialog and is no longer enabled by default (alpha3).
 * New:
   * Methods
     * GetArtwork(): Gets the embedded artwork (front / back / disc / icon / artist) from the current playing item (alpha1).
