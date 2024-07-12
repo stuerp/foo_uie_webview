@@ -391,9 +391,9 @@ HRESULT UIElement::CreateWebView()
 /// </summary>
 void UIElement::DeleteWebView() noexcept
 {
-    try
+    if (_WebView)
     {
-        if (_WebView)
+        try
         {
             wil::com_ptr<ICoreWebView2_11> WebView11 = _WebView.try_query<ICoreWebView2_11>();
 
@@ -408,10 +408,17 @@ void UIElement::DeleteWebView() noexcept
 
             _WebView = nullptr;
         }
+        catch (const std::exception & e)
+        {
+            console::print(STR_COMPONENT_BASENAME " caught an exception while deleting WebView2: ", e.what());
+        }
+    }
 
-        _Controller = nullptr;
+    _Controller = nullptr;
 
-        if (_Environment != nullptr)
+    if (_Environment != nullptr)
+    {
+        try
         {
             wil::com_ptr<ICoreWebView2Environment5> Environment5;
 
@@ -441,10 +448,10 @@ void UIElement::DeleteWebView() noexcept
 
             _Environment = nullptr;
         }
-    }
-    catch (const std::exception & e)
-    {
-        console::print(STR_COMPONENT_BASENAME " caught an exception during WebView2 deletion: ", e.what());
+        catch (const std::exception & e)
+        {
+            console::print(STR_COMPONENT_BASENAME " caught an exception while deleting the WebView2 environment: ", e.what());
+        }
     }
 }
 
