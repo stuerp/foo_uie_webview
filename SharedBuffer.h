@@ -11,7 +11,7 @@
 #include <WebView2.h>
 
 /// <summary>
-/// Implements a shared buffer.
+/// Implements a buffer shared between the component and the WebView2 control.
 /// </summary>
 class SharedBuffer
 {

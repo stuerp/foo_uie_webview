@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.h (2024.07.08) P. Stuer **/
+/** $VER: UIElement.h (2024.07.10) P. Stuer **/
 
 #pragma once
 
@@ -50,9 +50,6 @@ public:
     static CWndClassInfo & GetWndClassInfo();
 
     void OnColorsChanged();
-
-    static const UINT UM_WEB_VIEW_READY = WM_USER + 100;
-    static const UINT UM_ASYNC          = WM_USER + 101;
 
     #pragma endregion
 

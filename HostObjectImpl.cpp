@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.cpp (2024.07.07) P. Stuer **/
+/** $VER: HostObjectImpl.cpp (2024.07.10) P. Stuer **/
 
 #include "pch.h"
 
@@ -8,8 +8,11 @@
 #include <pathcch.h>
 #pragma comment(lib, "pathcch")
 
+#pragma comment(lib, "crypt32")
+
 #include "Support.h"
 #include "Resources.h"
+#include "Encoding.h"
 
 #include <SDK/titleformat.h>
 #include <SDK/playlist.h>
@@ -455,6 +458,175 @@ HRESULT HostObject::GetTrackIndex(t_size & playlistIndex, t_size & itemIndex) no
         if (itemIndex == ~0u)
             return E_FAIL;
     }
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the specified artwork of the currently selected item in the current playlist.
+/// </summary>
+STDMETHODIMP HostObject::GetArtwork(BSTR type, BSTR * image)
+{
+    *image = ::SysAllocString(L""); // Return an empty string by default and in case of an error.
+
+    if (type == nullptr)
+        return E_INVALIDARG;
+
+    // Verify the requested artwork type.
+    GUID AlbumArtId;
+
+    if (::_wcsicmp(type, L"front") == 0)
+    {
+        AlbumArtId = album_art_ids::cover_front;
+    }
+    else
+    if (::_wcsicmp(type, L"back") == 0)
+    {
+        AlbumArtId = album_art_ids::cover_back;
+    }
+    else
+    if (::_wcsicmp(type, L"disc") == 0)
+    {
+        AlbumArtId = album_art_ids::disc;
+    }
+    else
+    if (::_wcsicmp(type, L"icon") == 0)
+    {
+        AlbumArtId = album_art_ids::icon;
+    }
+    else
+    if (::_wcsicmp(type, L"artist") == 0)
+    {
+        AlbumArtId = album_art_ids::artist;
+    }
+    else
+        return S_OK;
+
+    metadb_handle_ptr Handle;
+
+    if (!_PlaybackControl->get_now_playing(Handle))
+        return S_OK;
+
+    static_api_ptr_t<album_art_manager_v3> Manager;
+
+    album_art_data::ptr aad;
+
+    try
+    {
+        album_art_extractor_instance_v2::ptr Extractor = Manager->open_v3(pfc::list_single_ref_t<metadb_handle_ptr>(Handle), pfc::list_single_ref_t<GUID>(AlbumArtId), nullptr, fb2k::noAbort);
+
+        if (Extractor.is_empty())
+            return S_OK;
+
+        // Query the external search patterns first.
+        try
+        {
+            album_art_path_list::ptr Paths = Extractor->query_paths(AlbumArtId, fb2k::noAbort);
+
+            if (Paths.is_valid())
+            {
+                for (size_t i = 0; i < Paths->get_count(); ++i)
+                {
+                    pfc::string Extension = pfc::io::path::getFileExtension(Paths->get_path(i));
+
+                    if (!Extension.isEmpty() && ((::_stricmp(Extension.c_str(), ".jpg") == 0) || (::_stricmp(Extension.c_str(), ".png") == 0) || (::_stricmp(Extension.c_str(), ".webp") == 0) || (::_stricmp(Extension.c_str(), ".gif") == 0)))
+                    {
+                        ::SysFreeString(*image); // Free the empty string.
+
+                        *image = ::SysAllocString(::UTF8ToWide(Paths->get_path(i)).c_str());
+                
+                        return S_OK;
+                    }
+                }
+            }
+        }
+        catch (...)
+        {
+        }
+
+        // Query the embedded art.
+        if (!Extractor->query(AlbumArtId, aad, fb2k::noAbort))
+        {
+            // Query the stub the stub path.
+            try
+            {
+                Extractor = Manager->open_stub(fb2k::noAbort);
+
+                if (!Extractor->query(AlbumArtId, aad, fb2k::noAbort))
+                    return S_OK;
+            }
+            catch (std::exception & e)
+            {
+                console::print(STR_COMPONENT_BASENAME " failed to query album art stub: ", e.what());
+            }
+        }
+    }
+    catch (...)
+    {
+        // Query the stub the stub path.
+        try
+        {
+            album_art_extractor_instance_v2::ptr Extractor = Manager->open_stub(fb2k::noAbort);
+
+            if (!Extractor->query(AlbumArtId, aad, fb2k::noAbort))
+                return S_OK;
+        }
+        catch (std::exception & e)
+        {
+            console::print(STR_COMPONENT_BASENAME " failed to query album art stub: ", e.what());
+        }
+    }
+
+    if (aad.is_empty())
+        return S_OK;
+
+    // Convert the binary image data into a JavaScript data URI.
+    const WCHAR * MIMEType = nullptr;
+
+    const BYTE * p = (const BYTE *) aad->data();
+
+    // Determine the MIME type of the image data.
+    if ((aad->size() > 2) && p[0] == 0xFF && p[1] == 0xD8)
+        MIMEType = L"image/jpeg";
+    else
+    if ((aad->size() > 15) && (p[0] == 'R' && p[1] == 'I' && p[2] == 'F' && p[3] == 'F') && (::memcmp(p + 8, "WEBPVP8", 7) == 0))
+        MIMEType = L"image/webp";
+    else
+    if ((aad->size() > 4) && p[0] == 0x89 && p[1] == 0x50 && p[2] == 0x4E && p[3] == 0x47)
+        MIMEType = L"image/png";
+    else
+    if ((aad->size() > 3) && p[0] == 0x47 && p[1] == 0x49 && p[2] == 0x46)
+        MIMEType = L"image/gif";
+
+    if (MIMEType == nullptr)
+        return S_OK;
+
+    // Convert the image data to base64.
+    const DWORD Flags = CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF;
+
+    DWORD Size = 0;
+
+    if (!::CryptBinaryToStringW(p, (DWORD) aad->size(), Flags, nullptr, &Size))
+        return S_OK;
+
+    Size += 16 + (DWORD) ::wcslen(MIMEType);
+
+    WCHAR * Base64 = new WCHAR[Size];
+
+    if (Base64 == nullptr)
+        return S_OK;
+
+    ::swprintf_s(Base64, Size, L"data:%s;base64,", MIMEType);
+
+    // Create the result.
+    if (::CryptBinaryToStringW(p, (DWORD) aad->size(), Flags, Base64 + ::wcslen(Base64), &Size))
+    {
+        ::SysFreeString(*image); // Free the empty string.
+
+        *image = ::SysAllocString(Base64);
+    }
+
+    delete[] Base64;
 
     return S_OK;
 }

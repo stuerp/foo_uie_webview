@@ -1,5 +1,5 @@
 
-/** $VER: Preferences.cpp (2024.07.09) P. Stuer **/
+/** $VER: Preferences.cpp (2024.07.11) P. Stuer **/
 
 #include "pch.h"
 
@@ -30,7 +30,11 @@ public:
         _CurrentElement = _UIElementTracker.GetCurrentElement();
 
         if (_CurrentElement != nullptr)
+        {
             _Configuration = _CurrentElement->GetConfiguration();
+
+            _ActiveConfiguration = _Configuration;
+        }
     }
 
     virtual ~Preferences()
@@ -102,6 +106,8 @@ public:
 
         _Configuration._ClearOnStartup = (SendDlgItemMessageW(IDC_CLEAR_BROWSING_DATA, BM_GETCHECK) == BST_CHECKED) ? ClearOnStartup::All : ClearOnStartup::None;
 
+        _Configuration._InPrivateMode = (SendDlgItemMessageW(IDC_IN_PRIVATE_MODE, BM_GETCHECK) == BST_CHECKED);
+
         UIElement * CurrentElement = _UIElementTracker.GetCurrentElement();
 
         if (CurrentElement != nullptr)
@@ -128,6 +134,8 @@ public:
     BEGIN_MSG_MAP_EX(Preferences)
         MSG_WM_INITDIALOG(OnInitDialog)
 
+        MSG_WM_CTLCOLORSTATIC(OnCtlColorStatic)
+
         COMMAND_HANDLER_EX(IDC_NAME, EN_CHANGE, OnEditChange)
         COMMAND_HANDLER_EX(IDC_USER_DATA_FOLDER_PATH, EN_CHANGE, OnEditChange)
         COMMAND_HANDLER_EX(IDC_FILE_PATH, EN_CHANGE, OnEditChange)
@@ -136,6 +144,7 @@ public:
 
         COMMAND_HANDLER_EX(IDC_USER_DATA_FOLDER_PATH_SELECT, BN_CLICKED, OnButtonClicked)
         COMMAND_HANDLER_EX(IDC_CLEAR_BROWSING_DATA, BN_CLICKED, OnButtonClicked)
+        COMMAND_HANDLER_EX(IDC_IN_PRIVATE_MODE, BN_CLICKED, OnButtonClicked)
 
         COMMAND_HANDLER_EX(IDC_FILE_PATH_SELECT, BN_CLICKED, OnButtonClicked)
         COMMAND_HANDLER_EX(IDC_FILE_PATH_EDIT, BN_CLICKED, OnButtonClicked)
@@ -186,6 +195,7 @@ private:
         SetDlgItemTextW(IDC_REACTION_ALIGNMENT, pfc::wideFromUTF8(pfc::format_float(_Configuration._ReactionAlignment, 0, 2)));
 
         SendDlgItemMessageW(IDC_CLEAR_BROWSING_DATA, BM_SETCHECK, (WPARAM) (_Configuration._ClearOnStartup == ClearOnStartup::All ? BST_CHECKED : BST_UNCHECKED));
+        SendDlgItemMessageW(IDC_IN_PRIVATE_MODE, BM_SETCHECK, (WPARAM) (_Configuration._InPrivateMode ? BST_CHECKED : BST_UNCHECKED));
     }
 
     /// <summary>
@@ -194,6 +204,20 @@ private:
     void OnSelectionChanged(UINT, int, CWindow) noexcept
     {
         OnChanged();
+    }
+
+    /// <summary>
+    /// Handles a WM_CTLCOLORSTATIC message.
+    /// </summary>
+    HBRUSH OnCtlColorStatic(CDCHandle dc, CStatic label)
+    {
+        if (label.GetDlgCtrlID() != IDC_WARNING)
+            return NULL;
+
+        ::SetTextColor(dc, ::GetSysColor(COLOR_INFOTEXT));
+        ::SetBkColor(dc, ::GetSysColor(COLOR_INFOBK));
+
+        return ::GetSysColorBrush(COLOR_INFOBK);
     }
 
     /// <summary>
@@ -308,6 +332,8 @@ private:
     /// </summary>
     bool HasChanged() noexcept
     {
+        GetDlgItem(IDC_WARNING).ShowWindow((_ActiveConfiguration._InPrivateMode != (SendDlgItemMessageW(IDC_IN_PRIVATE_MODE, BM_GETCHECK) == BST_CHECKED)) ? SW_SHOW : SW_HIDE);
+
         wchar_t Text[MAX_PATH];
 
         GetDlgItemTextW(IDC_NAME, Text, _countof(Text));
@@ -343,6 +369,9 @@ private:
         if (SendDlgItemMessageW(IDC_CLEAR_BROWSING_DATA, BM_GETCHECK) != (_Configuration._ClearOnStartup == ClearOnStartup::All ? BST_CHECKED : BST_UNCHECKED))
             return true;
 
+        if (SendDlgItemMessageW(IDC_IN_PRIVATE_MODE, BM_GETCHECK) != (_Configuration._InPrivateMode ? BST_CHECKED : BST_UNCHECKED))
+            return true;
+
         return false;
     }
 
@@ -352,7 +381,7 @@ private:
     fb2k::CDarkModeHooks _DarkModeHooks;
 
     UIElement * _CurrentElement;
-    configuration_t _Configuration;
+    configuration_t _Configuration, _ActiveConfiguration;
 };
 
 #pragma region PreferencesPage

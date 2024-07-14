@@ -1,5 +1,5 @@
 
-/** $VER: PreferencesLayout.h (2024.07.09) **/
+/** $VER: PreferencesLayout.h (2024.07.10) **/
 
 #pragma once
 
@@ -138,3 +138,15 @@
 #define Y_D26   Y_D24 + H_D24 + IY
 #define W_D26   160
 #define H_D26   H_LBL
+
+// Checkbox: In Private mode
+#define X_D27   0
+#define Y_D27   Y_D26 + H_D26 + IY
+#define W_D27   160
+#define H_D27   H_LBL
+
+// Warning
+#define X_D99   0
+#define Y_D99   H_A00 - H_LBL
+#define W_D99   W_A00
+#define H_D99   H_LBL

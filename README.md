@@ -17,6 +17,7 @@ It takes an HTML file that receives playback notifications from foobar2000. The 
 * [Microsoft Edge WebView2](https://learn.microsoft.com/en-us/deployoffice/webview2-install)
 * Tested on Microsoft Windows 10 and later.
 * Tested with [Columns UI](https://yuo.be/columns-ui) 2.1.0.
+* Tested with WebView2 126.0.2592.87.
 
 ## Getting started
 
@@ -94,6 +95,18 @@ Open `foo_uie_webview.sln` with Visual Studio and build the solution.
 To create the component first build the x86 configuration and next the x64 configuration.
 
 ## Change Log
+
+v0.1.7.0, 2024-07-14
+
+* New: In Private mode can be enabled in the Preferences dialog and is no longer enabled by default (alpha3).
+* New:
+  * Methods
+    * GetArtwork(): Gets the embedded artwork (front / back / disc / icon / artist) from the current playing item (alpha1).
+      * Fixed support for other artwork types (alpha2, regression).
+      * Added support for WebP images (alpha2).
+      * Always returns an empty data URI in case of an error or if the specified artwork type is not availabe (alpha2).
+      * The album art search patterns are used first. If no matching file can be found, the embedded artwork gets queried (alpha3).
+* Changed: Updated the WebView2 SDK to the latest version (alpha3).
 
 v0.1.6.0, 2024-07-09
 

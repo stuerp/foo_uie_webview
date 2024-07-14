@@ -74,7 +74,8 @@ void configuration_t::Reset() noexcept
     _WindowSizeUnit = WindowSizeUnit::Milliseconds;
     _ReactionAlignment = 0.25;
 
-    _ClearOnStartup = ClearOnStartup::All;
+    _ClearOnStartup = ClearOnStartup::None;
+    _InPrivateMode = false;
 }
 
 /// <summary>
@@ -93,6 +94,7 @@ configuration_t & configuration_t::operator=(const configuration_t & other)
     _ProfileName = other._ProfileName;
 
     _ClearOnStartup = other._ClearOnStartup;
+    _InPrivateMode = other._InPrivateMode;
  
     return *this;
 }
@@ -141,6 +143,12 @@ void configuration_t::Read(stream_reader * reader, size_t size, abort_callback &
         {
             uint32_t Value; reader->read_object_t(Value, abortHandler); _ClearOnStartup = (ClearOnStartup) Value;
         }
+
+        // Version 6, v0.1.6.3-alpha3
+        if (Version >= 6)
+        {
+            reader->read_object_t(_InPrivateMode, abortHandler);
+        }
     }
     catch (exception & ex)
     {
@@ -176,6 +184,9 @@ void configuration_t::Write(stream_writer * writer, abort_callback & abortHandle
 
         // Version 5, v0.1.6.0
         Value = (uint32_t) _ClearOnStartup; writer->write_object_t(Value, abortHandler);
+
+        // Version 6, v0.1.6.3-alpha3
+        writer->write_object_t(_InPrivateMode, abortHandler);
     }
     catch (exception & ex)
     {

@@ -81,6 +81,9 @@ div
     <span id="Medium"></span><br/>
     <span id="Comment"></span><br/>
     <span id="MIDI"></span><br/>
+    <div width="256px" height="256px" style="overflow: hidden;">
+        <img id="Artwork" style="max-width: 256px; height: auto; object-fit: cover;"/>
+    </div>
     <p style="display: flow">
         <strong>Events</strong><br/>
         OnStarting: <span id="Starting">?</span><br/>
@@ -118,7 +121,7 @@ div
     </div>
     </p>
     <div>Timestamp: <span id="Timestamp"></span>, <span id="SampleCount"></span> samples, <span id="SampleRate"></span>Hz, <span id="ChannelCount"></span> channels (<span id="ChannelConfig"></span>)<br/>
-    <span id="Timer"></span><br/>
+        <span id="Timer"></span><br/>
     </div>
 </div>
 <script type="text/javascript">
@@ -176,6 +179,12 @@ function OnPlaybackNewTrack()
     document.getElementById("Info").style.display = 'inline';
 
     Refresh()
+
+    var TestDataURI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
+
+    var DataURI = chrome.webview.hostObjects.sync.foo_uie_webview.GetArtwork("front"); // "front", "back", "disc", "icon", "artist"
+
+    document.getElementById("Artwork").src = (DataURI.length != 0) ? DataURI : TestDataURI;
 }
 
 // Called when playback stops.
