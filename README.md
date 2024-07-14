@@ -17,6 +17,7 @@ It takes an HTML file that receives playback notifications from foobar2000. The 
 * [Microsoft Edge WebView2](https://learn.microsoft.com/en-us/deployoffice/webview2-install)
 * Tested on Microsoft Windows 10 and later.
 * Tested with [Columns UI](https://yuo.be/columns-ui) 2.1.0.
+* Tested with WebView2 126.0.2592.87.
 
 ## Getting started
 
@@ -95,7 +96,7 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.1.6.3, 2024-07-12
+v0.1.7.0, 2024-07-14
 
 * New: In Private mode can be enabled in the Preferences dialog and is no longer enabled by default (alpha3).
 * New:
