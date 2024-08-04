@@ -1,5 +1,5 @@
 
-/** $VER: WebView.cpp (2024.07.11) P. Stuer - Creates the WebView. **/
+/** $VER: WebView.cpp (2024.08.04) P. Stuer - Creates the WebView. **/
 
 #include "pch.h"
 
@@ -75,7 +75,7 @@ HRESULT UIElement::CreateWebView()
 
         if (SUCCEEDED(hr))
         {
-            const COREWEBVIEW2_SCROLLBAR_STYLE Style = COREWEBVIEW2_SCROLLBAR_STYLE_FLUENT_OVERLAY;
+            const COREWEBVIEW2_SCROLLBAR_STYLE Style = (_Configuration._ScrollbarStyle == 0) ? COREWEBVIEW2_SCROLLBAR_STYLE_DEFAULT : COREWEBVIEW2_SCROLLBAR_STYLE_FLUENT_OVERLAY;
 
             hr = EnvironmentOptions8->put_ScrollBarStyle(Style); // See https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2environmentoptions8?view=webview2-1.0.2592.51
 

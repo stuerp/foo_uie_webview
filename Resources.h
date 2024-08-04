@@ -1,5 +1,5 @@
 
-/** $VER: Resources.h (2024.07.14) P. Stuer **/
+/** $VER: Resources.h (2024.08.04) P. Stuer **/
 
 #pragma once
 
@@ -8,12 +8,12 @@
 
 #define NUM_FILE_MAJOR          0
 #define NUM_FILE_MINOR          1
-#define NUM_FILE_PATCH          7
+#define NUM_FILE_PATCH          8
 #define NUM_FILE_PRERELEASE     0
 
 #define NUM_PRODUCT_MAJOR       0
 #define NUM_PRODUCT_MINOR       1
-#define NUM_PRODUCT_PATCH       7
+#define NUM_PRODUCT_PATCH       8
 #define NUM_PRODUCT_PRERELEASE  0
 
 /** Component specific **/
@@ -79,6 +79,7 @@
 
 #define IDC_CLEAR_BROWSING_DATA             1040
 #define IDC_IN_PRIVATE_MODE                 1042
+#define IDC_SCROLLBAR_STYLE                 1044
 
 #define IDC_WARNING                         9999
 

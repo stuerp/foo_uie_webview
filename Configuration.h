@@ -1,5 +1,5 @@
 ﻿
-/** $VER: Configuration.h (2024.07.10) P. Stuer **/
+/** $VER: Configuration.h (2024.08.04) P. Stuer **/
 
 #pragma once
 
@@ -26,6 +26,12 @@ enum ClearOnStartup : uint32_t
     SitePermissions,
 
     All = (uint32_t) ~0,
+};
+
+enum ScrollbarStyle : uint32_t
+{
+    Default = 0,
+    Fluent,
 };
 
 /// <summary>
@@ -60,7 +66,8 @@ public:
     std::wstring _ProfileName;
     ClearOnStartup _ClearOnStartup;
     bool _InPrivateMode;
+    ScrollbarStyle _ScrollbarStyle;
 
 private:
-    const int32_t _CurrentVersion = 6;
+    const int32_t _CurrentVersion = 7;
 };

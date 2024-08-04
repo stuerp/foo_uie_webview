@@ -1,5 +1,5 @@
 ﻿
-/** $VER: Resources.rc (2024.07.11) P. Stuer **/
+/** $VER: Resources.rc (2024.08.04) P. Stuer **/
 
 #include "Resources.h"
 
@@ -72,6 +72,7 @@ font 8, "Segoe UI", 400, 0, 1
 
     control     "Clear browsing data on startup",   IDC_CLEAR_BROWSING_DATA, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, X_D26, Y_D26, W_D26, H_D26
     control     "In Private mode",                  IDC_IN_PRIVATE_MODE,     "Button", BS_AUTOCHECKBOX | WS_TABSTOP, X_D27, Y_D27, W_D27, H_D27
+    control     "Fluent scrollbar style",           IDC_SCROLLBAR_STYLE,     "Button", BS_AUTOCHECKBOX | WS_TABSTOP, X_D28, Y_D28, W_D28, H_D28
 
     ltext       "Restart the component to activate changed settings", IDC_WARNING, X_D99, Y_D99, W_D99, H_D99, NOT WS_VISIBLE
 }
