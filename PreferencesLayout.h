@@ -1,5 +1,5 @@
 
-/** $VER: PreferencesLayout.h (2024.07.10) **/
+/** $VER: PreferencesLayout.h (2024.08.04) **/
 
 #pragma once
 
@@ -144,6 +144,12 @@
 #define Y_D27   Y_D26 + H_D26 + IY
 #define W_D27   160
 #define H_D27   H_LBL
+
+// Checkbox: Fluent scrollbar style
+#define X_D28   0
+#define Y_D28   Y_D27 + H_D27 + IY
+#define W_D28   160
+#define H_D28   H_LBL
 
 // Warning
 #define X_D99   0

@@ -96,6 +96,12 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
+v0.1.8.0, 2024-08-10
+
+* New: The Fluent scrollbar style can be disabled.
+  * The component needs to be restarted for the change to become active.
+  * Be sure to use separate user data folders when you have multiple instances that use different styles.
+
 v0.1.7.0, 2024-07-14
 
 * New: In Private mode can be enabled in the Preferences dialog and is no longer enabled by default (alpha3).
@@ -104,7 +110,7 @@ v0.1.7.0, 2024-07-14
     * GetArtwork(): Gets the embedded artwork (front / back / disc / icon / artist) from the current playing item (alpha1).
       * Fixed support for other artwork types (alpha2, regression).
       * Added support for WebP images (alpha2).
-      * Always returns an empty data URI in case of an error or if the specified artwork type is not availabe (alpha2).
+      * Always returns an empty data URI in case of an error or if the specified artwork type is not available (alpha2).
       * The album art search patterns are used first. If no matching file can be found, the embedded artwork gets queried (alpha3).
 * Changed: Updated the WebView2 SDK to the latest version (alpha3).
 

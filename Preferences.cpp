@@ -1,5 +1,5 @@
 
-/** $VER: Preferences.cpp (2024.07.11) P. Stuer **/
+/** $VER: Preferences.cpp (2024.08.04) P. Stuer **/
 
 #include "pch.h"
 
@@ -107,6 +107,7 @@ public:
         _Configuration._ClearOnStartup = (SendDlgItemMessageW(IDC_CLEAR_BROWSING_DATA, BM_GETCHECK) == BST_CHECKED) ? ClearOnStartup::All : ClearOnStartup::None;
 
         _Configuration._InPrivateMode = (SendDlgItemMessageW(IDC_IN_PRIVATE_MODE, BM_GETCHECK) == BST_CHECKED);
+        _Configuration._ScrollbarStyle = (SendDlgItemMessageW(IDC_SCROLLBAR_STYLE, BM_GETCHECK) == BST_CHECKED) ? ScrollbarStyle::Fluent : ScrollbarStyle::Default;
 
         UIElement * CurrentElement = _UIElementTracker.GetCurrentElement();
 
@@ -145,6 +146,7 @@ public:
         COMMAND_HANDLER_EX(IDC_USER_DATA_FOLDER_PATH_SELECT, BN_CLICKED, OnButtonClicked)
         COMMAND_HANDLER_EX(IDC_CLEAR_BROWSING_DATA, BN_CLICKED, OnButtonClicked)
         COMMAND_HANDLER_EX(IDC_IN_PRIVATE_MODE, BN_CLICKED, OnButtonClicked)
+        COMMAND_HANDLER_EX(IDC_SCROLLBAR_STYLE, BN_CLICKED, OnButtonClicked)
 
         COMMAND_HANDLER_EX(IDC_FILE_PATH_SELECT, BN_CLICKED, OnButtonClicked)
         COMMAND_HANDLER_EX(IDC_FILE_PATH_EDIT, BN_CLICKED, OnButtonClicked)
@@ -196,6 +198,7 @@ private:
 
         SendDlgItemMessageW(IDC_CLEAR_BROWSING_DATA, BM_SETCHECK, (WPARAM) (_Configuration._ClearOnStartup == ClearOnStartup::All ? BST_CHECKED : BST_UNCHECKED));
         SendDlgItemMessageW(IDC_IN_PRIVATE_MODE, BM_SETCHECK, (WPARAM) (_Configuration._InPrivateMode ? BST_CHECKED : BST_UNCHECKED));
+        SendDlgItemMessageW(IDC_SCROLLBAR_STYLE, BM_SETCHECK, (WPARAM) ((_Configuration._ScrollbarStyle == ScrollbarStyle::Fluent) ? BST_CHECKED : BST_UNCHECKED));
     }
 
     /// <summary>
@@ -370,6 +373,9 @@ private:
             return true;
 
         if (SendDlgItemMessageW(IDC_IN_PRIVATE_MODE, BM_GETCHECK) != (_Configuration._InPrivateMode ? BST_CHECKED : BST_UNCHECKED))
+            return true;
+
+        if (SendDlgItemMessageW(IDC_SCROLLBAR_STYLE, BM_GETCHECK) != ((_Configuration._ScrollbarStyle == ScrollbarStyle::Fluent) ? BST_CHECKED : BST_UNCHECKED))
             return true;
 
         return false;
