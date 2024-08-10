@@ -96,10 +96,10 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.1.8.0, 2024-08-xx
+v0.1.8.0, 2024-08-10
 
 * New: The Fluent scrollbar style can be disabled.
-  * The component has to be restarted for the change to become active.
+  * The component needs to be restarted for the change to become active.
   * Be sure to use separate user data folders when you have multiple instances that use different styles.
 
 v0.1.7.0, 2024-07-14
