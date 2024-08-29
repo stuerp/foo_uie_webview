@@ -96,6 +96,10 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
+v0.1.x.0, 2024-xx-xx
+
+* Builds with foobar2000 SDK 2024-08-07.
+
 v0.1.8.0, 2024-08-10
 
 * New: The Fluent scrollbar style can be disabled.
