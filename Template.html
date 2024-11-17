@@ -141,7 +141,7 @@ window.onload = function()
 
         document.getElementById("Volume2").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.Volume;
 
-        chrome.webview.hostObjects.sync.foo_uie_webview.Volume = 0;
+//      chrome.webview.hostObjects.sync.foo_uie_webview.Volume = 0; // The volume can be set from code.
 
         document.getElementById("Stop").textContent = '\u23F9';
         document.getElementById("Play").textContent = '\u23F5';
