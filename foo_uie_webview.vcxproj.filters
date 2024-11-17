@@ -46,8 +46,8 @@
     <None Include=".gitattributes" />
     <None Include=".gitignore" />
     <None Include="README.md" />
-    <None Include="packages.config" />
     <None Include="Template.html" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="LICENSE.txt" />

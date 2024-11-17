@@ -98,7 +98,8 @@ To create the component first build the x86 configuration and next the x64 confi
 
 v0.1.x.0, 2024-xx-xx
 
-* Builds with foobar2000 SDK 2024-08-07.
+* New: Builds with foobar2000 SDK 2024-08-07.
+* Update: WebView2 component to 1.0.2849.39.
 
 v0.1.8.0, 2024-08-10
 
