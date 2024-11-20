@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.h (2024.07.10) P. Stuer **/
+/** $VER: HostObjectImpl.h (2024.11.20) P. Stuer **/
 
 #pragma once
 
@@ -82,6 +82,8 @@ public:
     STDMETHODIMP GetFormattedText(BSTR text, BSTR * formattedText) override;
 
     STDMETHODIMP GetArtwork(BSTR type, BSTR * image) override;
+
+    STDMETHODIMP ReadAllText(BSTR filePath, __int32 codePage, BSTR * text) override;
 
     #pragma endregion
 

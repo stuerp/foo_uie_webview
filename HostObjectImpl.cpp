@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.cpp (2024.07.10) P. Stuer **/
+/** $VER: HostObjectImpl.cpp (2024.11.20) P. Stuer **/
 
 #include "pch.h"
 
@@ -627,6 +627,41 @@ STDMETHODIMP HostObject::GetArtwork(BSTR type, BSTR * image)
     }
 
     delete[] Base64;
+
+    return S_OK;
+}
+
+/// <summary>
+/// Reads the specified file and returns it as a string.
+/// </summary>
+STDMETHODIMP HostObject::ReadAllText(BSTR filePath, __int32 codePage, BSTR * text)
+{
+    if ((filePath == nullptr) || (text == nullptr))
+        return E_INVALIDARG;
+
+    if (codePage == 0)
+        codePage = 65001;
+
+    HANDLE hFile = ::CreateFileW(filePath, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+
+    if (hFile == INVALID_HANDLE_VALUE)
+        return HRESULT_FROM_WIN32(::GetLastError());
+
+    LARGE_INTEGER FileSize;
+
+    if (GetFileSizeEx(hFile, &FileSize))
+    {
+        std::string Text;
+
+        Text.resize((size_t) FileSize.LowPart + 2);
+
+        DWORD BytesRead;
+
+        if (::ReadFile(hFile, (void *) Text.c_str(), FileSize.LowPart, &BytesRead, nullptr) && (BytesRead == FileSize.LowPart))
+            *text = ::SysAllocString(::CodePageToWide((uint32_t) codePage, Text).c_str());
+    }
+
+    ::CloseHandle(hFile);
 
     return S_OK;
 }

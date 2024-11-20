@@ -101,6 +101,9 @@ v0.2.0.0-alpha1, 2024-11-20, *"I'm getting framed..."*
 * New: Builds with foobar2000 SDK 2024-08-07.
 * New: Updated WebView2 component to 1.0.2849.39.
 * New: Templates can contain iframes. Take a look at the included Default-FrameTemplate.html example.
+* New:
+  * Methods
+    * ReadAllText(filePath, codePage): Reads the specified file and returns it as a string. If codePage is 0 the file is assumed to be UTF-8 encoded.
 
 v0.1.8.0, 2024-08-10
 
