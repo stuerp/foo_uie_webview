@@ -96,10 +96,11 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.1.x.0, 2024-xx-xx
+v0.2.0.0-alpha1, 2024-11-20, *"I'm getting framed..."*
 
 * New: Builds with foobar2000 SDK 2024-08-07.
-* Update: WebView2 component to 1.0.2849.39.
+* New: Updated WebView2 component to 1.0.2849.39.
+* New: Templates can contain iframes. Take a look at the included Default-FrameTemplate.html example.
 
 v0.1.8.0, 2024-08-10
 

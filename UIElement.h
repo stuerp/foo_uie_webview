@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.h (2024.07.10) P. Stuer **/
+/** $VER: UIElement.h (2024.11.20) P. Stuer **/
 
 #pragma once
 
@@ -224,6 +224,7 @@ private:
 
     EventRegistrationToken _NavigationStartingToken = {};
     EventRegistrationToken _NavigationCompletedToken = {};
+    EventRegistrationToken _FrameCreatedToken = {};
     EventRegistrationToken _ContextMenuRequestedToken = {};
     EventRegistrationToken _BrowserProcessExitedToken = {};
 
