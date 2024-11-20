@@ -93,7 +93,7 @@ elseif ($Platform -eq 'Win32')
 #       Copy-Item "$OutputPath/$TargetName.tlb"    -Destination "$PackagePath" -Force -Verbose;
         Copy-Item "$OutputPath/WebView2Loader.dll" -Destination "$PackagePath" -Force -Verbose;
         Copy-Item "Template.html"                  -Destination "$PackagePath/Default-Template.html" -Force -Verbose;
-        Copy-Item "Template.html"                  -Destination "$PackagePath/Default-FrameTemplate.html" -Force -Verbose;
+        Copy-Item "FrameTemplate.html"             -Destination "$PackagePath/Default-FrameTemplate.html" -Force -Verbose;
     }
 
     # install the x86 component in the foobar2000 x86 components directory.
