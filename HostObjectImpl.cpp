@@ -649,7 +649,9 @@ STDMETHODIMP HostObject::ReadAllText(BSTR filePath, __int32 codePage, BSTR * tex
 
     LARGE_INTEGER FileSize;
 
-    if (GetFileSizeEx(hFile, &FileSize))
+    HRESULT hr = S_OK;
+
+    if (::GetFileSizeEx(hFile, &FileSize))
     {
         std::string Text;
 
@@ -659,11 +661,15 @@ STDMETHODIMP HostObject::ReadAllText(BSTR filePath, __int32 codePage, BSTR * tex
 
         if (::ReadFile(hFile, (void *) Text.c_str(), FileSize.LowPart, &BytesRead, nullptr) && (BytesRead == FileSize.LowPart))
             *text = ::SysAllocString(::CodePageToWide((uint32_t) codePage, Text).c_str());
+        else
+            hr = HRESULT_FROM_WIN32(::GetLastError());
     }
+    else
+        hr = HRESULT_FROM_WIN32(::GetLastError());
 
     ::CloseHandle(hFile);
 
-    return S_OK;
+    return hr;
 }
 
 #pragma region IDispatch
