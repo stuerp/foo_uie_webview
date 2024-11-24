@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.cpp (2024.11.20) P. Stuer **/
+/** $VER: HostObjectImpl.cpp (2024.11.22) P. Stuer **/
 
 #include "pch.h"
 
@@ -20,6 +20,8 @@
 #include <SDK/contextmenu.h>
 
 #include <pfc/string-conv-lite.h>
+
+void ToBase64(const BYTE * data, DWORD size, BSTR * base64);
 
 /// <summary>
 /// Initializes a new instance
@@ -577,59 +579,13 @@ STDMETHODIMP HostObject::GetArtwork(BSTR type, BSTR * image)
         }
     }
 
-    if (aad.is_empty())
-        return S_OK;
-
-    // Convert the binary image data into a JavaScript data URI.
-    const WCHAR * MIMEType = nullptr;
-
-    const BYTE * p = (const BYTE *) aad->data();
-
-    // Determine the MIME type of the image data.
-    if ((aad->size() > 2) && p[0] == 0xFF && p[1] == 0xD8)
-        MIMEType = L"image/jpeg";
-    else
-    if ((aad->size() > 15) && (p[0] == 'R' && p[1] == 'I' && p[2] == 'F' && p[3] == 'F') && (::memcmp(p + 8, "WEBPVP8", 7) == 0))
-        MIMEType = L"image/webp";
-    else
-    if ((aad->size() > 4) && p[0] == 0x89 && p[1] == 0x50 && p[2] == 0x4E && p[3] == 0x47)
-        MIMEType = L"image/png";
-    else
-    if ((aad->size() > 3) && p[0] == 0x47 && p[1] == 0x49 && p[2] == 0x46)
-        MIMEType = L"image/gif";
-
-    if (MIMEType == nullptr)
-        return S_OK;
-
-    // Convert the image data to base64.
-    const DWORD Flags = CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF;
-
-    DWORD Size = 0;
-
-    if (!::CryptBinaryToStringW(p, (DWORD) aad->size(), Flags, nullptr, &Size))
-        return S_OK;
-
-    Size += 16 + (DWORD) ::wcslen(MIMEType);
-
-    WCHAR * Base64 = new WCHAR[Size];
-
-    if (Base64 == nullptr)
-        return S_OK;
-
-    ::swprintf_s(Base64, Size, L"data:%s;base64,", MIMEType);
-
-    // Create the result.
-    if (::CryptBinaryToStringW(p, (DWORD) aad->size(), Flags, Base64 + ::wcslen(Base64), &Size))
-    {
-        ::SysFreeString(*image); // Free the empty string.
-
-        *image = ::SysAllocString(Base64);
-    }
-
-    delete[] Base64;
+    if (!aad.is_empty())
+        ToBase64((const BYTE *) aad->data(), (DWORD) aad->size(), image);
 
     return S_OK;
 }
+
+#pragma region Files
 
 /// <summary>
 /// Reads the specified file and returns it as a string.
@@ -671,6 +627,458 @@ STDMETHODIMP HostObject::ReadAllText(BSTR filePath, __int32 codePage, BSTR * tex
 
     return hr;
 }
+
+/// <summary>
+/// Reads the specified file and returns it as a string.
+/// </summary>
+STDMETHODIMP HostObject::ReadImage(BSTR filePath, BSTR * image)
+{
+    *image = ::SysAllocString(L""); // Return an empty string by default and in case of an error.
+
+    if ((filePath == nullptr) || (image == nullptr))
+        return E_INVALIDARG;
+
+    HANDLE hFile = ::CreateFileW(filePath, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+
+    if (hFile == INVALID_HANDLE_VALUE)
+        return HRESULT_FROM_WIN32(::GetLastError());
+
+    LARGE_INTEGER FileSize;
+
+    HRESULT hr = S_OK;
+
+    if (::GetFileSizeEx(hFile, &FileSize))
+    {
+        BYTE * Data = new BYTE[FileSize.LowPart];
+
+        if (Data != nullptr)
+        {
+            DWORD BytesRead;
+
+            if (::ReadFile(hFile, Data, FileSize.LowPart, &BytesRead, nullptr) && (BytesRead == FileSize.LowPart))
+                ToBase64(Data, FileSize.LowPart, image);
+            else
+                hr = HRESULT_FROM_WIN32(::GetLastError());
+
+            delete[] Data;
+        }
+    }
+    else
+        hr = HRESULT_FROM_WIN32(::GetLastError());
+
+    ::CloseHandle(hFile);
+
+    return S_OK;
+}
+
+#pragma endregion
+
+#pragma region Playlists
+
+/// <summary>
+/// Gets the number of playlists.
+/// </summary>
+STDMETHODIMP HostObject::get_PlaylistCount(uint32_t * count)
+{
+    if (count == nullptr)
+        return E_INVALIDARG;
+
+    *count = (uint32_t) playlist_manager::get()->get_playlist_count();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the index of the active playlist.
+/// </summary>
+STDMETHODIMP HostObject::get_ActivePlaylist(int32_t * index)
+{
+    if (index == nullptr)
+        return E_INVALIDARG;
+
+    size_t Index = (uint32_t) playlist_manager::get()->get_active_playlist();
+
+    *index = (Index != (size_t) pfc_infinite) ? (int32_t) Index : -1;
+
+    return S_OK;
+}
+
+/// <summary>
+/// Sets the index of the active playlist.
+/// </summary>
+STDMETHODIMP HostObject::put_ActivePlaylist(int32_t playlistIndex)
+{
+    auto Manager = playlist_manager_v4::get();
+
+    if ((size_t) playlistIndex >= Manager->get_playlist_count())
+        return E_INVALIDARG;
+
+    Manager->set_active_playlist((size_t) playlistIndex);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the index of the playing playlist.
+/// </summary>
+STDMETHODIMP HostObject::get_PlayingPlaylist(int32_t * playlistIndex)
+{
+    if (playlistIndex == nullptr)
+        return E_INVALIDARG;
+
+    size_t Index = (uint32_t) playlist_manager::get()->get_playing_playlist();
+
+    *playlistIndex = (Index != (size_t) pfc_infinite) ? (int32_t) Index : -1;
+
+    return S_OK;
+}
+
+/// <summary>
+/// Sets the index of the playing playlist.
+/// </summary>
+STDMETHODIMP HostObject::put_PlayingPlaylist(int32_t playlistIndex)
+{
+    auto Manager = playlist_manager_v4::get();
+
+    if ((size_t) playlistIndex >= Manager->get_playlist_count())
+        return E_INVALIDARG;
+
+    Manager->set_playing_playlist((size_t) playlistIndex);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the name of the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::GetPlaylistName(int32_t playlistIndex, BSTR * name)
+{
+    auto Manager = playlist_manager_v4::get();
+
+    if ((size_t) playlistIndex >= Manager->get_playlist_count())
+        return E_INVALIDARG;
+
+    if (name == nullptr)
+        return E_INVALIDARG;
+
+    pfc::string Name;
+
+    Manager->playlist_get_name((size_t) playlistIndex, Name);
+
+    *name = ::SysAllocString(pfc::wideFromUTF8(Name).c_str());
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the name of the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::SetPlaylistName(int32_t playlistIndex, BSTR name)
+{
+    auto Manager = playlist_manager_v4::get();
+
+    if ((size_t) playlistIndex >= Manager->get_playlist_count())
+        return E_INVALIDARG;
+
+    if (name == nullptr)
+        return E_INVALIDARG;
+
+    pfc::string Name = pfc::utf8FromWide(name).c_str();
+
+    Manager->playlist_rename((size_t) playlistIndex, Name.c_str(), Name.length());
+
+    return S_OK;
+}
+
+/// <summary>
+/// Finds the index of the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::FindPlaylist(BSTR name, int32_t * playlistIndex)
+{
+    if (name == nullptr)
+        return E_INVALIDARG;
+
+    pfc::string Name = pfc::utf8FromWide(name).c_str();
+
+    *playlistIndex = (int32_t) playlist_manager::get()->find_playlist(Name.c_str(), Name.length());
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the number of items of the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::GetPlaylistItemCount(int32_t playlistIndex, uint32_t * itemCount)
+{
+    auto Manager = playlist_manager_v4::get();
+
+    if ((size_t) playlistIndex >= Manager->get_playlist_count())
+        return E_INVALIDARG;
+
+    if (itemCount == nullptr)
+        return E_INVALIDARG;
+
+    *itemCount = (uint32_t) Manager->playlist_get_item_count((size_t) playlistIndex);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the index of the focused playlist item.
+/// </summary>
+STDMETHODIMP HostObject::GetFocusedPlaylistItem(int32_t playlistIndex, int32_t * itemIndex)
+{
+    auto Manager = playlist_manager_v4::get();
+
+    if ((size_t) playlistIndex >= Manager->get_playlist_count())
+        return E_INVALIDARG;
+
+    if (itemIndex == nullptr)
+        return E_INVALIDARG;
+
+    size_t ItemIndex = Manager->playlist_get_focus_item((size_t) playlistIndex);
+
+    *itemIndex = (ItemIndex != (size_t) pfc_infinite) ? (int32_t) ItemIndex : -1;
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the name of the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::SetFocusedPlaylistItem(int32_t playlistIndex, int32_t itemIndex)
+{
+    auto Manager = playlist_manager_v4::get();
+
+    if ((size_t) playlistIndex >= Manager->get_playlist_count())
+        return E_INVALIDARG;
+
+    Manager->playlist_set_focus_item((size_t) playlistIndex, (size_t) itemIndex);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Ensures that the specified item in the specified playlist is visible.
+/// </summary>
+STDMETHODIMP HostObject::EnsurePlaylistItemVisible(int32_t playlistIndex, int32_t itemIndex)
+{
+    auto Manager = playlist_manager_v4::get();
+
+    if ((size_t) playlistIndex >= Manager->get_playlist_count())
+        return E_INVALIDARG;
+
+    Manager->playlist_ensure_visible((size_t) playlistIndex, (size_t) itemIndex);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Execute the default action on the specified item in the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::ExecutePlaylistDefaultAction(int32_t playlistIndex, int32_t itemIndex)
+{
+    auto Manager = playlist_manager_v4::get();
+
+    if ((size_t) playlistIndex >= Manager->get_playlist_count())
+        return E_INVALIDARG;
+
+    Manager->playlist_execute_default_action((size_t) playlistIndex, (size_t) itemIndex);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Creates a new playlist at the specified index.
+/// </summary>
+STDMETHODIMP HostObject::CreatePlaylist(int32_t playlistIndex, BSTR name, int32_t * newPlaylistIndex)
+{
+    auto Manager = playlist_manager::get();
+
+    if ((size_t) playlistIndex >= Manager->get_playlist_count())
+        return E_INVALIDARG;
+
+    if (newPlaylistIndex == nullptr)
+        return E_INVALIDARG;
+
+    size_t Index;
+
+    if ((name != nullptr) && (*name != '\0'))
+    {
+        pfc::string Name = pfc::utf8FromWide(name).c_str();
+
+        Index = Manager->create_playlist(Name.c_str(), Name.length(), (size_t) playlistIndex);
+    }
+    else
+        Index = Manager->create_playlist_autoname((size_t) playlistIndex);
+
+    *newPlaylistIndex = (Index != (size_t) pfc_infinite) ? (int32_t) Index : -1;
+
+    return S_OK;
+}
+
+/// <summary>
+/// Duplicates the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::DuplicatePlaylist(int32_t playlistIndex, BSTR name, int32_t * newPlaylistIndex)
+{
+    auto Manager = playlist_manager_v4::get();
+
+    if ((size_t) playlistIndex >= Manager->get_playlist_count())
+        return E_INVALIDARG;
+
+    if (newPlaylistIndex == nullptr)
+        return E_INVALIDARG;
+
+    pfc::string Name;
+
+    if ((name != nullptr) && (*name != '\0'))
+        Name = pfc::utf8FromWide(name).c_str();
+    else
+        (void) Manager->playlist_get_name((size_t) playlistIndex, Name);
+
+    metadb_handle_list Items;
+
+    Manager->playlist_get_all_items((size_t) playlistIndex, Items);
+
+    stream_reader_dummy sr;
+
+    *newPlaylistIndex = (int32_t) Manager->create_playlist_ex(Name.c_str(), Name.length(), (size_t) playlistIndex + 1, Items, &sr, fb2k::noAbort);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Clears the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::ClearPlaylist(int32_t playlistIndex)
+{
+    auto Manager = playlist_manager_v4::get();
+
+    if ((size_t) playlistIndex >= Manager->get_playlist_count())
+        return E_INVALIDARG;
+
+    Manager->playlist_clear((size_t) playlistIndex);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the selected items of the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::GetSelectedPlaylistItems(int32_t playlistIndex)
+{
+    auto Manager = playlist_manager_v4::get();
+
+    if ((size_t) playlistIndex >= Manager->get_playlist_count())
+        return E_INVALIDARG;
+
+    metadb_handle_list Items;
+
+    Manager->playlist_get_selected_items((size_t) playlistIndex, Items);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Clears the selection of the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::ClearPlaylistSelection(int32_t playlistIndex)
+{
+    auto Manager = playlist_manager_v4::get();
+
+    if ((size_t) playlistIndex >= Manager->get_playlist_count())
+        return E_INVALIDARG;
+
+    Manager->playlist_clear_selection((size_t) playlistIndex);
+
+    return S_OK;
+}
+
+#pragma endregion
+
+#pragma region Auto Playlists
+
+/// <summary>
+/// Creates a new auto playlist at the specified index.
+/// </summary>
+STDMETHODIMP HostObject::CreateAutoPlaylist(int32_t playlistIndex, BSTR name, BSTR query, BSTR sort, uint32_t flags, int32_t * newPlaylistIndex)
+{
+    int32_t Index;
+
+    HRESULT hr = CreatePlaylist(playlistIndex, name, &Index);
+
+    if (!SUCCEEDED(hr))
+        return hr;
+
+    if (Index == pfc_infinite)
+        return E_INVALIDARG;
+
+    try
+    {
+        pfc::string Query = pfc::utf8FromWide(query).c_str();
+        pfc::string Sort = pfc::utf8FromWide(sort).c_str();
+
+        autoplaylist_manager::get()->add_client_simple(Query.c_str(), Sort.c_str(), (size_t) Index, flags);
+
+        *newPlaylistIndex = (Index != pfc_infinite) ? (int32_t) Index : -1;
+
+        return S_OK;
+    }
+    catch (const pfc::exception &)
+    {
+        playlist_manager::get()->remove_playlist((size_t) Index);
+
+        return E_FAIL;
+    }
+}
+
+STDMETHODIMP HostObject::IsAutoPlaylist(int32_t index, BOOL * result)
+{
+    if (result == nullptr)
+        return E_INVALIDARG;
+
+    if ((size_t) index >= playlist_manager::get()->get_playlist_count())
+        return E_INVALIDARG;
+
+    *result = autoplaylist_manager::get()->is_client_present((size_t) index);
+
+    return S_OK;
+}
+
+#pragma endregion
+
+#pragma region Playback Order
+
+/// <summary>
+/// Gets the playback order (0 = default, 1 = repeat playlist, 2 = repeat track, 3 = random, 4 = shuffle tracks, 5 = shuffle albums, 6 = shuffle folders).
+/// </summary>
+STDMETHODIMP HostObject::get_PlaybackOrder(int32_t * index)
+{
+    if (index == nullptr)
+        return E_INVALIDARG;
+
+    size_t Index = (uint32_t) playlist_manager::get()->playback_order_get_active();
+
+    *index = (Index != (size_t) pfc_infinite) ? (int32_t) Index : -1;
+
+    return S_OK;
+}
+
+/// <summary>
+/// Sets the playback order (0 = default, 1 = repeat playlist, 2 = repeat track, 3 = random, 4 = shuffle tracks, 5 = shuffle albums, 6 = shuffle folders).
+/// </summary>
+STDMETHODIMP HostObject::put_PlaybackOrder(int32_t index)
+{
+    auto Manager = playlist_manager::get();
+
+    if ((size_t) index < Manager->playback_order_get_count())
+        Manager->playback_order_set_active((size_t) index);
+
+    return S_OK;
+}
+
+#pragma endregion
 
 #pragma region IDispatch
 
@@ -771,3 +1179,57 @@ HRESULT HostObject::GetTypeLibFilePath(std::wstring & filePath) noexcept
 }
 
 #pragma endregion
+
+/// <summary>
+/// Converts the specified data to a JavaScript data URI.
+/// </summary>
+void ToBase64(const BYTE * data, DWORD size, BSTR * base64)
+{
+    // Convert the binary image data into a JavaScript data URI.
+    const WCHAR * MIMEType = nullptr;
+
+    const BYTE * p = data;
+
+    // Determine the MIME type of the image data.
+    if ((size > 2) && p[0] == 0xFF && p[1] == 0xD8)
+        MIMEType = L"image/jpeg";
+    else
+    if ((size > 15) && (p[0] == 'R' && p[1] == 'I' && p[2] == 'F' && p[3] == 'F') && (::memcmp(p + 8, "WEBPVP8", 7) == 0))
+        MIMEType = L"image/webp";
+    else
+    if ((size > 4) && p[0] == 0x89 && p[1] == 0x50 && p[2] == 0x4E && p[3] == 0x47)
+        MIMEType = L"image/png";
+    else
+    if ((size > 3) && p[0] == 0x47 && p[1] == 0x49 && p[2] == 0x46)
+        MIMEType = L"image/gif";
+
+    if (MIMEType == nullptr)
+        return;
+
+    // Convert the image data to base64.
+    const DWORD Flags = CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF;
+
+    DWORD Size = 0;
+
+    if (!::CryptBinaryToStringW(p, size, Flags, nullptr, &Size))
+        return;
+
+    Size += 16 + (DWORD) ::wcslen(MIMEType);
+
+    WCHAR * Base64 = new WCHAR[Size];
+
+    if (Base64 == nullptr)
+        return;
+
+    ::swprintf_s(Base64, Size, L"data:%s;base64,", MIMEType);
+
+    // Create the result.
+    if (::CryptBinaryToStringW(p, size, Flags, Base64 + ::wcslen(Base64), &Size))
+    {
+        ::SysFreeString(*base64); // Free the empty string.
+
+        *base64 = ::SysAllocString(Base64);
+    }
+
+    delete[] Base64;
+}

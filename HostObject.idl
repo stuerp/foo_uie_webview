@@ -56,7 +56,44 @@ library HostObjectLibrary
 
         HRESULT GetArtwork([in] BSTR type, [out, retval] BSTR * image);
 
+        // Files
         HRESULT ReadAllText([in] BSTR filePath, [in] __int32 codePage, [out, retval] BSTR * text);
+        HRESULT ReadImage([in] BSTR filePath, [out, retval] BSTR * image);
+
+        // Playlists
+        [propget] HRESULT PlaylistCount([out, retval] unsigned __int32 * count);
+
+        [propget] HRESULT ActivePlaylist([out, retval] __int32 * index);
+        [propput] HRESULT ActivePlaylist([in] __int32 index);
+
+        [propget] HRESULT PlayingPlaylist([out, retval] __int32 * index);
+        [propput] HRESULT PlayingPlaylist([in] __int32 index);
+
+        HRESULT GetPlaylistName([in] __int32 index, [out, retval] BSTR * name);
+        HRESULT SetPlaylistName([in] __int32 index, [in] BSTR name);
+
+        HRESULT FindPlaylist([in] BSTR name, [out, retval] __int32 * index);
+
+        HRESULT GetPlaylistItemCount([in] __int32 playlistIndex, [out, retval] unsigned __int32 * itemCount);
+
+        HRESULT GetFocusedPlaylistItem([in] __int32 playlistIndex, [out, retval] __int32 * itemIndex);
+        HRESULT SetFocusedPlaylistItem([in] __int32 playlistIndex, [in] __int32 itemIndex);
+        HRESULT EnsurePlaylistItemVisible([in] __int32 playlistIndex, [in] __int32 itemIndex);
+        HRESULT ExecutePlaylistDefaultAction([in] __int32 playlistIndex, [in] __int32 itemIndex);
+
+        HRESULT CreatePlaylist([in] __int32 playlistIndex, [in] BSTR name, [out, retval] __int32 * newPlaylistIndex);
+        HRESULT DuplicatePlaylist([in] __int32 playlistIndex, [in] BSTR name, [out, retval] __int32 * newPlaylistIndex);
+        HRESULT ClearPlaylist([in] __int32 playlistIndex);
+        HRESULT GetSelectedPlaylistItems([in] __int32 playlistIndex);
+        HRESULT ClearPlaylistSelection([in] __int32 playlistIndex);
+
+        // Auto Playlists
+        HRESULT CreateAutoPlaylist([in] __int32 playlistIndex, [in] BSTR name, [in] BSTR query, [in] BSTR sort, [in] unsigned __int32 flags, [out, retval] __int32 * newPlaylistIndex);
+        HRESULT IsAutoPlaylist([in] __int32 playlistIndex, [out, retval] bool * result);
+
+        // Playback Order
+        [propget] HRESULT PlaybackOrder([out, retval] __int32 * index);
+        [propput] HRESULT PlaybackOrder([in] __int32 index);
     };
 
     [uuid(637abc45-11f7-4dde-84b4-317d62a638d3)]

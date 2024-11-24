@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.h (2024.11.20) P. Stuer **/
+/** $VER: HostObjectImpl.h (2024.11.22) P. Stuer **/
 
 #pragma once
 
@@ -83,7 +83,44 @@ public:
 
     STDMETHODIMP GetArtwork(BSTR type, BSTR * image) override;
 
+    // Files
     STDMETHODIMP ReadAllText(BSTR filePath, __int32 codePage, BSTR * text) override;
+    STDMETHODIMP ReadImage(BSTR filePath, BSTR * image) override;
+
+    // Playlists
+    STDMETHODIMP get_PlaylistCount(uint32_t * count) override;
+
+    STDMETHODIMP get_ActivePlaylist(int32_t * playlistIndex) override;
+    STDMETHODIMP put_ActivePlaylist(int32_t playlistIndex) override;
+
+    STDMETHODIMP get_PlayingPlaylist(int32_t * playlistIndex) override;
+    STDMETHODIMP put_PlayingPlaylist(int32_t playlistIndex) override;
+
+    STDMETHODIMP GetPlaylistName(int32_t index, BSTR * name) override;
+    STDMETHODIMP SetPlaylistName(int32_t index, BSTR name) override;
+
+    STDMETHODIMP FindPlaylist(BSTR name, int32_t * playlistIndex) override;
+
+    STDMETHODIMP GetPlaylistItemCount(int32_t playlistIndex, uint32_t * itemCount) override;
+
+    STDMETHODIMP GetFocusedPlaylistItem(int32_t playlistIndex, int32_t * itemIndex) override;
+    STDMETHODIMP SetFocusedPlaylistItem(int32_t playlistIndex, int32_t itemIndex) override;
+    STDMETHODIMP EnsurePlaylistItemVisible(int32_t playlistIndex, int32_t itemIndex) override;
+    STDMETHODIMP ExecutePlaylistDefaultAction(int32_t playlistIndex, int32_t itemIndex) override;
+
+    STDMETHODIMP CreatePlaylist(int32_t playlistIndex, BSTR name, int32_t * newPlaylistIndex) override;
+    STDMETHODIMP DuplicatePlaylist(int32_t playlistIndex, BSTR name, int32_t * newPlaylistIndex) override;
+    STDMETHODIMP ClearPlaylist(int32_t playlistIndex) override;
+    STDMETHODIMP GetSelectedPlaylistItems(int32_t playlistIndex) override;
+    STDMETHODIMP ClearPlaylistSelection(int32_t playlistIndex) override;
+
+    // Auto Playlists
+    STDMETHODIMP CreateAutoPlaylist(int32_t playlistIndex, BSTR name, BSTR query, BSTR sort, uint32_t flags, int32_t * newPlaylistIndex) override;
+    STDMETHODIMP IsAutoPlaylist(int32_t index, BOOL * result) override;
+
+    // Playback Order
+    STDMETHODIMP get_PlaybackOrder(int32_t * index) override;
+    STDMETHODIMP put_PlaybackOrder(int32_t index) override;
 
     #pragma endregion
 

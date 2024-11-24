@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+:root
+{
+    color-scheme: light dark; /* Opt the entire page into the user's color scheme preferences */
+}
+
+html
+{
+    margin: 0;
+    padding: 0;
+}
+body
+{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0 auto; 
+    padding: 0;
+    font: 90% Calibri, Sans-serif;
+    line-height: 1.2;
+    color: #555753;
+/*  background-color: #e0e0e0; *//* Don't set a background color to use the theme background color of the foobar2000 panel */
+}
+div
+{ 
+    display: none;
+    margin-top: 0; 
+    text-align: center;
+    display: inline;
+}
+.track
+{
+    font: 1.75em Cambria;
+    color: crimson;
+}
+.artist
+{
+    font: 1.00em Cambria;
+    color: crimson;
+}
+.value
+{
+    font-weight: 800;
+}
+</style>
+</head>
+<body>
+<div>
+    Playlist count: <span id="PlaylistCount"></span><br/>
+    Active playlist: <span id="ActivePlaylist"></span><br/>
+    Playing playlist: <span id="PlayingPlaylist"></span><br/>
+    Playlist name: <span id="PlaylistName"></span><br/>
+    Playlist item count: <span id="PlaylistItemCount"></span><br/>
+    Focused playlist item: <span id="FocusedPlaylistItem"></span><br/>
+    <br/>
+    <button id="CreatePlaylistButton">Create Playlist</button><br/>
+    <br/>
+    <button id="DuplicatePlaylistButton">Duplicate Playlist</button><br/>
+    <br/>
+    <button id="CreateAutoPlaylistButton">Create Auto Playlist</button><br/>
+    Is auto playlist: <span id="IsAutoPlaylist"></span><br/>
+    <br/>
+    Playback order: <span id="PlaybackOrder"></span><br/>
+    <br/>
+    <button id="ReadImageButton">Read Image</button><br/>
+    <br/>
+    <div width="128px" height="128px" style="overflow: hidden;">
+        <img id="Image" style="max-width: 128px; height: auto; object-fit: cover;"/>
+    </div>
+</div>
+<script>
+// Refreshes the content of all elements.
+function Refresh()
+{
+    var Index = chrome.webview.hostObjects.sync.foo_uie_webview.ActivePlaylist;
+
+    document.getElementById("PlaylistCount").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.PlaylistCount;
+    document.getElementById("ActivePlaylist").textContent = Index;
+    document.getElementById("PlayingPlaylist").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.PlayingPlaylist;
+    document.getElementById("PlaylistName").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetPlaylistName(Index);
+    document.getElementById("PlaylistItemCount").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetPlaylistItemCount(Index);
+    document.getElementById("FocusedPlaylistItem").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFocusedPlaylistItem(Index);
+    document.getElementById("IsAutoPlaylist").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.IsAutoPlaylist(Index);
+
+    document.getElementById("PlaybackOrder").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.PlaybackOrder;
+}
+
+document.getElementById("CreatePlaylistButton").addEventListener("click", async () =>
+{
+    chrome.webview.hostObjects.sync.foo_uie_webview.ActivePlaylist = await chrome.webview.hostObjects.foo_uie_webview.CreatePlaylist(-1, "");
+
+    Refresh();
+});
+
+document.getElementById("DuplicatePlaylistButton").addEventListener("click", async () =>
+{
+    var PlaylistIndex = await chrome.webview.hostObjects.foo_uie_webview.DuplicatePlaylist(0, "Duplicate");
+
+    chrome.webview.hostObjects.sync.foo_uie_webview.ActivePlaylist = PlaylistIndex;
+
+    chrome.webview.hostObjects.foo_uie_webview.EnsurePlaylistItemVisible(PlaylistIndex, chrome.webview.hostObjects.sync.foo_uie_webview.GetPlaylistItemCount(PlaylistIndex) - 1);
+
+    await chrome.webview.hostObjects.foo_uie_webview.FindPlaylist("Duplicate");
+
+    Refresh();
+});
+
+document.getElementById("CreateAutoPlaylistButton").addEventListener("click", async () =>
+{
+    chrome.webview.hostObjects.sync.foo_uie_webview.ActivePlaylist = await chrome.webview.hostObjects.foo_uie_webview.CreateAutoPlaylist(-1, "Test", "%title% HAS test", "%album artist% | %album% | %tracknumber% | %title%", 0);
+
+    Refresh();
+});
+
+document.getElementById("ReadImageButton").addEventListener("click", async () =>
+{
+    document.getElementById("Image").src = await chrome.webview.hostObjects.foo_uie_webview.ReadImage("C:/Windows/Web/Screen/img100.jpg");
+});
+
+Refresh();
+</script>
+</body>
+</html>

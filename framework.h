@@ -1,5 +1,5 @@
 
-/** $VER: framework.h (2024.06.03) P. Stuer **/
+/** $VER: framework.h (2024.11.20) P. Stuer **/
 
 #pragma once
 
@@ -8,6 +8,7 @@
 #pragma warning(disable: 4100 4625 4626 4710 4711 4738 5045 ALL_CPPCORECHECK_WARNINGS)
 
 #include <sdk/foobar2000-lite.h>
+#include <sdk/autoplaylist.h>
 
 #include <SDKDDKVer.h>
 
