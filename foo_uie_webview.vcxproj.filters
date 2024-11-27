@@ -17,6 +17,7 @@
     <ClInclude Include="Configuration.h" />
     <ClInclude Include="UIElementTracker.h" />
     <ClInclude Include="SharedBuffer.h" />
+    <ClInclude Include="ProcessLocationsHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />

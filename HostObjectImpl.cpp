@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.cpp (2024.11.22) P. Stuer **/
+/** $VER: HostObjectImpl.cpp (2024.11.27) P. Stuer **/
 
 #include "pch.h"
 
@@ -14,14 +14,19 @@
 #include "Resources.h"
 #include "Encoding.h"
 
+#include "ProcessLocationsHandler.h"
+
 #include <SDK/titleformat.h>
 #include <SDK/playlist.h>
 #include <SDK/ui.h>
 #include <SDK/contextmenu.h>
 
 #include <pfc/string-conv-lite.h>
+#include <pfc/bit_array_impl.h>
 
 void ToBase64(const BYTE * data, DWORD size, BSTR * base64);
+const std::string Stringify(const char * s);
+std::wstring ToJSON(const metadb_handle_list & hItems);
 
 /// <summary>
 /// Initializes a new instance
@@ -431,7 +436,7 @@ STDMETHODIMP HostObject::GetFormattedText(BSTR text, BSTR * formattedText)
 /// <summary>
 /// Gets the index of the active playlist and the focused item, taking into account the user preferences.
 /// </summary>
-HRESULT HostObject::GetTrackIndex(t_size & playlistIndex, t_size & itemIndex) noexcept
+HRESULT HostObject::GetTrackIndex(size_t & playlistIndex, size_t & itemIndex) noexcept
 {
     auto SelectionManager = ui_selection_manager::get();
 
@@ -631,6 +636,64 @@ STDMETHODIMP HostObject::ReadAllText(BSTR filePath, __int32 codePage, BSTR * tex
 /// <summary>
 /// Reads the specified file and returns it as a string.
 /// </summary>
+STDMETHODIMP HostObject::ReadDirectory(BSTR directoryPath, BSTR searchPattern, BSTR * json)
+{
+    if ((directoryPath == nullptr) || (searchPattern == nullptr) || (json == nullptr))
+        return E_INVALIDARG;
+
+    *json = ::SysAllocString(L""); // Return an empty string by default and in case of an error.
+
+    WCHAR PathName[MAX_PATH];
+
+    if (!SUCCEEDED(::PathCchCombineEx(PathName, _countof(PathName), directoryPath, searchPattern, PATHCCH_ALLOW_LONG_PATHS)))
+        return HRESULT_FROM_WIN32(::GetLastError());
+
+    WIN32_FIND_DATA fd = {};
+
+    HANDLE hFind = ::FindFirstFileW(PathName, &fd);
+
+    if (hFind == INVALID_HANDLE_VALUE)
+        return HRESULT_FROM_WIN32(::GetLastError());
+
+    BOOL Success = TRUE;
+
+    if (::wcscmp(fd.cFileName, L".") == 0)
+    {
+        Success = ::FindNextFileW(hFind, &fd);
+
+        if (Success && ::wcscmp(fd.cFileName, L"..") == 0)
+            Success = ::FindNextFileW(hFind, &fd);
+    }
+
+    std::wstring Result = L"[";
+    bool IsFirstItem = true;
+
+    while (Success)
+    {
+        if (!IsFirstItem)
+            Result.append(L",");
+
+        uint64_t FileSize = (((uint64_t) fd.nFileSizeHigh) << 32) + fd.nFileSizeLow;
+
+        Result.append(FormatText(LR"({"Name": "%s", "Size": %lu, "IsDirectory": %s})", fd.cFileName, FileSize, (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? L"true" : L"false").c_str());
+
+        IsFirstItem = false;
+
+        Success = ::FindNextFileW(hFind, &fd);
+    }
+
+    Result.append(L"]");
+
+    ::FindClose(hFind);
+
+    *json = ::SysAllocString(Result.c_str());
+
+    return S_OK;
+}
+
+/// <summary>
+/// Reads the specified file and returns it as a string.
+/// </summary>
 STDMETHODIMP HostObject::ReadImage(BSTR filePath, BSTR * image)
 {
     *image = ::SysAllocString(L""); // Return an empty string by default and in case of an error.
@@ -678,12 +741,12 @@ STDMETHODIMP HostObject::ReadImage(BSTR filePath, BSTR * image)
 /// <summary>
 /// Gets the number of playlists.
 /// </summary>
-STDMETHODIMP HostObject::get_PlaylistCount(uint32_t * count)
+STDMETHODIMP HostObject::get_PlaylistCount(int * count)
 {
     if (count == nullptr)
         return E_INVALIDARG;
 
-    *count = (uint32_t) playlist_manager::get()->get_playlist_count();
+    *count = (int) playlist_manager::get()->get_playlist_count();
 
     return S_OK;
 }
@@ -691,14 +754,12 @@ STDMETHODIMP HostObject::get_PlaylistCount(uint32_t * count)
 /// <summary>
 /// Gets the index of the active playlist.
 /// </summary>
-STDMETHODIMP HostObject::get_ActivePlaylist(int32_t * index)
+STDMETHODIMP HostObject::get_ActivePlaylist(int * playlistIndex)
 {
-    if (index == nullptr)
+    if (playlistIndex == nullptr)
         return E_INVALIDARG;
 
-    size_t Index = (uint32_t) playlist_manager::get()->get_active_playlist();
-
-    *index = (Index != (size_t) pfc_infinite) ? (int32_t) Index : -1;
+    *playlistIndex = (int) playlist_manager::get()->get_active_playlist();
 
     return S_OK;
 }
@@ -706,12 +767,12 @@ STDMETHODIMP HostObject::get_ActivePlaylist(int32_t * index)
 /// <summary>
 /// Sets the index of the active playlist.
 /// </summary>
-STDMETHODIMP HostObject::put_ActivePlaylist(int32_t playlistIndex)
+STDMETHODIMP HostObject::put_ActivePlaylist(int playlistIndex)
 {
     auto Manager = playlist_manager_v4::get();
 
-    if ((size_t) playlistIndex >= Manager->get_playlist_count())
-        return E_INVALIDARG;
+    if (playlistIndex == -1)
+        playlistIndex = (int) Manager->get_active_playlist();
 
     Manager->set_active_playlist((size_t) playlistIndex);
 
@@ -721,14 +782,12 @@ STDMETHODIMP HostObject::put_ActivePlaylist(int32_t playlistIndex)
 /// <summary>
 /// Gets the index of the playing playlist.
 /// </summary>
-STDMETHODIMP HostObject::get_PlayingPlaylist(int32_t * playlistIndex)
+STDMETHODIMP HostObject::get_PlayingPlaylist(int * playlistIndex)
 {
     if (playlistIndex == nullptr)
         return E_INVALIDARG;
 
-    size_t Index = (uint32_t) playlist_manager::get()->get_playing_playlist();
-
-    *playlistIndex = (Index != (size_t) pfc_infinite) ? (int32_t) Index : -1;
+    *playlistIndex = (int) playlist_manager::get()->get_playing_playlist();
 
     return S_OK;
 }
@@ -736,12 +795,12 @@ STDMETHODIMP HostObject::get_PlayingPlaylist(int32_t * playlistIndex)
 /// <summary>
 /// Sets the index of the playing playlist.
 /// </summary>
-STDMETHODIMP HostObject::put_PlayingPlaylist(int32_t playlistIndex)
+STDMETHODIMP HostObject::put_PlayingPlaylist(int playlistIndex)
 {
     auto Manager = playlist_manager_v4::get();
 
-    if ((size_t) playlistIndex >= Manager->get_playlist_count())
-        return E_INVALIDARG;
+    if (playlistIndex == -1)
+        playlistIndex = (int) Manager->get_active_playlist();
 
     Manager->set_playing_playlist((size_t) playlistIndex);
 
@@ -751,15 +810,15 @@ STDMETHODIMP HostObject::put_PlayingPlaylist(int32_t playlistIndex)
 /// <summary>
 /// Gets the name of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::GetPlaylistName(int32_t playlistIndex, BSTR * name)
+STDMETHODIMP HostObject::GetPlaylistName(int playlistIndex, BSTR * name)
 {
-    auto Manager = playlist_manager_v4::get();
-
-    if ((size_t) playlistIndex >= Manager->get_playlist_count())
-        return E_INVALIDARG;
-
     if (name == nullptr)
         return E_INVALIDARG;
+
+    auto Manager = playlist_manager_v4::get();
+
+    if (playlistIndex == -1)
+        playlistIndex = (int) Manager->get_active_playlist();
 
     pfc::string Name;
 
@@ -773,15 +832,15 @@ STDMETHODIMP HostObject::GetPlaylistName(int32_t playlistIndex, BSTR * name)
 /// <summary>
 /// Gets the name of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::SetPlaylistName(int32_t playlistIndex, BSTR name)
+STDMETHODIMP HostObject::SetPlaylistName(int playlistIndex, BSTR name)
 {
-    auto Manager = playlist_manager_v4::get();
-
-    if ((size_t) playlistIndex >= Manager->get_playlist_count())
-        return E_INVALIDARG;
-
     if (name == nullptr)
         return E_INVALIDARG;
+
+    auto Manager = playlist_manager_v4::get();
+
+    if (playlistIndex == -1)
+        playlistIndex = (int) Manager->get_active_playlist();
 
     pfc::string Name = pfc::utf8FromWide(name).c_str();
 
@@ -793,14 +852,14 @@ STDMETHODIMP HostObject::SetPlaylistName(int32_t playlistIndex, BSTR name)
 /// <summary>
 /// Finds the index of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::FindPlaylist(BSTR name, int32_t * playlistIndex)
+STDMETHODIMP HostObject::FindPlaylist(BSTR name, int * playlistIndex)
 {
     if (name == nullptr)
         return E_INVALIDARG;
 
     pfc::string Name = pfc::utf8FromWide(name).c_str();
 
-    *playlistIndex = (int32_t) playlist_manager::get()->find_playlist(Name.c_str(), Name.length());
+    *playlistIndex = (int) playlist_manager::get()->find_playlist(Name.c_str(), Name.length());
 
     return S_OK;
 }
@@ -808,17 +867,35 @@ STDMETHODIMP HostObject::FindPlaylist(BSTR name, int32_t * playlistIndex)
 /// <summary>
 /// Gets the number of items of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::GetPlaylistItemCount(int32_t playlistIndex, uint32_t * itemCount)
+STDMETHODIMP HostObject::GetPlaylistItemCount(int playlistIndex, int * itemCount)
 {
-    auto Manager = playlist_manager_v4::get();
-
-    if ((size_t) playlistIndex >= Manager->get_playlist_count())
-        return E_INVALIDARG;
-
     if (itemCount == nullptr)
         return E_INVALIDARG;
 
-    *itemCount = (uint32_t) Manager->playlist_get_item_count((size_t) playlistIndex);
+    auto Manager = playlist_manager_v4::get();
+
+    if (playlistIndex == -1)
+        playlistIndex = (int) Manager->get_active_playlist();
+
+    *itemCount = (int) Manager->playlist_get_item_count((size_t) playlistIndex);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the number of selected items of the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::GetSelectedPlaylistItemCount(int playlistIndex, int maxItems, int * itemCount)
+{
+    if (itemCount == nullptr)
+        return E_INVALIDARG;
+
+    auto Manager = playlist_manager_v4::get();
+
+    if (playlistIndex == -1)
+        playlistIndex = (int) Manager->get_active_playlist();
+
+    *itemCount = (int) Manager->playlist_get_selection_count((size_t) playlistIndex, (size_t) maxItems);
 
     return S_OK;
 }
@@ -826,19 +903,17 @@ STDMETHODIMP HostObject::GetPlaylistItemCount(int32_t playlistIndex, uint32_t * 
 /// <summary>
 /// Gets the index of the focused playlist item.
 /// </summary>
-STDMETHODIMP HostObject::GetFocusedPlaylistItem(int32_t playlistIndex, int32_t * itemIndex)
+STDMETHODIMP HostObject::GetFocusedPlaylistItem(int playlistIndex, int * itemIndex)
 {
-    auto Manager = playlist_manager_v4::get();
-
-    if ((size_t) playlistIndex >= Manager->get_playlist_count())
-        return E_INVALIDARG;
-
     if (itemIndex == nullptr)
         return E_INVALIDARG;
 
-    size_t ItemIndex = Manager->playlist_get_focus_item((size_t) playlistIndex);
+    auto Manager = playlist_manager_v4::get();
 
-    *itemIndex = (ItemIndex != (size_t) pfc_infinite) ? (int32_t) ItemIndex : -1;
+    if (playlistIndex == -1)
+        playlistIndex = (int) Manager->get_active_playlist();
+
+    *itemIndex = (int) Manager->playlist_get_focus_item((size_t) playlistIndex);
 
     return S_OK;
 }
@@ -846,12 +921,11 @@ STDMETHODIMP HostObject::GetFocusedPlaylistItem(int32_t playlistIndex, int32_t *
 /// <summary>
 /// Gets the name of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::SetFocusedPlaylistItem(int32_t playlistIndex, int32_t itemIndex)
+STDMETHODIMP HostObject::SetFocusedPlaylistItem(int playlistIndex, int itemIndex)
 {
-    auto Manager = playlist_manager_v4::get();
+    NormalizeIndexes(playlistIndex, itemIndex);
 
-    if ((size_t) playlistIndex >= Manager->get_playlist_count())
-        return E_INVALIDARG;
+    auto Manager = playlist_manager_v4::get();
 
     Manager->playlist_set_focus_item((size_t) playlistIndex, (size_t) itemIndex);
 
@@ -861,12 +935,11 @@ STDMETHODIMP HostObject::SetFocusedPlaylistItem(int32_t playlistIndex, int32_t i
 /// <summary>
 /// Ensures that the specified item in the specified playlist is visible.
 /// </summary>
-STDMETHODIMP HostObject::EnsurePlaylistItemVisible(int32_t playlistIndex, int32_t itemIndex)
+STDMETHODIMP HostObject::EnsurePlaylistItemVisible(int playlistIndex, int itemIndex)
 {
-    auto Manager = playlist_manager_v4::get();
+    NormalizeIndexes(playlistIndex, itemIndex);
 
-    if ((size_t) playlistIndex >= Manager->get_playlist_count())
-        return E_INVALIDARG;
+    auto Manager = playlist_manager_v4::get();
 
     Manager->playlist_ensure_visible((size_t) playlistIndex, (size_t) itemIndex);
 
@@ -874,14 +947,27 @@ STDMETHODIMP HostObject::EnsurePlaylistItemVisible(int32_t playlistIndex, int32_
 }
 
 /// <summary>
-/// Execute the default action on the specified item in the specified playlist.
+/// Returns true if the specified item in the specified playlist is selected.
 /// </summary>
-STDMETHODIMP HostObject::ExecutePlaylistDefaultAction(int32_t playlistIndex, int32_t itemIndex)
+STDMETHODIMP HostObject::IsPlaylistItemSelected(int playlistIndex, int itemIndex, BOOL * result)
 {
+    NormalizeIndexes(playlistIndex, itemIndex);
+
     auto Manager = playlist_manager_v4::get();
 
-    if ((size_t) playlistIndex >= Manager->get_playlist_count())
-        return E_INVALIDARG;
+    *result = Manager->playlist_is_item_selected((size_t) playlistIndex, (size_t) itemIndex);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Execute the default action on the specified item in the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::ExecutePlaylistDefaultAction(int playlistIndex, int itemIndex)
+{
+    NormalizeIndexes(playlistIndex, itemIndex);
+
+    auto Manager = playlist_manager_v4::get();
 
     Manager->playlist_execute_default_action((size_t) playlistIndex, (size_t) itemIndex);
 
@@ -889,30 +975,65 @@ STDMETHODIMP HostObject::ExecutePlaylistDefaultAction(int32_t playlistIndex, int
 }
 
 /// <summary>
+/// Removes the specified item from the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::RemovePlaylistItem(int playlistIndex, int itemIndex)
+{
+    NormalizeIndexes(playlistIndex, itemIndex);
+
+    auto Manager = playlist_manager_v4::get();
+
+    Manager->playlist_clear_selection((size_t) playlistIndex);
+    Manager->playlist_set_selection_single((size_t) playlistIndex, (size_t) itemIndex, true);
+    Manager->playlist_remove_selection((size_t) playlistIndex);
+
+    return S_OK;
+}
+
+/// <summary>
 /// Creates a new playlist at the specified index.
 /// </summary>
-STDMETHODIMP HostObject::CreatePlaylist(int32_t playlistIndex, BSTR name, int32_t * newPlaylistIndex)
+STDMETHODIMP HostObject::CreatePlaylist(int playlistIndex, BSTR name, int * newPlaylistIndex)
 {
-    auto Manager = playlist_manager::get();
-
-    if ((size_t) playlistIndex >= Manager->get_playlist_count())
-        return E_INVALIDARG;
-
     if (newPlaylistIndex == nullptr)
         return E_INVALIDARG;
 
-    size_t Index;
+    auto Manager = playlist_manager::get();
 
     if ((name != nullptr) && (*name != '\0'))
     {
         pfc::string Name = pfc::utf8FromWide(name).c_str();
 
-        Index = Manager->create_playlist(Name.c_str(), Name.length(), (size_t) playlistIndex);
+        *newPlaylistIndex = (int) Manager->create_playlist(Name.c_str(), Name.length(), (size_t) playlistIndex);
     }
     else
-        Index = Manager->create_playlist_autoname((size_t) playlistIndex);
+        *newPlaylistIndex = (int) Manager->create_playlist_autoname((size_t) playlistIndex);
 
-    *newPlaylistIndex = (Index != (size_t) pfc_infinite) ? (int32_t) Index : -1;
+    return S_OK;
+}
+
+/// <summary>
+/// Adds an item to the specified playlist after the specified item using a location and optionally selects it.
+/// </summary>
+STDMETHODIMP HostObject::AddPath(int playlistIndex, int itemIndex, BSTR filePath, BOOL selectAddedItem)
+{
+    NormalizeIndexes(playlistIndex, itemIndex);
+
+    auto Manager = playlist_manager_v4::get();
+
+    pfc::string_list_impl LocationList;
+
+    LocationList.add_item(WideToUTF8(filePath).c_str());
+
+    playlist_incoming_item_filter_v2::get()->process_locations_async
+    (
+        LocationList,
+        playlist_incoming_item_filter_v2::op_flag_no_filter | playlist_incoming_item_filter_v2::op_flag_delay_ui,
+        nullptr,
+        nullptr,
+        nullptr,
+        fb2k::service_new<ProcessLocationsHandler>(playlistIndex, itemIndex, selectAddedItem)
+    );
 
     return S_OK;
 }
@@ -920,15 +1041,15 @@ STDMETHODIMP HostObject::CreatePlaylist(int32_t playlistIndex, BSTR name, int32_
 /// <summary>
 /// Duplicates the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::DuplicatePlaylist(int32_t playlistIndex, BSTR name, int32_t * newPlaylistIndex)
+STDMETHODIMP HostObject::DuplicatePlaylist(int playlistIndex, BSTR name, int * newPlaylistIndex)
 {
-    auto Manager = playlist_manager_v4::get();
-
-    if ((size_t) playlistIndex >= Manager->get_playlist_count())
-        return E_INVALIDARG;
-
     if (newPlaylistIndex == nullptr)
         return E_INVALIDARG;
+
+    auto Manager = playlist_manager_v4::get();
+
+    if (playlistIndex == -1)
+        playlistIndex = (int) Manager->get_active_playlist();
 
     pfc::string Name;
 
@@ -943,7 +1064,7 @@ STDMETHODIMP HostObject::DuplicatePlaylist(int32_t playlistIndex, BSTR name, int
 
     stream_reader_dummy sr;
 
-    *newPlaylistIndex = (int32_t) Manager->create_playlist_ex(Name.c_str(), Name.length(), (size_t) playlistIndex + 1, Items, &sr, fb2k::noAbort);
+    *newPlaylistIndex = (int) Manager->create_playlist_ex(Name.c_str(), Name.length(), (size_t) playlistIndex + 1, Items, &sr, fb2k::noAbort);
 
     return S_OK;
 }
@@ -951,12 +1072,12 @@ STDMETHODIMP HostObject::DuplicatePlaylist(int32_t playlistIndex, BSTR name, int
 /// <summary>
 /// Clears the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::ClearPlaylist(int32_t playlistIndex)
+STDMETHODIMP HostObject::ClearPlaylist(int playlistIndex)
 {
     auto Manager = playlist_manager_v4::get();
 
-    if ((size_t) playlistIndex >= Manager->get_playlist_count())
-        return E_INVALIDARG;
+    if (playlistIndex == -1)
+        playlistIndex = (int) Manager->get_active_playlist();
 
     Manager->playlist_clear((size_t) playlistIndex);
 
@@ -964,18 +1085,67 @@ STDMETHODIMP HostObject::ClearPlaylist(int32_t playlistIndex)
 }
 
 /// <summary>
-/// Gets the selected items of the specified playlist.
+/// Gets the items of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::GetSelectedPlaylistItems(int32_t playlistIndex)
+STDMETHODIMP HostObject::GetPlaylistItems(int playlistIndex, BSTR * json)
 {
     auto Manager = playlist_manager_v4::get();
 
-    if ((size_t) playlistIndex >= Manager->get_playlist_count())
-        return E_INVALIDARG;
+    if (playlistIndex == -1)
+        playlistIndex = (int) Manager->get_active_playlist();
 
-    metadb_handle_list Items;
+    metadb_handle_list hItems;
 
-    Manager->playlist_get_selected_items((size_t) playlistIndex, Items);
+    Manager->playlist_get_all_items((size_t) playlistIndex, hItems);
+
+    *json = ::SysAllocString(ToJSON(hItems).c_str());
+
+    return S_OK;
+}
+
+/// <summary>
+/// Selects the specified item of the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::SelectPlaylistItem(int playlistIndex, int itemIndex)
+{
+    NormalizeIndexes(playlistIndex, itemIndex);
+
+    auto Manager = playlist_manager_v4::get();
+
+    Manager->playlist_set_selection_single((size_t) playlistIndex, (size_t) itemIndex, true);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Deselects the specified item of the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::DeselectPlaylistItem(int playlistIndex, int itemIndex)
+{
+    NormalizeIndexes(playlistIndex, itemIndex);
+
+    auto Manager = playlist_manager_v4::get();
+
+    Manager->playlist_set_selection_single((size_t) playlistIndex, (size_t) itemIndex, false);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the selected items of the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::GetSelectedPlaylistItems(int playlistIndex, BSTR * json)
+{
+    auto Manager = playlist_manager_v4::get();
+
+    if (playlistIndex == -1)
+        playlistIndex = (int) Manager->get_active_playlist();
+
+    metadb_handle_list hItems;
+
+    Manager->playlist_get_selected_items((size_t) playlistIndex, hItems);
+
+    *json = ::SysAllocString(ToJSON(hItems).c_str());
 
     return S_OK;
 }
@@ -983,14 +1153,59 @@ STDMETHODIMP HostObject::GetSelectedPlaylistItems(int32_t playlistIndex)
 /// <summary>
 /// Clears the selection of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::ClearPlaylistSelection(int32_t playlistIndex)
+STDMETHODIMP HostObject::ClearPlaylistSelection(int playlistIndex)
 {
     auto Manager = playlist_manager_v4::get();
 
-    if ((size_t) playlistIndex >= Manager->get_playlist_count())
-        return E_INVALIDARG;
+    if (playlistIndex == -1)
+        playlistIndex = (int) Manager->get_active_playlist();
 
     Manager->playlist_clear_selection((size_t) playlistIndex);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Removes the selected items in the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::RemoveSelectedPlaylistItems(int playlistIndex)
+{
+    auto Manager = playlist_manager_v4::get();
+
+    if (playlistIndex == -1)
+        playlistIndex = (int) Manager->get_active_playlist();
+
+    Manager->playlist_remove_selection((size_t) playlistIndex, false);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Removes the unselected items in the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::RemoveUnselectedPlaylistItems(int playlistIndex)
+{
+    auto Manager = playlist_manager_v4::get();
+
+    if (playlistIndex == -1)
+        playlistIndex = (int) Manager->get_active_playlist();
+
+    Manager->playlist_remove_selection((size_t) playlistIndex, true);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Deletes the specified playlist.
+/// </summary>
+STDMETHODIMP HostObject::DeletePlaylist(int playlistIndex)
+{
+    auto Manager = playlist_manager_v4::get();
+
+    if (playlistIndex == -1)
+        playlistIndex = (int) Manager->get_active_playlist();
+
+    Manager->remove_playlist((size_t) playlistIndex);
 
     return S_OK;
 }
@@ -1002,46 +1217,39 @@ STDMETHODIMP HostObject::ClearPlaylistSelection(int32_t playlistIndex)
 /// <summary>
 /// Creates a new auto playlist at the specified index.
 /// </summary>
-STDMETHODIMP HostObject::CreateAutoPlaylist(int32_t playlistIndex, BSTR name, BSTR query, BSTR sort, uint32_t flags, int32_t * newPlaylistIndex)
+STDMETHODIMP HostObject::CreateAutoPlaylist(int playlistIndex, BSTR name, BSTR query, BSTR sort, uint32_t flags, int * newPlaylistIndex)
 {
-    int32_t Index;
-
-    HRESULT hr = CreatePlaylist(playlistIndex, name, &Index);
+    HRESULT hr = CreatePlaylist(playlistIndex, name, newPlaylistIndex);
 
     if (!SUCCEEDED(hr))
         return hr;
-
-    if (Index == pfc_infinite)
-        return E_INVALIDARG;
 
     try
     {
         pfc::string Query = pfc::utf8FromWide(query).c_str();
         pfc::string Sort = pfc::utf8FromWide(sort).c_str();
 
-        autoplaylist_manager::get()->add_client_simple(Query.c_str(), Sort.c_str(), (size_t) Index, flags);
-
-        *newPlaylistIndex = (Index != pfc_infinite) ? (int32_t) Index : -1;
+        autoplaylist_manager::get()->add_client_simple(Query.c_str(), Sort.c_str(), (size_t) *newPlaylistIndex, flags);
 
         return S_OK;
     }
     catch (const pfc::exception &)
     {
-        playlist_manager::get()->remove_playlist((size_t) Index);
+        playlist_manager::get()->remove_playlist((size_t) *newPlaylistIndex);
 
         return E_FAIL;
     }
 }
 
-STDMETHODIMP HostObject::IsAutoPlaylist(int32_t index, BOOL * result)
+STDMETHODIMP HostObject::IsAutoPlaylist(int playlistIndex, BOOL * result)
 {
     if (result == nullptr)
         return E_INVALIDARG;
 
-    if ((size_t) index >= playlist_manager::get()->get_playlist_count())
-        return E_INVALIDARG;
+    if (playlistIndex == -1)
+        playlistIndex = (int) playlist_manager_v4::get()->get_active_playlist();
 
-    *result = autoplaylist_manager::get()->is_client_present((size_t) index);
+    *result = autoplaylist_manager::get()->is_client_present((size_t) playlistIndex);
 
     return S_OK;
 }
@@ -1053,14 +1261,14 @@ STDMETHODIMP HostObject::IsAutoPlaylist(int32_t index, BOOL * result)
 /// <summary>
 /// Gets the playback order (0 = default, 1 = repeat playlist, 2 = repeat track, 3 = random, 4 = shuffle tracks, 5 = shuffle albums, 6 = shuffle folders).
 /// </summary>
-STDMETHODIMP HostObject::get_PlaybackOrder(int32_t * index)
+STDMETHODIMP HostObject::get_PlaybackOrder(int * playlistIndex)
 {
-    if (index == nullptr)
+    if (playlistIndex == nullptr)
         return E_INVALIDARG;
 
-    size_t Index = (uint32_t) playlist_manager::get()->playback_order_get_active();
+    auto Manager = playlist_manager::get();
 
-    *index = (Index != (size_t) pfc_infinite) ? (int32_t) Index : -1;
+    *playlistIndex = (int) Manager->playback_order_get_active();
 
     return S_OK;
 }
@@ -1068,12 +1276,14 @@ STDMETHODIMP HostObject::get_PlaybackOrder(int32_t * index)
 /// <summary>
 /// Sets the playback order (0 = default, 1 = repeat playlist, 2 = repeat track, 3 = random, 4 = shuffle tracks, 5 = shuffle albums, 6 = shuffle folders).
 /// </summary>
-STDMETHODIMP HostObject::put_PlaybackOrder(int32_t index)
+STDMETHODIMP HostObject::put_PlaybackOrder(int playlistIndex)
 {
     auto Manager = playlist_manager::get();
 
-    if ((size_t) index < Manager->playback_order_get_count())
-        Manager->playback_order_set_active((size_t) index);
+    if (playlistIndex == -1)
+        playlistIndex = (int) Manager->get_active_playlist();
+
+    Manager->playback_order_set_active((size_t) playlistIndex);
 
     return S_OK;
 }
@@ -1232,4 +1442,62 @@ void ToBase64(const BYTE * data, DWORD size, BSTR * base64)
     }
 
     delete[] Base64;
+}
+
+/// <summary>
+/// Escapes all restricted JSON characters in a string.
+/// </summary>
+const std::string Stringify(const char * s)
+{
+    std::string t;
+
+    t.reserve(::strlen(s));
+
+    for (; *s; ++s)
+    {
+        switch (*s)
+        {
+            case '"':  t += '\\'; t += '\"'; break;
+            case '\\': t += '\\'; t += '\\'; break;
+            case '\b': t += '\\'; t += 'b'; break;
+            case '\t': t += '\\'; t += 't'; break;
+            case '\n': t += '\\'; t += 'n'; break;
+            case '\f': t += '\\'; t += 'f'; break;
+            case '\r': t += '\\'; t += 'r'; break;
+            default:
+                if ('\x00' <= *s && *s <= '\x1f')
+                    t += FormatText("\\u04x", *s).c_str();
+                else
+                    t += *s;
+        }
+    }
+
+    return t;
+}
+
+/// <summary>
+/// Converts a metadb handle list to a JSON string.
+/// </summary>
+std::wstring ToJSON(const metadb_handle_list & hItems)
+{
+    std::wstring Result = L"[";
+    bool IsFirstItem = true;
+
+    for (const auto & hItem : hItems)
+    {
+        if (!IsFirstItem)
+            Result.append(L",");
+
+        const playable_location & Location = hItem->get_location();
+
+        std::string Path = Stringify(Location.get_path());
+
+        Result.append(FormatText(LR"({"Path": "%s", "Subsong": %u})", UTF8ToWide(Path).c_str(), Location.get_subsong_index()).c_str());
+
+        IsFirstItem = false;
+    }
+
+    Result.append(L"]");
+
+    return Result;
 }

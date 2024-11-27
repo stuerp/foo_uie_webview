@@ -1,5 +1,5 @@
 
-/** $VER: framework.h (2024.11.20) P. Stuer **/
+/** $VER: framework.h (2024.11.27) P. Stuer **/
 
 #pragma once
 
@@ -13,6 +13,7 @@
 #include <SDKDDKVer.h>
 
 #include <Windows.h>
+#include <pathcch.h>
 
 #include <atlbase.h>
 #include <atltypes.h>

@@ -96,7 +96,7 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.2.0.0-alpha2, 2024-11-24, *"I'm getting framed..."*
+v0.2.0.0-alpha3, 2024-11-xx, *"I'm getting framed..."*
 
 * New: Builds with foobar2000 SDK 2024-08-07.
 * New: Updated WebView2 component to 1.0.2849.39.
@@ -105,6 +105,8 @@ v0.2.0.0-alpha2, 2024-11-24, *"I'm getting framed..."*
   * Methods
     * ReadAllText(filePath, codePage): Reads the specified file and returns it as a string. If codePage is 0 the file is assumed to be UTF-8 encoded.
     * ReadImage(filePath): Reads the specified file and returns it as a Base64 string. (alpha2)
+    * ReadDirectory(directoryPath, searchPattern): Reads the specified directory and returns the matching items as a JSON string. (alpha3)
+
     * GetPlaylistName: Gets the name of the specified playlist. (alpha2)
     * SetPlaylistName: Sets the name of the specified playlist. (alpha2)
     * FindPlaylist(name): Returns the index of the playlist with specified name. (alpha2)
@@ -112,13 +114,28 @@ v0.2.0.0-alpha2, 2024-11-24, *"I'm getting framed..."*
     * GetFocusedPlaylistItem: Gets the index of the focused item in the specified playlist. (alpha2)
     * SetFocusedPlaylistItem: Sets the index of the focused item in the specified playlist. (alpha2)
     * EnsurePlaylistItemVisible(playlistIndex, itemIndex): Ensures the specified item of the specified playlist is visible. (alpha2)
+    * IsPlaylistItemSelected(playlistIndex, itemIndex): Returns true if the specified item of the specified playlist is selected. (alpha3)   
     * ExecutePlaylistDefaultAction(playlistIndex, itemIndex): Executes the default action on the specified item of the specified playlist. (alpha2)
+
     * CreatePlaylist(playlistIndex, name): Creates a new playlist with the specified name and inserts it after the specified playlist. (alpha2)
+    * AddPath(playlistIndex, itemIndex, filePath, selectAddedItem): Adds an item to the specified playlist after the specified item using a file path and optionally selects it. (alpha3)
+
     * DuplicatePlaylist(playlistIndex, name): Duplicates the specified playlist and sets its name. (alpha2)
-    * ClearPlaylist(playlistIndex): Removes all items from the specified playlist. (alpha2)
+    * GetPlaylistItems(playlistIndex): Returns the items of the specified playlist as a JSON string. (alpha3)
+    * SelectPlaylistItem(playlistIndex, itemIndex): Selects the specified item in the specified playlist. (alpha3)
+    * DeselectPlaylistItem(playlistIndex, itemIndex): Deselects the specified item in the specified playlist. (alpha3)
+    * GetSelectedPlaylistItems(playlistIndex): Returns the selected items of the specified playlist as a JSON string. (alpha3)
     * ClearPlaylistSelection(playlistIndex): Clears the selected items in the specified playlist. (alpha2)
+    * RemoveSelectedPlaylistItems(playlistIndex, crop): Removes the selected items from the specfied playlist. (alpha3)
+   
+    * RemovePlaylistItem(playlistIndex, itemIndex): Removes the specified item from the specified playlist. (alpha3)
+
+    * ClearPlaylist(playlistIndex): Removes all items from the specified playlist. (alpha2)
+    * DeletePlaylist(playlistIndex): Deletes the specified playlist. (alpha3)
+
     * CreateAutoPlaylist(playlistIndex, name, query, sort, flags): Creates an auto playlist. (alpha2)
     * IsAutoPlaylist(playlistIndex): Returns true if the specified playlist is an auto playlist. (alpha2)
+
   * Properties
     * PlaylistCount: Returns the number of playlists. (alpha2)
     * ActivePlaylist: Gets or sets index of the active playlist. (alpha2)

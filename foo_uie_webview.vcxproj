@@ -213,6 +213,7 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
     <ClInclude Include="framework.h" />
     <ClInclude Include="HostObjectImpl.h" />
     <ClInclude Include="HostObject_h.h" />
+    <ClInclude Include="ProcessLocationsHandler.h" />
     <ClInclude Include="SharedBuffer.h" />
     <ClInclude Include="UIElementTracker.h" />
     <ClInclude Include="pch.h" />
