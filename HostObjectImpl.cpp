@@ -675,7 +675,7 @@ STDMETHODIMP HostObject::ReadDirectory(BSTR directoryPath, BSTR searchPattern, B
 
         uint64_t FileSize = (((uint64_t) fd.nFileSizeHigh) << 32) + fd.nFileSizeLow;
 
-        Result.append(FormatText(LR"({"Name": "%s", "Size": %lu, "IsDirectory": %s})", fd.cFileName, FileSize, (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? L"true" : L"false").c_str());
+        Result.append(FormatText(LR"({"Name": "%s", "Size": %lu, "IsDirectory": "%s"})", fd.cFileName, FileSize, (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? L"true" : L"false").c_str());
 
         IsFirstItem = false;
 
