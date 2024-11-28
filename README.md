@@ -96,7 +96,7 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.2.0.0-alpha3, 2024-11-xx, *"I'm getting framed..."*
+v0.2.0.0-alpha4, 2024-12-xx, *"I'm getting framed..."*
 
 * New: Builds with foobar2000 SDK 2024-08-07.
 * New: Updated WebView2 component to 1.0.2849.39.
@@ -142,6 +142,8 @@ v0.2.0.0-alpha3, 2024-11-xx, *"I'm getting framed..."*
     * PlayingPlaylist: Gets or sets index of the playing playlist. (alpha2)
     * IsAutoPlaylist: Returns true if the specified playlist is an auto playlist. (alpha2)
     * PlaybackOrder: Gets or sets the playback order (0 = default, 1 = repeat playlist, 2 = repeat track, 3 = random, 4 = shuffle tracks, 5 = shuffle albums, 6 = shuffle folders). (alpha2)
+  * Fixed: Booleans in objects are now parsed correctly. (alpha4)
+  * Improved: The searchPattern parameter is now optional in ReadDirectory() and defaults to "*.*".
 
 v0.1.8.0, 2024-08-10
 

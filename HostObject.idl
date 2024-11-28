@@ -59,7 +59,7 @@ library HostObjectLibrary
         // Files
         HRESULT ReadAllText([in] BSTR filePath, [in] __int32 codePage, [out, retval] BSTR * text);
         HRESULT ReadImage([in] BSTR filePath, [out, retval] BSTR * image);
-        HRESULT ReadDirectory([in] BSTR pathName, [in] BSTR searchPattern, [out, retval] BSTR * json);
+        HRESULT ReadDirectory([in] BSTR pathName, [in, defaultvalue("*.*")] BSTR searchPattern, [out, retval] BSTR * json);
 
         // Playlists
         [propget] HRESULT PlaylistCount([out, retval] int * count);
