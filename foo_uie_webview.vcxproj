@@ -288,6 +288,7 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
     <None Include=".gitignore" />
     <None Include="Build-FB2KComponent.ps1" />
     <None Include="cpp.hint" />
+    <None Include="docs\README.md" />
     <None Include="packages.config" />
     <None Include="README.md" />
     <None Include="Template.html">

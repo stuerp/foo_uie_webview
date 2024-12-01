@@ -50,6 +50,7 @@
     <None Include="README.md" />
     <None Include="Template.html" />
     <None Include="packages.config" />
+    <None Include="docs\README.md" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="LICENSE.txt" />
