@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.cpp (2024.11.27) P. Stuer **/
+/** $VER: HostObjectImpl.cpp (2024.12.01) P. Stuer **/
 
 #include "pch.h"
 
@@ -91,12 +91,12 @@ STDMETHODIMP HostObject::Stop()
 /// <summary>
 /// Starts playback, paused or unpaused. If playback is already active, existing process is stopped first.
 /// </summary>
-STDMETHODIMP HostObject::Play(BOOL paused)
+STDMETHODIMP HostObject::Play(VARIANT_BOOL paused)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
 
-    _PlaybackControl->start(playback_control::track_command_play, paused);
+    _PlaybackControl->start(playback_control::track_command_play, (bool) paused);
 
     return S_OK;
 }
@@ -104,12 +104,12 @@ STDMETHODIMP HostObject::Play(BOOL paused)
 /// <summary>
 /// Pauses or resumes playback.
 /// </summary>
-STDMETHODIMP HostObject::Pause(BOOL paused)
+STDMETHODIMP HostObject::Pause(VARIANT_BOOL paused)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
 
-    _PlaybackControl->pause(paused);
+    _PlaybackControl->pause((bool) paused);
 
     return S_OK;
 }
@@ -247,7 +247,7 @@ STDMETHODIMP HostObject::SeekDelta(double delta)
 /// <summary>
 /// Gets whether playback is active.
 /// </summary>
-STDMETHODIMP HostObject::get_IsPlaying(BOOL * isPlaying)
+STDMETHODIMP HostObject::get_IsPlaying(VARIANT_BOOL * isPlaying)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -263,7 +263,7 @@ STDMETHODIMP HostObject::get_IsPlaying(BOOL * isPlaying)
 /// <summary>
 /// Gets whether playback is active and in paused state.
 /// </summary>
-STDMETHODIMP HostObject::get_IsPaused(BOOL * isPaused)
+STDMETHODIMP HostObject::get_IsPaused(VARIANT_BOOL * isPaused)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -279,7 +279,7 @@ STDMETHODIMP HostObject::get_IsPaused(BOOL * isPaused)
 /// <summary>
 /// Gets the stop-after-current-track option state.
 /// </summary>
-STDMETHODIMP HostObject::get_StopAfterCurrent(BOOL * stopAfterCurrent)
+STDMETHODIMP HostObject::get_StopAfterCurrent(VARIANT_BOOL * stopAfterCurrent)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -295,12 +295,12 @@ STDMETHODIMP HostObject::get_StopAfterCurrent(BOOL * stopAfterCurrent)
 /// <summary>
 /// Sets the stop-after-current-track option state.
 /// </summary>
-STDMETHODIMP HostObject::put_StopAfterCurrent(BOOL stopAfterCurrent)
+STDMETHODIMP HostObject::put_StopAfterCurrent(VARIANT_BOOL stopAfterCurrent)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
 
-    _PlaybackControl->set_stop_after_current(stopAfterCurrent);
+    _PlaybackControl->set_stop_after_current((bool) stopAfterCurrent);
 
     return S_OK;
 }
@@ -340,7 +340,7 @@ STDMETHODIMP HostObject::get_Position(double * position)
 /// <summary>
 /// Gets whether currently played track is seekable. If it's not, playback_seek/playback_seek_delta calls will be ignored.
 /// </summary>
-STDMETHODIMP HostObject::get_CanSeek(BOOL * canSeek)
+STDMETHODIMP HostObject::get_CanSeek(VARIANT_BOOL * canSeek)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -385,7 +385,7 @@ STDMETHODIMP HostObject::put_Volume(double volume)
 /// <summary>
 /// Gets whether playback is muted.
 /// </summary>
-STDMETHODIMP HostObject::get_IsMuted(BOOL * isMuted)
+STDMETHODIMP HostObject::get_IsMuted(VARIANT_BOOL * isMuted)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -675,7 +675,7 @@ STDMETHODIMP HostObject::ReadDirectory(BSTR directoryPath, BSTR searchPattern, B
 
         uint64_t FileSize = (((uint64_t) fd.nFileSizeHigh) << 32) + fd.nFileSizeLow;
 
-        Result.append(FormatText(LR"({"Name": "%s", "Size": %lu, "IsDirectory": "%s"})", fd.cFileName, FileSize, (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? L"true" : L"false").c_str());
+        Result.append(FormatText(LR"({"name": "%s", "size": %lu, "isDirectory": %s})", fd.cFileName, FileSize, ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? L"true" : L"false")).c_str());
 
         IsFirstItem = false;
 
@@ -949,7 +949,7 @@ STDMETHODIMP HostObject::EnsurePlaylistItemVisible(int playlistIndex, int itemIn
 /// <summary>
 /// Returns true if the specified item in the specified playlist is selected.
 /// </summary>
-STDMETHODIMP HostObject::IsPlaylistItemSelected(int playlistIndex, int itemIndex, BOOL * result)
+STDMETHODIMP HostObject::IsPlaylistItemSelected(int playlistIndex, int itemIndex, VARIANT_BOOL * result)
 {
     NormalizeIndexes(playlistIndex, itemIndex);
 
@@ -1015,7 +1015,7 @@ STDMETHODIMP HostObject::CreatePlaylist(int playlistIndex, BSTR name, int * newP
 /// <summary>
 /// Adds an item to the specified playlist after the specified item using a location and optionally selects it.
 /// </summary>
-STDMETHODIMP HostObject::AddPath(int playlistIndex, int itemIndex, BSTR filePath, BOOL selectAddedItem)
+STDMETHODIMP HostObject::AddPath(int playlistIndex, int itemIndex, BSTR filePath, VARIANT_BOOL selectAddedItem)
 {
     NormalizeIndexes(playlistIndex, itemIndex);
 
@@ -1241,7 +1241,7 @@ STDMETHODIMP HostObject::CreateAutoPlaylist(int playlistIndex, BSTR name, BSTR q
     }
 }
 
-STDMETHODIMP HostObject::IsAutoPlaylist(int playlistIndex, BOOL * result)
+STDMETHODIMP HostObject::IsAutoPlaylist(int playlistIndex, VARIANT_BOOL * result)
 {
     if (result == nullptr)
         return E_INVALIDARG;
@@ -1492,7 +1492,7 @@ std::wstring ToJSON(const metadb_handle_list & hItems)
 
         std::string Path = Stringify(Location.get_path());
 
-        Result.append(FormatText(LR"({"Path": "%s", "Subsong": %u})", UTF8ToWide(Path).c_str(), Location.get_subsong_index()).c_str());
+        Result.append(FormatText(LR"({"path": "%s", "subsong": %u})", UTF8ToWide(Path).c_str(), Location.get_subsong_index()).c_str());
 
         IsFirstItem = false;
     }

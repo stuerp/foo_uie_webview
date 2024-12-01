@@ -1,7 +1,10 @@
+
+/** $VER: HostObject.idl (2024.12.01) P. Stuer **/
+
 import "oaidl.idl";
 import "ocidl.idl";
 
-[uuid(661566A3-CB7A-4901-A64B-4C0C603BBA48), version(0.1)]
+[uuid(661566A3-CB7A-4901-A64B-4C0C603BBA48), version(0.2)]
 library HostObjectLibrary
 {
     struct image_t
@@ -21,8 +24,8 @@ library HostObjectLibrary
         HRESULT Print([in] BSTR text);
 
         HRESULT Stop();
-        HRESULT Play([in] bool paused);
-        HRESULT Pause([in] bool paused);
+        HRESULT Play([in] VARIANT_BOOL paused);
+        HRESULT Pause([in] VARIANT_BOOL paused);
         HRESULT Previous();
         HRESULT Next();
         HRESULT Random();
@@ -37,20 +40,20 @@ library HostObjectLibrary
         HRESULT Seek([in] double time);
         HRESULT SeekDelta([in] double delta);
 
-        [propget] HRESULT IsPlaying([out, retval] bool * value);
-        [propget] HRESULT IsPaused([out, retval] bool * value);
+        [propget] HRESULT IsPlaying([out, retval] VARIANT_BOOL * value);
+        [propget] HRESULT IsPaused([out, retval] VARIANT_BOOL * value);
 
-        [propget] HRESULT StopAfterCurrent([out, retval] bool * value);
-        [propput] HRESULT StopAfterCurrent([in] bool value);
+        [propget] HRESULT StopAfterCurrent([out, retval] VARIANT_BOOL * value);
+        [propput] HRESULT StopAfterCurrent([in] VARIANT_BOOL value);
 
         [propget] HRESULT Length([out, retval] double * value);
         [propget] HRESULT Position([out, retval] double * value);
-        [propget] HRESULT CanSeek([out, retval] bool * value);
+        [propget] HRESULT CanSeek([out, retval] VARIANT_BOOL * value);
 
         [propget] HRESULT Volume([out, retval] double * value);
         [propput] HRESULT Volume([in] double value);
 
-        [propget] HRESULT IsMuted([out, retval] bool * value);
+        [propget] HRESULT IsMuted([out, retval] VARIANT_BOOL * value);
 
         HRESULT GetFormattedText([in] BSTR text, [out, retval] BSTR * formattedText);
 
@@ -82,10 +85,10 @@ library HostObjectLibrary
         HRESULT SetFocusedPlaylistItem([in] int playlistIndex, [in] int itemIndex);
         HRESULT EnsurePlaylistItemVisible([in] int playlistIndex, [in] int itemIndex);
         HRESULT ExecutePlaylistDefaultAction([in] int playlistIndex, [in] int itemIndex);
-        HRESULT IsPlaylistItemSelected([in] int playlistIndex, [in] int itemIndex, [out, retval] bool * result);
+        HRESULT IsPlaylistItemSelected([in] int playlistIndex, [in] int itemIndex, [out, retval] VARIANT_BOOL * result);
 
         HRESULT CreatePlaylist([in] int playlistIndex, [in] BSTR name, [out, retval] int * newPlaylistIndex);
-        HRESULT AddPath([in] int playlistIndex, [in] int itemIndex, [in] BSTR filePath, [in] BOOL selectAddedItem);
+        HRESULT AddPath([in] int playlistIndex, [in] int itemIndex, [in] BSTR filePath, [in] VARIANT_BOOL selectAddedItem);
 
         HRESULT DuplicatePlaylist([in] int playlistIndex, [in] BSTR name, [out, retval] int * newPlaylistIndex);
         HRESULT GetPlaylistItems([in] int playlistIndex, [out, retval] BSTR * json);
@@ -104,7 +107,7 @@ library HostObjectLibrary
 
         // Auto Playlists
         HRESULT CreateAutoPlaylist([in] int playlistIndex, [in] BSTR name, [in] BSTR query, [in] BSTR sort, [in] unsigned __int32 flags, [out, retval] int * newPlaylistIndex);
-        HRESULT IsAutoPlaylist([in] int playlistIndex, [out, retval] bool * result);
+        HRESULT IsAutoPlaylist([in] int playlistIndex, [out, retval] VARIANT_BOOL * result);
 
         // Playback Order
         [propget] HRESULT PlaybackOrder([out, retval] int * index);

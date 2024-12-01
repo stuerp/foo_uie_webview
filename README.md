@@ -96,37 +96,38 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.2.0.0-alpha4, 2024-12-xx, *"I'm getting framed..."*
+v0.2.0.0-alpha4, 2024-12-01, *"I'm getting framed..."*
 
 * New: Builds with foobar2000 SDK 2024-08-07.
 * New: Updated WebView2 component to 1.0.2849.39.
 * New: Templates can contain iframes. Take a look at the included Default-FrameTemplate.html example.
 * New:
   * Methods
-    * ReadAllText(filePath, codePage): Reads the specified file and returns it as a string. If codePage is 0 the file is assumed to be UTF-8 encoded.
-    * ReadImage(filePath): Reads the specified file and returns it as a Base64 string. (alpha2)
-    * ReadDirectory(directoryPath, searchPattern): Reads the specified directory and returns the matching items as a JSON string. (alpha3)
+    * ReadAllText(filePath, codePage): Reads a file and returns it as a string. If codePage is 0 the file is assumed to be UTF-8 encoded.
+    * ReadImage(filePath): Reads an image file and returns it as a Base64 string. (alpha2)
+    * ReadDirectory(directoryPath, searchPattern): Reads a directory and returns the matching items as a JSON string. (alpha3)
 
-    * GetPlaylistName: Gets the name of the specified playlist. (alpha2)
-    * SetPlaylistName: Sets the name of the specified playlist. (alpha2)
-    * FindPlaylist(name): Returns the index of the playlist with specified name. (alpha2)
-    * GetPlaylistItemCount(index): Gets the number of items in the specified platlist. (alpha2)
-    * GetFocusedPlaylistItem: Gets the index of the focused item in the specified playlist. (alpha2)
-    * SetFocusedPlaylistItem: Sets the index of the focused item in the specified playlist. (alpha2)
-    * EnsurePlaylistItemVisible(playlistIndex, itemIndex): Ensures the specified item of the specified playlist is visible. (alpha2)
-    * IsPlaylistItemSelected(playlistIndex, itemIndex): Returns true if the specified item of the specified playlist is selected. (alpha3)   
-    * ExecutePlaylistDefaultAction(playlistIndex, itemIndex): Executes the default action on the specified item of the specified playlist. (alpha2)
+    * GetPlaylistName(playlistIndex): Gets the name of a playlist. (alpha2)
+    * SetPlaylistName(playlistIndex, name): Sets the name of a playlist. (alpha2)
+    * FindPlaylist(name): Returns the index of the playlist with the specified name. (alpha2)
+    * GetPlaylistItemCount(index): Gets the number of items in a platlist. (alpha2)
+    * GetFocusedPlaylistItem(playlistIndex): Gets the index of the focused item in a playlist. (alpha2)
+    * SetFocusedPlaylistItem(playlistIndex, name): Sets the index of the focused item in a playlist. (alpha2)
+    * EnsurePlaylistItemVisible(playlistIndex, itemIndex): Ensures the specified item of a playlist is visible. (alpha2)
+    * IsPlaylistItemSelected(playlistIndex, itemIndex): Returns true if the specified item of a playlist is selected. (alpha3)   
+    * ExecutePlaylistDefaultAction(playlistIndex, itemIndex): Executes the default action on the specified item of a playlist. (alpha2)
 
     * CreatePlaylist(playlistIndex, name): Creates a new playlist with the specified name and inserts it after the specified playlist. (alpha2)
     * AddPath(playlistIndex, itemIndex, filePath, selectAddedItem): Adds an item to the specified playlist after the specified item using a file path and optionally selects it. (alpha3)
 
     * DuplicatePlaylist(playlistIndex, name): Duplicates the specified playlist and sets its name. (alpha2)
     * GetPlaylistItems(playlistIndex): Returns the items of the specified playlist as a JSON string. (alpha3)
-    * SelectPlaylistItem(playlistIndex, itemIndex): Selects the specified item in the specified playlist. (alpha3)
+    * SelectPlaylistItem(playlistIndex, itemIndex): Selects the specified item in a playlist. (alpha3)
     * DeselectPlaylistItem(playlistIndex, itemIndex): Deselects the specified item in the specified playlist. (alpha3)
     * GetSelectedPlaylistItems(playlistIndex): Returns the selected items of the specified playlist as a JSON string. (alpha3)
     * ClearPlaylistSelection(playlistIndex): Clears the selected items in the specified playlist. (alpha2)
-    * RemoveSelectedPlaylistItems(playlistIndex, crop): Removes the selected items from the specfied playlist. (alpha3)
+    * RemoveSelectedPlaylistItems(playlistIndex): Removes the selected items from the specfied playlist. (alpha3)
+    * RemoveUnselectedPlaylistItems(playlistIndex): Removes the unselected items from the specfied playlist. (alpha3)
    
     * RemovePlaylistItem(playlistIndex, itemIndex): Removes the specified item from the specified playlist. (alpha3)
 
@@ -144,6 +145,8 @@ v0.2.0.0-alpha4, 2024-12-xx, *"I'm getting framed..."*
     * PlaybackOrder: Gets or sets the playback order (0 = default, 1 = repeat playlist, 2 = repeat track, 3 = random, 4 = shuffle tracks, 5 = shuffle albums, 6 = shuffle folders). (alpha2)
   * Fixed: Booleans in objects are now parsed correctly. (alpha4)
   * Improved: The searchPattern parameter is now optional in ReadDirectory() and defaults to "*.*".
+  * Changed: Returned JSON objects now use Pascal casing. (alpha4)
+  * Fixed: Boolean parameters and return values are true Javascript booleans now. (alpha4)
 
 v0.1.8.0, 2024-08-10
 
