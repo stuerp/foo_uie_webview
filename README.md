@@ -134,7 +134,7 @@ v0.2.0.0-alpha4, 2024-12-01, *"I'm getting framed..."*
     * ClearPlaylist(playlistIndex): Removes all items from the specified playlist. (alpha2)
     * DeletePlaylist(playlistIndex): Deletes the specified playlist. (alpha3)
 
-    * CreateAutoPlaylist(playlistIndex, name, query, sort, flags): Creates an auto playlist. (alpha2)
+    * CreateAutoPlaylist(playlistIndex, name, query, sort, flags): Creates an auto playlist. Possible values for flags are 0 = default, 1 = Keep sorted). (alpha2)
     * IsAutoPlaylist(playlistIndex): Returns true if the specified playlist is an auto playlist. (alpha2)
 
   * Properties
@@ -143,10 +143,41 @@ v0.2.0.0-alpha4, 2024-12-01, *"I'm getting framed..."*
     * PlayingPlaylist: Gets or sets index of the playing playlist. (alpha2)
     * IsAutoPlaylist: Returns true if the specified playlist is an auto playlist. (alpha2)
     * PlaybackOrder: Gets or sets the playback order (0 = default, 1 = repeat playlist, 2 = repeat track, 3 = random, 4 = shuffle tracks, 5 = shuffle albums, 6 = shuffle folders). (alpha2)
+
+  * Events
+    * OnAddedPlaylistItems(playlistIndex): Called when items have been added to the specified playlist. (alpha4)
+    * OnReorderedPlaylistItems(playlistIndex): Called when the items of the specified playlist have been reordered. (alpha4)
+    * OnRemovingPlaylistItems(playlistIndex): Called when removing items of the specified playlist. (alpha4)
+    * OnRemovedPlaylistItems(playlistIndex): Called when items of the specified playlist have been removed. (alpha4)
+
+    * OnPlaylistSelectedItemsChanged(playlistIndex): Called when the selected items of the specified playlist have been changed. (alpha4)
+    * OnPlaylistFocusedItemChanged(playlistIndex, fromItemIndex, toItemIndex): Called when the focused item of the specified playlist has been changed. (alpha4)
+
+    * OnModifiedPlaylistItems(playlistIndex): Called when some playlist items of the specified playlist have been modified. (alpha4)
+    * OnModifiedPlaylistItemsFromPlayback(playlistIndex): Called when some playlist items of the specified playlist have been modified from playback. (alpha4)
+
+    * OnEnsuredPlaylistItemIsVisible(playlistIndex, itemIndex): Called when the specified item of a playlist was ensured to be visible. (alpha4)
+
+    * OnReplacedPlaylistItems(playlistIndex): Called when items of the specified playlist have been replaced. (alpha4)
+
+    * OnChangedActivePlaylist(oldPlaylistIndex, newPlaylistIndex): Called when the active playlist is changed. (alpha4)
+    * OnCreatedPlaylist(playlistIndex, name): Called when the specified playlist has been created. (alpha4)
+    * OnReorderedPlaylists(): Called when the playlists have been reordered. (alpha4)
+    * OnRemovingPlaylists(): Called when playlists are being removed. (alpha4)
+    * OnRemovedPlaylists(): Called when playlists have been removed. (alpha4)
+
+    * OnRenamedPlaylist(playlistIndex, name): Called when the specified playlist has been renamed. (alpha4)
+    * OnLockedPlaylist(playlistIndex): Called when the specified playlist has been locked. (alpha4)
+    * OnUnlockedPlaylist(playlistIndex): Called when the specified playlist has been unlocked. (alpha4)
+
+    * OnDefaultFormatChanged(): Called when the default format has been changed. (alpha4)
+    * OnChangedPlaybackOrder(playbackOrderIndex): Called when the playback order has been changed. (alpha4)
+
   * Fixed: Booleans in objects are now parsed correctly. (alpha4)
-  * Improved: The searchPattern parameter is now optional in ReadDirectory() and defaults to "*.*".
-  * Changed: Returned JSON objects now use Pascal casing. (alpha4)
   * Fixed: Boolean parameters and return values are true Javascript booleans now. (alpha4)
+  * Improved: The searchPattern parameter is now optional in ReadDirectory() and defaults to "*.*". (alpha4)
+  * Improved: The CreateAutoPlaylist() sort and flags parameter can be omitted. They default to "" and 0 respectively. (alpha4)
+  * Changed: Returned JSON objects now use Pascal casing. (alpha4)
 
 v0.1.8.0, 2024-08-10
 

@@ -158,6 +158,11 @@ window.onload = function()
         OnSharedBufferReceived(e);
     });
 
+    window.chrome.webview.addEventListener("playlistItemFocusChanged", e =>
+    {
+        alert("Focus changed");
+    });
+
     Refresh();
 }
 
@@ -239,12 +244,6 @@ function OnPlaybackTime(time)
 function OnVolumeChange(newValue)
 {
     document.getElementById("Volume").textContent = newValue; // in dBFS
-}
-
-// Called when the focused playlist item changes.
-function OnPlaylistFocusedItemChanged()
-{
-    Refresh();
 }
 
 // Refreshes the content of all elements.

@@ -231,6 +231,7 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
     <ClCompile Include="Exceptions.cpp" />
     <ClCompile Include="FileWatcher.cpp" />
     <ClCompile Include="HostObjectImpl.cpp" />
+    <ClCompile Include="HostObjectImplPlaylists.cpp" />
     <ClCompile Include="HostObject_i.c">
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </ForcedIncludeFiles>

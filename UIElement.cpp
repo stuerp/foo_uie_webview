@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.cpp (2024.07.08) P. Stuer **/
+/** $VER: UIElement.cpp (2024.12.01) P. Stuer **/
 
 #include "pch.h"
 
@@ -24,9 +24,17 @@
 /// </summary>
 UIElement::UIElement() : m_bMsgHandled(FALSE)
 {
-    playlist_callback_single_impl_base::set_callback_flags(flag_on_item_focus_change);
-
     _PlaybackControl = playback_control::get();
+
+    playlist_manager::get()->register_callback(this, (t_uint32) flag_all);
+}
+
+/// <summary>
+/// Deletes this instance.
+/// </summary>
+UIElement::~UIElement()
+{
+    playlist_manager::get()->unregister_callback(this);
 }
 
 #pragma region User Interface
@@ -504,13 +512,9 @@ void UIElement::on_playback_seek(double time)
 /// </summary>
 void UIElement::on_playback_pause(bool paused)
 {
-    if (_WebView == nullptr)
-        return;
+    const std::wstring Script = ::FormatText(L"OnPlaybackPause(%s)", (paused ? L"true" : L"false"));
 
-    HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnPlaybackPause(%s)", (paused ? L"true" : L"false")).c_str(), nullptr);
-
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackPause()").c_str());
+    ExecuteScript(Script);
 }
 
 /// <summary>
@@ -518,13 +522,9 @@ void UIElement::on_playback_pause(bool paused)
 /// </summary>
 void UIElement::on_playback_edited(metadb_handle_ptr hTrack)
 {
-    if (_WebView == nullptr)
-        return;
+    const std::wstring Script = L"OnPlaybackEdited()";
 
-    HRESULT hr = _WebView->ExecuteScript(L"OnPlaybackEdited()", nullptr);
-
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackEdited()").c_str());
+    ExecuteScript(Script);
 }
 
 /// <summary>
@@ -532,13 +532,9 @@ void UIElement::on_playback_edited(metadb_handle_ptr hTrack)
 /// </summary>
 void UIElement::on_playback_dynamic_info(const file_info & fileInfo)
 {
-    if (_WebView == nullptr)
-        return;
+    const std::wstring Script = L"OnPlaybackDynamicInfo()";
 
-    HRESULT hr = _WebView->ExecuteScript(L"OnPlaybackDynamicInfo()", nullptr);
-
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackDynamicInfo()").c_str());
+    ExecuteScript(Script);
 }
 
 /// <summary>
@@ -546,13 +542,9 @@ void UIElement::on_playback_dynamic_info(const file_info & fileInfo)
 /// </summary>
 void UIElement::on_playback_dynamic_info_track(const file_info & fileInfo)
 {
-    if (_WebView == nullptr)
-        return;
+    const std::wstring Script = L"OnPlaybackDynamicTrackInfo()";
 
-    HRESULT hr = _WebView->ExecuteScript(L"OnPlaybackDynamicTrackInfo()", nullptr);
-
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackDynamicTrackInfo()").c_str());
+    ExecuteScript(Script);
 }
 
 /// <summary>
@@ -560,13 +552,9 @@ void UIElement::on_playback_dynamic_info_track(const file_info & fileInfo)
 /// </summary>
 void UIElement::on_playback_time(double time)
 {
-    if (_WebView == nullptr)
-        return;
+    const std::wstring Script = ::FormatText(L"OnPlaybackTime(%f)", time);
 
-    HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnPlaybackTime(%f)", time).c_str(), nullptr);
-
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackTime()").c_str());
+    ExecuteScript(Script);
 }
 
 /// <summary>
@@ -574,13 +562,9 @@ void UIElement::on_playback_time(double time)
 /// </summary>
 void UIElement::on_volume_change(float newValue) // in dBFS
 {
-    if (_WebView == nullptr)
-        return;
+    const std::wstring Script = ::FormatText(L"OnVolumeChange(%f)", (double) newValue);
 
-    HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnVolumeChange(%f)", (double) newValue).c_str(), nullptr);
-
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnVolumeChange()").c_str());
+    ExecuteScript(Script);
 }
 
 #pragma endregion
@@ -588,17 +572,180 @@ void UIElement::on_volume_change(float newValue) // in dBFS
 #pragma region playlist_callback_single
 
 /// <summary>
-/// Called when the selected item changes.
+/// Called when items have been added to the active playlist.
 /// </summary>
-void UIElement::on_item_focus_change(t_size fromIndex, t_size toIndex)
+void UIElement::on_items_added(t_size playlistIndex, t_size startIndex, metadb_handle_list_cref data, const bit_array & selection)
+{
+    const std::wstring Script = ::FormatText(L"OnAddedPlaylistItems(%d)", (int) playlistIndex);
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when the items of the specified playlist have been reordered.
+/// </summary>
+void UIElement::on_items_reordered(t_size playlistIndex, const t_size * order, t_size count)
+{
+    const std::wstring Script = ::FormatText(L"OnReorderedPlaylistItems(%d)", (int) playlistIndex);
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when removing items of the specified playlist.
+/// </summary>
+void UIElement::on_items_removing(t_size playlistIndex, const bit_array & mask, t_size oldCount, t_size newCount)
+{
+    const std::wstring Script = ::FormatText(L"OnRemovingPlaylistItems(%d)", (int) playlistIndex);
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when items of the active playlist have been removed.
+/// </summary>
+void UIElement::on_items_removed(t_size playlistIndex, const bit_array & mask, t_size oldCount, t_size newCount)
+{
+    const std::wstring Script = ::FormatText(L"OnRemovedPlaylistItems(%d)", (int) playlistIndex);
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when the selected items changed.
+/// </summary>
+void UIElement::on_items_selection_change(t_size playlistIndex, const bit_array & affectedItems, const bit_array & state)
+{
+    const std::wstring Script = ::FormatText(L"OnPlaylistSelectedItemsChanged(%d)", (int) playlistIndex);
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when the focused item of a playlist changed.
+/// </summary>
+void UIElement::on_item_focus_change(t_size playlistIndex, t_size fromIndex, t_size toIndex)
+{
+    const std::wstring Script = ::FormatText(L"OnPlaylistFocusedItemChanged(%d, %d, %d)", (int) playlistIndex, (int) fromIndex, (int) toIndex);
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when some playlist items of the specified playlist have been modified.
+/// </summary>
+void UIElement::on_items_modified(t_size playlistIndex, const bit_array & mask)
+{
+    const std::wstring Script = ::FormatText(L"OnModifiedPlaylistItems(%d)", (int) playlistIndex);
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when some playlist items of the specified playlist have been modified from playback.
+/// </summary>
+void UIElement::on_items_modified_fromplayback(t_size playlistIndex, const bit_array & mask, play_control::t_display_level displayLevel)
+{
+    const std::wstring Script = ::FormatText(L"OnModifiedPlaylistItemsFromPlayback(%d)", (int) playlistIndex);
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when items of the specified playlist have been replaced.
+/// </summary>
+void UIElement::on_items_replaced(t_size playlistIndex, const bit_array & mask, const pfc::list_base_const_t<playlist_callback::t_on_items_replaced_entry> & replacedItems)
+{
+    const std::wstring Script = ::FormatText(L"OnReplacedPlaylistItems(%d)", (int) playlistIndex);
+
+    ExecuteScript(Script);
+}
+
+void UIElement::on_item_ensure_visible(t_size playlistIndex, t_size itemIndex)
+{
+    const std::wstring Script = ::FormatText(L"OnEnsuredPlaylistItemIsVisible(%d, %d)", (int) playlistIndex, (int) itemIndex);
+
+    ExecuteScript(Script);
+}
+
+void UIElement::on_playlist_activate(t_size oldPlaylistIndex, t_size newPlaylistIndex)
+{
+    const std::wstring Script = ::FormatText(L"OnChangedActivePlaylist(%d, %d)", (int) oldPlaylistIndex, (int) newPlaylistIndex);
+
+    ExecuteScript(Script);
+}
+
+void UIElement::on_playlist_created(t_size playlistIndex, const char * name, t_size size)
+{
+    const std::wstring Script = ::FormatText(L"OnCreatedPlaylist(%d, \"%s\")", (int) playlistIndex, UTF8ToWide(name, size).c_str());
+
+    ExecuteScript(Script);
+}
+
+void UIElement::on_playlists_reorder(const t_size * order, t_size count)
+{
+    const std::wstring Script = L"OnReorderedPlaylists()";
+
+    ExecuteScript(Script);
+}
+
+void UIElement::on_playlists_removing(const bit_array & mask, t_size oldCount, t_size newCount)
+{
+    const std::wstring Script = L"OnRemovingPlaylists()";
+
+    ExecuteScript(Script);
+}
+
+void UIElement::on_playlists_removed(const bit_array & mask, t_size oldCount, t_size newcount)
+{
+    const std::wstring Script = L"OnRemovedPlaylists()";
+
+    ExecuteScript(Script);
+}
+
+void UIElement::on_playlist_renamed(t_size playlistIndex, const char * name, t_size size)
+{
+    const std::wstring Script = ::FormatText(L"OnRenamedPlaylist(%d, \"%s\")", (int) playlistIndex, UTF8ToWide(name, size).c_str());
+
+    ExecuteScript(Script);
+}
+
+void UIElement::on_playlist_locked(t_size playlistIndex, bool isLocked)
+{
+    const std::wstring Script = ::FormatText(isLocked ? L"OnLockedPlaylist(%d)" : L"OnUnlockedPlaylist(%d)", (int) playlistIndex);
+
+    ExecuteScript(Script);
+}
+
+void UIElement::on_default_format_changed()
+{
+    const std::wstring Script = L"OnChangedDefaultFormat()";
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when the playback order changed.
+/// </summary>
+void UIElement::on_playback_order_changed(t_size playbackOrderIndex)
+{
+    const std::wstring Script = ::FormatText(L"OnChangedPlaybackOrder(%d)", (int) playbackOrderIndex);
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Executes a script.
+/// </summary>
+void UIElement::ExecuteScript(const std::wstring & script) const noexcept
 {
     if (_WebView == nullptr)
         return;
 
-    HRESULT hr = _WebView->ExecuteScript(L"OnPlaylistFocusedItemChanged()", nullptr);
+    HRESULT hr = _WebView->ExecuteScript(script.c_str(), nullptr);
 
     if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaylistFocusedItemChanged()").c_str());
+        console::print(::GetErrorMessage(hr, FormatText(STR_COMPONENT_BASENAME " failed to call %s", WideToUTF8(script).c_str())).c_str());
 }
 
 #pragma endregion

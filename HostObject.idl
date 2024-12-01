@@ -106,7 +106,7 @@ library HostObjectLibrary
         HRESULT DeletePlaylist([in] int playlistIndex);
 
         // Auto Playlists
-        HRESULT CreateAutoPlaylist([in] int playlistIndex, [in] BSTR name, [in] BSTR query, [in] BSTR sort, [in] unsigned __int32 flags, [out, retval] int * newPlaylistIndex);
+        HRESULT CreateAutoPlaylist([in] int playlistIndex, [in] BSTR name, [in] BSTR query, [in, defaultvalue("*.*")] BSTR sort, [in, defaultvalue(0)] unsigned __int32 flags, [out, retval] int * newPlaylistIndex);
         HRESULT IsAutoPlaylist([in] int playlistIndex, [out, retval] VARIANT_BOOL * result);
 
         // Playback Order

@@ -37,6 +37,7 @@
     <ClCompile Include="UIElementTracker.cpp" />
     <ClCompile Include="Rendering.cpp" />
     <ClCompile Include="SharedBuffer.cpp" />
+    <ClCompile Include="HostObjectImplPlaylists.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources.rc" />

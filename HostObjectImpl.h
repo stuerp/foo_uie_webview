@@ -204,3 +204,7 @@ private:
 
     service_ptr_t<album_art_manager_config_t> _AlbumArtManagerConfig = new service_impl_t<album_art_manager_config_t>;
 };
+
+extern void ToBase64(const BYTE * data, DWORD size, BSTR * base64);
+extern const std::string Stringify(const char * s);
+extern std::wstring ToJSON(const metadb_handle_list & hItems);
