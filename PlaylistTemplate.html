@@ -101,34 +101,34 @@ div
     <br/>
     <div id="Playlist"/>
 
-    Select last item&nbsp;<button id="SelectItemButton"/>Execute</button>&nbsp;<span id="SelectItemResult"></span><br/>
-    Deselect last item&nbsp;<button id="DeselectItemButton"/>Execute</button>&nbsp;<span id="DeselectItemResult"></span><br/>
-    Is last item selected?&nbsp;<button id="IsSelectedButton"/>Execute</button>&nbsp;<span id="IsSelectedResult"></span><br/>
-    Remove selected playlist items&nbsp;<button id="RemoveSelectedButton"/>Execute</button>&nbsp;<span id="RemoveSelectedResult"></span><br/>
-    Remove unselected playlist items&nbsp;<button id="RemoveUnselectedButton"/>Execute</button>&nbsp;<span id="RemoveUnselectedResult"></span><br/>
-    Count playlist items&nbsp;<button id="PlaylistItemCountButton"/>Execute</button>&nbsp;<span id="PlaylistItemCount"></span><br/>
-    Count selected playlist items&nbsp;<button id="SelectedPlaylistItemCountButton"/>Execute</button>&nbsp;<span id="SelectedPlaylistItemCount"></span><br/>
-    Remove last item&nbsp;<button id="RemoveItemButton"/>Execute</button>&nbsp;<span id="RemoveItemResult"></span><br/>
+    Select last item&nbsp;<button id="selectItemButton"/>Execute</button>&nbsp;<span id="SelectItemResult"></span><br/>
+    Deselect last item&nbsp;<button id="deselectItemButton"/>Execute</button>&nbsp;<span id="DeselectItemResult"></span><br/>
+    Is last item selected?&nbsp;<button id="isSelectedButton"/>Execute</button>&nbsp;<span id="IsSelectedResult"></span><br/>
+    Remove selected playlist items&nbsp;<button id="removeSelectedButton"/>Execute</button>&nbsp;<span id="RemoveSelectedResult"></span><br/>
+    Remove unselected playlist items&nbsp;<button id="removeUnselectedButton"/>Execute</button>&nbsp;<span id="RemoveUnselectedResult"></span><br/>
+    Count playlist items&nbsp;<button id="playlistItemCountButton"/>Execute</button>&nbsp;<span id="PlaylistItemCount"></span><br/>
+    Count selected playlist items&nbsp;<button id="selectedPlaylistItemCountButton"/>Execute</button>&nbsp;<span id="SelectedPlaylistItemCount"></span><br/>
+    Remove last item&nbsp;<button id="removeItemButton"/>Execute</button>&nbsp;<span id="RemoveItemResult"></span><br/>
     <br/>
 
-    Clear playlist&nbsp;<button id="ClearPlaylistButton"/>Execute</button>&nbsp;<span id="ClearPlaylistResult"></span><br/>
+    Clear playlist&nbsp;<button id="clearPlaylistButton"/>Execute</button>&nbsp;<span id="ClearPlaylistResult"></span><br/>
     <br/>
 
-    Create Auto playlist&nbsp;<button id="CreateAutoPlaylistButton"/>Execute</button>&nbsp;<span id="CreateAutoPlaylistResult"></span><br/>
+    Create Auto playlist&nbsp;<button id="createAutoPlaylistButton"/>Execute</button>&nbsp;<span id="CreateAutoPlaylistResult"></span><br/>
     Is auto playlist: <span id="IsAutoPlaylist"></span><br/>
     <br/>
     Playback order: <span id="PlaybackOrder"></span><br/>
     <br/>
 
-    <button id="ReadImageButton">Read Image</button><br/>
+    <button id="readImageButton">Read Image</button><br/>
     <br/>
     <div width="128px" height="128px" style="overflow: hidden;">
-        <img id="Image" style="max-width: 128px; height: auto; object-fit: cover;"/><br/>
+        <img id="readImageResult" style="max-width: 128px; height: auto; object-fit: cover;"/><br/>
     </div>
 
     <button id="readDirectoryButton">Read Directory</button><br/>
     <br/>
-    <div id="Directory"/>
+    <div id="readDirectoryResult"/>
 </div>
 <script>
 // Refreshes the content of all elements.
@@ -146,7 +146,7 @@ function Refresh()
     document.getElementById("PlaybackOrder").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.playbackOrder;
 }
 
-document.getElementById("CreatePlaylistButton").addEventListener("click", async () =>
+document.getElementById("createPlaylistButton").addEventListener("click", async () =>
 {
     // Create a new playlist with an auto-generated name after the last playlist and activate it.
     chrome.webview.hostObjects.sync.foo_uie_webview.activePlaylist = await chrome.webview.hostObjects.foo_uie_webview.createPlaylist(-1, "");
@@ -158,7 +158,7 @@ document.getElementById("CreatePlaylistButton").addEventListener("click", async 
     Refresh();
 });
 
-document.getElementById("DuplicatePlaylistButton").addEventListener("click", async () =>
+document.getElementById("duplicatePlaylistButton").addEventListener("click", async () =>
 {
     // Create a duplicate of playlist 0.
     const PlaylistIndex = await chrome.webview.hostObjects.foo_uie_webview.duplicatePlaylist(0, "Duplicate");
@@ -170,13 +170,13 @@ document.getElementById("DuplicatePlaylistButton").addEventListener("click", asy
     chrome.webview.hostObjects.foo_uie_webview.ensurePlaylistItemVisible(PlaylistIndex, chrome.webview.hostObjects.sync.foo_uie_webview.getPlaylistItemCount(PlaylistIndex) - 1);
 });
 
-document.getElementById("FindPlaylistButton").addEventListener("click", async () =>
+document.getElementById("findPlaylistButton").addEventListener("click", async () =>
 {
     // Find the playlist named "Duplicate" and activate it.
     chrome.webview.hostObjects.sync.foo_uie_webview.activePlaylist = await chrome.webview.hostObjects.foo_uie_webview.findPlaylist("Duplicate");
 });
 
-document.getElementById("DeletePlaylistButton").addEventListener("click", async () =>
+document.getElementById("deletePlaylistButton").addEventListener("click", async () =>
 {
     // Deletes the specified playlist. Use -1 for the active playlist.
     await chrome.webview.hostObjects.foo_uie_webview.deletePlaylist(-1);
@@ -192,7 +192,7 @@ document.getElementById("getPlaylistItemsButton").addEventListener("click", asyn
     document.getElementById('Playlist').innerHTML = ArrayToTable(Items);
 });
 
-document.getElementById("GetSelectedItemsButton").addEventListener("click", async () =>
+document.getElementById("getSelectedItemsButton").addEventListener("click", async () =>
 {
     const Text = await chrome.webview.hostObjects.foo_uie_webview.getSelectedPlaylistItems(0);
 
@@ -201,7 +201,7 @@ document.getElementById("GetSelectedItemsButton").addEventListener("click", asyn
     document.getElementById('Playlist').innerHTML = ArrayToTable(Items);
 });
 
-document.getElementById("SelectItemButton").addEventListener("click", async () =>
+document.getElementById("selectItemButton").addEventListener("click", async () =>
 {
     // Selects the last item of the active playlist.
     await chrome.webview.hostObjects.foo_uie_webview.selectPlaylistItem(-1, -1);
@@ -209,7 +209,7 @@ document.getElementById("SelectItemButton").addEventListener("click", async () =
     document.getElementById("SelectItemResult").textContent = "Done (" + Now() + ")";
 });
 
-document.getElementById("DeselectItemButton").addEventListener("click", async () =>
+document.getElementById("deselectItemButton").addEventListener("click", async () =>
 {
     // Deselects the last item of the active playlist.
     await chrome.webview.hostObjects.foo_uie_webview.deselectPlaylistItem(-1, -1);
@@ -217,44 +217,44 @@ document.getElementById("DeselectItemButton").addEventListener("click", async ()
     document.getElementById("DeselectItemResult").textContent = "Done (" + Now() + ")";
 });
 
-document.getElementById("IsSelectedButton").addEventListener("click", async () =>
+document.getElementById("isSelectedButton").addEventListener("click", async () =>
 {
     // Returns true if the last item of the active playlist is selected.
     document.getElementById("IsSelectedResult").textContent = await chrome.webview.hostObjects.foo_uie_webview.isPlaylistItemSelected(-1, -1);
 });
 
-document.getElementById("RemoveSelectedButton").addEventListener("click", async () =>
+document.getElementById("removeSelectedButton").addEventListener("click", async () =>
 {
     await chrome.webview.hostObjects.foo_uie_webview.removeSelectedPlaylistItems(0);
 
     document.getElementById("RemoveSelectedResult").textContent = "Done (" + Now() + ")";
 });
 
-document.getElementById("RemoveUnselectedButton").addEventListener("click", async () =>
+document.getElementById("removeUnselectedButton").addEventListener("click", async () =>
 {
     await chrome.webview.hostObjects.foo_uie_webview.removeUnselectedPlaylistItems(0);
 
     document.getElementById("RemoveUnselectedResult").textContent = "Done (" + Now() + ")";
 });
 
-document.getElementById("PlaylistItemCountButton").addEventListener("click", async () =>
+document.getElementById("playlistItemCountButton").addEventListener("click", async () =>
 {
     document.getElementById("PlaylistItemCount").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getPlaylistItemCount(-1);
 });
 
-document.getElementById("SelectedPlaylistItemCountButton").addEventListener("click", async () =>
+document.getElementById("selectedPlaylistItemCountButton").addEventListener("click", async () =>
 {
     document.getElementById("SelectedPlaylistItemCount").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getSelectedPlaylistItemCount(-1, -1);
 });
 
-document.getElementById("RemoveItemButton").addEventListener("click", async () =>
+document.getElementById("removeItemButton").addEventListener("click", async () =>
 {
     await chrome.webview.hostObjects.foo_uie_webview.removePlaylistItem(-1, -1);
 
     document.getElementById("RemoveItemResult").textContent = "Done (" + Now() + ")";
 });
 
-document.getElementById("ClearPlaylistButton").addEventListener("click", async () =>
+document.getElementById("clearPlaylistButton").addEventListener("click", async () =>
 {
     // Clear the specified playlist. Use -1 for the active playlist.
     await chrome.webview.hostObjects.foo_uie_webview.clearPlaylist(-1);
@@ -262,16 +262,16 @@ document.getElementById("ClearPlaylistButton").addEventListener("click", async (
     document.getElementById("ClearPlaylistResult").textContent = "Done (" + Now() + ")";
 });
 
-document.getElementById("CreateAutoPlaylistButton").addEventListener("click", async () =>
+document.getElementById("createAutoPlaylistButton").addEventListener("click", async () =>
 {
     chrome.webview.hostObjects.sync.foo_uie_webview.activePlaylist = await chrome.webview.hostObjects.foo_uie_webview.createAutoPlaylist(-1, "Test", "%title% HAS test", "%album artist% | %album% | %tracknumber% | %title%", 0);
 
     document.getElementById("CreateAutoPlaylistResult").textContent = "Done (" + Now() + ")";
 });
 
-document.getElementById("ReadImageButton").addEventListener("click", async () =>
+document.getElementById("readImageButton").addEventListener("click", async () =>
 {
-    document.getElementById("Image").src = await chrome.webview.hostObjects.foo_uie_webview.readImage("C:/Windows/Web/Screen/img100.jpg");
+    document.getElementById("readImageResult").src = await chrome.webview.hostObjects.foo_uie_webview.readImage("C:/Windows/Web/Screen/img100.jpg");
 });
 
 document.getElementById("readDirectoryButton").addEventListener("click", async () =>
@@ -280,7 +280,7 @@ document.getElementById("readDirectoryButton").addEventListener("click", async (
 
     const Items = JSON.parse(Text);
 
-    document.getElementById("Directory").innerHTML = ArrayToTable(Items);
+    document.getElementById("readDirectoryResult").innerHTML = ArrayToTable(Items);
 });
 
 // Called when items have been added to the specified playlist.
