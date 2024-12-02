@@ -731,6 +731,37 @@ const std::string Stringify(const char * s)
 }
 
 /// <summary>
+/// Escapes all restricted JSON characters in a string.
+/// </summary>
+const std::wstring Stringify(const std::wstring & s)
+{
+    std::wstring t;
+
+    t.reserve(s.length());
+
+    for (auto & Iter : s)
+    {
+        switch (Iter)
+        {
+            case '"':  t += '\\'; t += '\"'; break;
+            case '\\': t += '\\'; t += '\\'; break;
+            case '\b': t += '\\'; t += 'b'; break;
+            case '\t': t += '\\'; t += 't'; break;
+            case '\n': t += '\\'; t += 'n'; break;
+            case '\f': t += '\\'; t += 'f'; break;
+            case '\r': t += '\\'; t += 'r'; break;
+            default:
+                if ('\x00' <= Iter && Iter <= '\x1f')
+                    t += ::FormatText(L"\\u04x", Iter).c_str();
+                else
+                    t += Iter;
+        }
+    }
+
+    return t;
+}
+
+/// <summary>
 /// Converts a metadb handle list to a JSON string.
 /// </summary>
 std::wstring ToJSON(const metadb_handle_list & hItems)
@@ -748,6 +779,52 @@ std::wstring ToJSON(const metadb_handle_list & hItems)
         std::string Path = Stringify(Location.get_path());
 
         Result.append(::FormatText(LR"({"path": "%s", "subsong": %u})", ::UTF8ToWide(Path).c_str(), Location.get_subsong_index()).c_str());
+
+        IsFirstItem = false;
+    }
+
+    Result.append(L"]");
+
+    return Result;
+}
+
+/// <summary>
+/// Converts a bit array to a JSON string.
+/// </summary>
+std::wstring ToJSON(const bit_array & mask, t_size count)
+{
+    std::wstring Result = L"[";
+    bool IsFirstItem = true;
+
+    for (t_size Iter = mask.find_first(true, 0, count); Iter < count; Iter = mask.find_next(true, Iter, count))
+    {
+        if (!IsFirstItem)
+            Result.append(L",");
+
+        Result.append(::FormatText(LR"(%d)", Iter).c_str());
+
+        IsFirstItem = false;
+    }
+
+    Result.append(L"]");
+
+    return Result;
+}
+
+/// <summary>
+/// Converts a t_size array to a JSON string.
+/// </summary>
+std::wstring ToJSON(const t_size * array, t_size count)
+{
+    std::wstring Result = L"[";
+    bool IsFirstItem = true;
+
+    for (t_size i = 0; i < count; ++i)
+    {
+        if (!IsFirstItem)
+            Result.append(L",");
+
+        Result.append(::FormatText(LR"(%d)", (int) *array++).c_str());
 
         IsFirstItem = false;
     }

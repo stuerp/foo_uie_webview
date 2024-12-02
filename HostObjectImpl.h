@@ -212,4 +212,8 @@ private:
 
 extern void ToBase64(const BYTE * data, DWORD size, BSTR * base64);
 extern const std::string Stringify(const char * s);
+extern const std::wstring Stringify(const std::wstring & s);
+
 extern std::wstring ToJSON(const metadb_handle_list & hItems);
+extern std::wstring ToJSON(const bit_array & mask, t_size count);
+extern std::wstring ToJSON(const t_size * array, t_size count);

@@ -249,6 +249,7 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
     </ClCompile>
     <ClCompile Include="Rendering.cpp" />
     <ClCompile Include="SharedBuffer.cpp" />
+    <ClCompile Include="UIElementPlaylistCallback.cpp" />
     <ClCompile Include="UIElementTracker.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -290,7 +291,9 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
     <None Include="Build-FB2KComponent.ps1" />
     <None Include="cpp.hint" />
     <None Include="docs\README.md" />
+    <None Include="FrameTemplate.html" />
     <None Include="packages.config" />
+    <None Include="PlaylistTemplate.html" />
     <None Include="README.md" />
     <None Include="Template.html">
       <DeploymentContent>true</DeploymentContent>

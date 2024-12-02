@@ -39,6 +39,7 @@
     <ClCompile Include="SharedBuffer.cpp" />
     <ClCompile Include="HostObjectImplPlaylists.cpp" />
     <ClCompile Include="HostObjectImplFiles.cpp" />
+    <ClCompile Include="UIElementPlaylistCallback.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources.rc" />
@@ -52,15 +53,14 @@
     <None Include="Template.html" />
     <None Include="packages.config" />
     <None Include="docs\README.md" />
+    <None Include="PlaylistTemplate.html" />
+    <None Include="FrameTemplate.html" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="HostObject.idl" />
-  </ItemGroup>
-  <ItemGroup>
-    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Main.ico" />

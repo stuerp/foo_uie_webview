@@ -285,27 +285,37 @@ document.getElementById("readDirectoryButton").addEventListener("click", async (
 });
 
 // Called when items have been added to the specified playlist.
-function onPlaylistItemsAdded(playlistIndex)
+function onPlaylistItemsAdded(playlistIndex, startIndex, locations)
 {
-    document.getElementById("onPlaylistItemsAddedResult").textContent = "Items added to playlist " + playlistIndex + " (" + Now() + ")";
+    document.getElementById("onPlaylistItemsAddedResult").textContent = "Items added at index " + startIndex + " to playlist " + playlistIndex + " (" + Now() + ")";
+
+    const Items = JSON.parse(locations);
+
+    document.getElementById("readDirectoryResult").innerHTML = ArrayToTable(Items);
 }
 
 // Called when the items of the specified playlist have been reordered.
-function onPlaylistItemsReordered(playlistIndex)
+function onPlaylistItemsReordered(playlistIndex, items)
 {
-    document.getElementById("onPlaylistItemsReorderedResult").textContent = "Items of playlist " + playlistIndex + " have been reordered (" + Now() + ")";
+    document.getElementById("onPlaylistItemsReorderedResult").textContent = "Items of playlist " + playlistIndex + " have been reordered as " + items + " (" + Now() + ")";
 }
 
 // Called when removing items from the specified playlist.
-function onPlaylistItemsRemoving(playlistIndex)
+function onPlaylistItemsRemoving(playlistIndex, removedItems, newCount)
 {
-    document.getElementById("onPlaylistItemsRemovingResult").textContent = "Items being removed from playlist " + playlistIndex + " (" + Now() + ")";
+    document.getElementById("onPlaylistItemsRemovingResult").textContent = "Items " + removedItems + " being removed from playlist " + playlistIndex + " (" + Now() + ")";
 }
 
 // Called when items have been removed from the specified playlist.
-function onPlaylistItemsRemoved(playlistIndex)
+function onPlaylistItemsRemoved(playlistIndex, removedItems, newCount)
 {
-    document.getElementById("onPlaylistItemsRemovedResult").textContent = "Items removed from playlist " + playlistIndex + " (" + Now() + ")";
+    document.getElementById("onPlaylistItemsRemovedResult").textContent = "Items " + removedItems + " removed from playlist " + playlistIndex + " (" + Now() + ")";
+}
+
+// Called when the selected items changed.
+function onPlaylistSelectedItemsChanged(playlistIndex, selection)
+{
+    document.getElementById("onPlaylistSelectedItemsChangedResult").textContent = "Selected items changed to " + selection + " in playlist " + playlistIndex + " (" + Now() + ")";
 }
 
 // Called when some playlist items of the specified playlist have been modified.
@@ -360,12 +370,6 @@ function onPlaylistLocked(playlistIndex)
 function onPlaylistUnlocked(playlistIndex)
 {
     document.getElementById("onPlaylistUnlockedResult").textContent = "Playlist " + playlistIndex + " has been unlocked (" + Now() + ")";
-}
-
-// Called when the selected items changed.
-function onPlaylistSelectedItemsChanged(playlistIndex)
-{
-    document.getElementById("onPlaylistSelectedItemsChangedResult").textContent = "Selected items changed in playlist " + playlistIndex + " (" + Now() + ")";
 }
 
 // Called when the focused item of a playlist changed.

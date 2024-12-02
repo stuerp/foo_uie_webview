@@ -145,10 +145,10 @@ v0.2.0.0-alpha5, 2024-12-xx, *"I'm getting framed..."*
     * playbackOrder: Gets or sets the playback order (0 = default, 1 = repeat playlist, 2 = repeat track, 3 = random, 4 = shuffle tracks, 5 = shuffle albums, 6 = shuffle folders). (alpha2)
 
   * Callbacks
-    * onPlaylistItemsAdded(playlistIndex): Called when items have been added to the specified playlist. (alpha4)
-    * onPlaylistItemsReordered(playlistIndex): Called when the items of the specified playlist have been reordered. (alpha4)
-    * onPlaylistItemsRemoving(playlistIndex): Called when removing items of the specified playlist. (alpha4)
-    * onPlaylistItemsRemoved(playlistIndex): Called when items of the specified playlist have been removed. (alpha4)
+    * onPlaylistItemsAdded(playlistIndex, startindex, locations): Called when items have been added to the specified playlist. (alpha5)
+    * onPlaylistItemsReordered(playlistIndex, items): Called when the items of the specified playlist have been reordered. (alpha5)
+    * onPlaylistItemsRemoving(playlistIndex, removedItems, newCount): Called when removing items of the specified playlist. (alpha5)
+    * onPlaylistItemsRemoved(playlistIndex, removedItems, newCount): Called when items of the specified playlist have been removed. (alpha5)
     * onPlaylistItemsModified(playlistIndex): Called when some playlist items of the specified playlist have been modified. (alpha4)
     * onPlaylistItemsModifiedFromPlayback(playlistIndex): Called when some playlist items of the specified playlist have been modified from playback. (alpha4)
     * onPlaylistItemsReplaced(playlistIndex): Called when items of the specified playlist have been replaced. (alpha4)
