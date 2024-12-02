@@ -149,9 +149,9 @@ v0.2.0.0-alpha5, 2024-12-xx, *"I'm getting framed..."*
     * onPlaylistItemsReordered(playlistIndex, items): Called when the items of the specified playlist have been reordered. (alpha5)
     * onPlaylistItemsRemoving(playlistIndex, removedItems, newCount): Called when removing items of the specified playlist. (alpha5)
     * onPlaylistItemsRemoved(playlistIndex, removedItems, newCount): Called when items of the specified playlist have been removed. (alpha5)
-    * onPlaylistItemsModified(playlistIndex): Called when some playlist items of the specified playlist have been modified. (alpha4)
-    * onPlaylistItemsModifiedFromPlayback(playlistIndex): Called when some playlist items of the specified playlist have been modified from playback. (alpha4)
-    * onPlaylistItemsReplaced(playlistIndex): Called when items of the specified playlist have been replaced. (alpha4)
+    * onPlaylistItemsModified(playlistIndex, items): Called when some playlist items of the specified playlist have been modified. (alpha5)
+    * onPlaylistItemsModifiedFromPlayback(playlistIndex, items): Called when some playlist items of the specified playlist have been modified from playback. (alpha5)
+    * onPlaylistItemsReplaced(playlistIndex, items): Called when items of the specified playlist have been replaced. (alpha5)
 
     * onPlaylistItemEnsureVisible(playlistIndex, itemIndex): Called when the specified item of a playlist was ensured to be visible. (alpha4)
 
@@ -160,12 +160,12 @@ v0.2.0.0-alpha5, 2024-12-xx, *"I'm getting framed..."*
     * onPlaylistActivated(oldPlaylistIndex, newPlaylistIndex): Called when the active playlist is changed. (alpha4)
     * onPlaylistLocked(playlistIndex): Called when the specified playlist has been locked. (alpha4)
     * onPlaylistUnlocked(playlistIndex): Called when the specified playlist has been unlocked. (alpha4)
-    * onPlaylistSelectedItemsChanged(playlistIndex): Called when the selected items of the specified playlist have been changed. (alpha4)
+    * onPlaylistSelectedItemsChanged(playlistIndex, selectedItems): Called when the selected items of the specified playlist have been changed. (alpha5)
     * onPlaylistFocusedItemChanged(playlistIndex, fromItemIndex, toItemIndex): Called when the focused item of the specified playlist has been changed. (alpha4)
 
-    * onPlaylistsReordered(): Called when the playlists have been reordered. (alpha4)
-    * onPlaylistsRemoving(): Called when playlists are being removed. (alpha4)
-    * onPlaylistsRemoved(): Called when playlists have been removed. (alpha4)
+    * onPlaylistsReordered(playlistOrder): Called when the playlists have been reordered. (alpha5)
+    * onPlaylistsRemoving(removedPlaylists, newCount): Called when playlists are being removed. (alpha5)
+    * onPlaylistsRemoved(removedPlaylists, newCount): Called when playlists have been removed. (alpha5)
 
     * onDefaultFormatChanged(): Called when the default format has been changed. (alpha4)
     * onPlaybackOrderChanged(playbackOrderIndex): Called when the playback order has been changed. (alpha4)
@@ -177,6 +177,7 @@ v0.2.0.0-alpha5, 2024-12-xx, *"I'm getting framed..."*
   * Changed: Returned JSON objects now use camelCase casing. (alpha4)
   * Changed: *Breaking Change* Callbacks follow the Category-Noun-Verb naming convention. (alpha5)
   * Changed: *Breaking Change* All properties, methods and callbacks to use camelCase convention. (alpha5)
+  * Changed: *Breaking Change* The parameter list of most callbacks has been expanded. (alpha5)
 
 v0.1.8.0, 2024-08-10
 

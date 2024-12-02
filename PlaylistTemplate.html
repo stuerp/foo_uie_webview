@@ -312,28 +312,22 @@ function onPlaylistItemsRemoved(playlistIndex, removedItems, newCount)
     document.getElementById("onPlaylistItemsRemovedResult").textContent = "Items " + removedItems + " removed from playlist " + playlistIndex + " (" + Now() + ")";
 }
 
-// Called when the selected items changed.
-function onPlaylistSelectedItemsChanged(playlistIndex, selection)
-{
-    document.getElementById("onPlaylistSelectedItemsChangedResult").textContent = "Selected items changed to " + selection + " in playlist " + playlistIndex + " (" + Now() + ")";
-}
-
 // Called when some playlist items of the specified playlist have been modified.
-function onPlaylistItemsModified(playlistIndex)
+function onPlaylistItemsModified(playlistIndex, items)
 {
-    document.getElementById("onPlaylistItemsModifiedResult").textContent = "Some playlist items have been modified in playlist " + playlistIndex + " (" + Now() + ")";
+    document.getElementById("onPlaylistItemsModifiedResult").textContent = "Playlist items " + items + " have been modified in playlist " + playlistIndex + " (" + Now() + ")";
 }
 
 // Called when some playlist items of the specified playlist have been modified from playback.
-function onPlaylistItemsModifiedFromPlayback(playlistIndex)
+function onPlaylistItemsModifiedFromPlayback(playlistIndex, items)
 {
-    document.getElementById("onPlaylistItemsModifiedFromPlaybackResult").textContent = "Some playlist items have been modified from playback in playlist " + playlistIndex + " (" + Now() + ")";
+    document.getElementById("onPlaylistItemsModifiedFromPlaybackResult").textContent = "Playlist items " + items + " have been modified from playback in playlist " + playlistIndex + " (" + Now() + ")";
 }
 
 // Called when items of the specified playlist have been replaced.
-function onPlaylistItemsReplaced(playlistIndex)
+function onPlaylistItemsReplaced(playlistIndex, items)
 {
-    document.getElementById("onPlaylistItemsReplacedResult").textContent = "Playlist items have been replaced in playlist " + playlistIndex + " (" + Now() + ")";
+    document.getElementById("onPlaylistItemsReplacedResult").textContent = "Playlist items " + items + "have been replaced in playlist " + playlistIndex + " (" + Now() + ")";
 }
 
 // Called when the specified item of a playlist has been ensured to be visible.
@@ -342,34 +336,40 @@ function onPlaylistItemEnsureVisible(playlistIndex, itemIndex)
     document.getElementById("onPlaylistItemEnsureVisibleResult").textContent = "Ensured item " + itemIndex + " in playlist " + playlistIndex + " (" + Now() + ")";
 }
 
-// Called when the active playlist changes.
-function onPlaylistActivated(oldPlaylistIndex, newPlaylistIndex)
-{
-    document.getElementById("onPlaylistActivatedResult").textContent = "Active playlist changed from " + oldPlaylistIndex + " to " + newPlaylistIndex + " (" + Now() + ")";
-}
-
 // Called when a new playlist has been created.
 function onPlaylistCreated(playlistIndex, name)
 {
     document.getElementById("onPlaylistCreatedResult").textContent = "Created playlist " + playlistIndex + " as \"" + name + "\" (" + Now() + ")";
 }
 
-/// Called when the specified playlist has been renamed.
+// Called when the specified playlist has been renamed.
 function onPlaylistRenamed(playlistIndex, name)
 {
     document.getElementById("onPlaylistRenamedResult").textContent = "Playlist " + playlistIndex + " renamed to \"" + name + "\" (" + Now() + ")";
 }
 
-/// Called when the specified playlist has been locked.
+// Called when the active playlist changes.
+function onPlaylistActivated(oldPlaylistIndex, newPlaylistIndex)
+{
+    document.getElementById("onPlaylistActivatedResult").textContent = "Active playlist changed from " + oldPlaylistIndex + " to " + newPlaylistIndex + " (" + Now() + ")";
+}
+
+// Called when the specified playlist has been locked.
 function onPlaylistLocked(playlistIndex)
 {
     document.getElementById("onPlaylistLockedResult").textContent = "Playlist " + playlistIndex + " has been locked (" + Now() + ")";
 }
 
-/// Called when the specified playlist has been locked.
+// Called when the specified playlist has been locked.
 function onPlaylistUnlocked(playlistIndex)
 {
     document.getElementById("onPlaylistUnlockedResult").textContent = "Playlist " + playlistIndex + " has been unlocked (" + Now() + ")";
+}
+
+// Called when the selected items changed.
+function onPlaylistSelectedItemsChanged(playlistIndex, selectedItems)
+{
+    document.getElementById("onPlaylistSelectedItemsChangedResult").textContent = "Selected items changed to " + selectedItems + " in playlist " + playlistIndex + " (" + Now() + ")";
 }
 
 // Called when the focused item of a playlist changed.
@@ -378,22 +378,22 @@ function onPlaylistFocusedItemChanged(playlistIndex, fromIndex, toIndex)
     document.getElementById("onPlaylistFocusedItemChangedResult").textContent = "Focused item changed from " + fromIndex + " to " + toIndex + " in playlist " + playlistIndex + " (" + Now() + ")";
 }
 
-// Called when the playlists have beenn reordered.
-function onPlaylistsReordered()
+// Called when the playlists have been reordered.
+function onPlaylistsReordered(playlistOrder)
 {
-    document.getElementById("onPlaylistsReorderedResult").textContent = "Playlists have been reordered (" + Now() + ")";
+    document.getElementById("onPlaylistsReorderedResult").textContent = "Playlists " + playlistOrder + " have been reordered (" + Now() + ")";
 }
 
 // Called when playlists are being removed.
-function onPlaylistsRemoving()
+function onPlaylistsRemoving(removedPlaylists, newCount)
 {
-    document.getElementById("onPlaylistsRemovingResult").textContent = "Playlists are being removed (" + Now() + ")";
+    document.getElementById("onPlaylistsRemovingResult").textContent = "Playlists " + removedPlaylists + " are being removed (" + Now() + ")";
 }
 
 /// Called when playlists have been removed.
-function onPlaylistsRemoved()
+function onPlaylistsRemoved(removedPlaylists, newCount)
 {
-    document.getElementById("onPlaylistsRemovedResult").textContent = "Playlists have been removed (" + Now() + ")";
+    document.getElementById("onPlaylistsRemovedResult").textContent = "Playlists " + removedPlaylists + " have been removed (" + Now() + ")";
 }
 
 /// Called when the default format has been changed.

@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.cpp (2024.12.02) P. Stuer **/
+/** $VER: UIElementPlaylistCallback.cpp (2024.12.02) P. Stuer **/
 
 #include "pch.h"
 
@@ -8,10 +8,6 @@
 #include "Encoding.h"
 #include "Exceptions.h"
 #include "Support.h"
-
-#include <pathcch.h>
-
-#pragma comment(lib, "pathcch")
 
 #include <SDK/titleformat.h>
 #include <SDK/playlist.h>
@@ -36,9 +32,9 @@ void UIElement::on_items_added(t_size playlistIndex, t_size startIndex, metadb_h
 /// <summary>
 /// Called when the items of the specified playlist have been reordered.
 /// </summary>
-void UIElement::on_items_reordered(t_size playlistIndex, const t_size * order, t_size count)
+void UIElement::on_items_reordered(t_size playlistIndex, const t_size * itemOrder, t_size itemCount)
 {
-    const std::wstring Text = ToJSON(order, count);
+    const std::wstring Text = ToJSON(itemOrder, itemCount);
 
     const std::wstring Script = ::FormatText(L"onPlaylistItemsReordered(%d, \"%s\")", (int) playlistIndex, Text.c_str());
 
@@ -70,11 +66,105 @@ void UIElement::on_items_removed(t_size playlistIndex, const bit_array & mask, t
 }
 
 /// <summary>
+/// Called when some playlist items of the specified playlist have been modified.
+/// </summary>
+void UIElement::on_items_modified(t_size playlistIndex, const bit_array & mask)
+{
+    t_size ItemCount = playlist_manager_v4::get()->playlist_get_item_count(playlistIndex);
+
+    const std::wstring Text = ToJSON(mask, ItemCount);
+
+    const std::wstring Script = ::FormatText(L"onPlaylistItemsModified(%d, \"%s\")", (int) playlistIndex, Text.c_str());
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when some playlist items of the specified playlist have been modified from playback.
+/// </summary>
+void UIElement::on_items_modified_fromplayback(t_size playlistIndex, const bit_array & mask, play_control::t_display_level displayLevel)
+{
+    t_size ItemCount = playlist_manager_v4::get()->playlist_get_item_count(playlistIndex);
+
+    const std::wstring Text = ToJSON(mask, ItemCount);
+
+    const std::wstring Script = ::FormatText(L"onPlaylistItemsModifiedFromPlayback(%d, \"%s\")", (int) playlistIndex, Text.c_str());
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when items of the specified playlist have been replaced.
+/// </summary>
+void UIElement::on_items_replaced(t_size playlistIndex, const bit_array & mask, const pfc::list_base_const_t<playlist_callback::t_on_items_replaced_entry> & replacedItems)
+{
+    t_size ItemCount = playlist_manager_v4::get()->playlist_get_item_count(playlistIndex);
+
+    const std::wstring Text = ToJSON(mask, ItemCount);
+
+    const std::wstring Script = ::FormatText(L"onPlaylistItemsReplaced(%d, \"%s\")", (int) playlistIndex, Text.c_str());
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when the specified item of a playlist has been ensured to be visible.
+/// </summary>
+void UIElement::on_item_ensure_visible(t_size playlistIndex, t_size itemIndex)
+{
+    const std::wstring Script = ::FormatText(L"onPlaylistItemEnsureVisible(%d, %d)", (int) playlistIndex, (int) itemIndex);
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when a new playlist has been created.
+/// </summary>
+void UIElement::on_playlist_created(t_size playlistIndex, const char * name, t_size size)
+{
+    const std::wstring Script = ::FormatText(L"onPlaylistCreated(%d, \"%s\")", (int) playlistIndex, ::UTF8ToWide(name, size).c_str());
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when the specified playlist has been renamed.
+/// </summary>
+void UIElement::on_playlist_renamed(t_size playlistIndex, const char * name, t_size size)
+{
+    const std::wstring Script = ::FormatText(L"onPlaylistRenamed(%d, \"%s\")", (int) playlistIndex, ::UTF8ToWide(name, size).c_str());
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when the active playlist changes.
+/// </summary>
+void UIElement::on_playlist_activate(t_size oldPlaylistIndex, t_size newPlaylistIndex)
+{
+    const std::wstring Script = ::FormatText(L"onPlaylistActivated(%d, %d)", (int) oldPlaylistIndex, (int) newPlaylistIndex);
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when the specified playlist has been locked or unlocked.
+/// </summary>
+void UIElement::on_playlist_locked(t_size playlistIndex, bool isLocked)
+{
+    const std::wstring Script = ::FormatText(isLocked ? L"onPlaylistLocked(%d)" : L"onPlaylistUnlocked(%d)", (int) playlistIndex);
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
 /// Called when the selected items changed.
 /// </summary>
 void UIElement::on_items_selection_change(t_size playlistIndex, const bit_array & affectedItems, const bit_array & state)
 {
-    const std::wstring Text = ToJSON(affectedItems, ~0);
+    t_size ItemCount = playlist_manager_v4::get()->playlist_get_item_count(playlistIndex);
+
+    const std::wstring Text = ToJSON(affectedItems, ItemCount);
 
     const std::wstring Script = ::FormatText(L"onPlaylistSelectedItemsChanged(%d, \"%s\")", (int) playlistIndex, Text.c_str());
 
@@ -92,71 +182,13 @@ void UIElement::on_item_focus_change(t_size playlistIndex, t_size fromIndex, t_s
 }
 
 /// <summary>
-/// Called when the specified item of a playlist has been ensured to be visible.
-/// </summary>
-void UIElement::on_item_ensure_visible(t_size playlistIndex, t_size itemIndex)
-{
-    const std::wstring Script = ::FormatText(L"onPlaylistItemEnsureVisible(%d, %d)", (int) playlistIndex, (int) itemIndex);
-
-    ExecuteScript(Script);
-}
-
-/// <summary>
-/// Called when some playlist items of the specified playlist have been modified.
-/// </summary>
-void UIElement::on_items_modified(t_size playlistIndex, const bit_array & mask)
-{
-    const std::wstring Script = ::FormatText(L"onPlaylistItemsModified(%d)", (int) playlistIndex);
-
-    ExecuteScript(Script);
-}
-
-/// <summary>
-/// Called when some playlist items of the specified playlist have been modified from playback.
-/// </summary>
-void UIElement::on_items_modified_fromplayback(t_size playlistIndex, const bit_array & mask, play_control::t_display_level displayLevel)
-{
-    const std::wstring Script = ::FormatText(L"onPlaylistItemsModifiedFromPlayback(%d)", (int) playlistIndex);
-
-    ExecuteScript(Script);
-}
-
-/// <summary>
-/// Called when items of the specified playlist have been replaced.
-/// </summary>
-void UIElement::on_items_replaced(t_size playlistIndex, const bit_array & mask, const pfc::list_base_const_t<playlist_callback::t_on_items_replaced_entry> & replacedItems)
-{
-    const std::wstring Script = ::FormatText(L"onPlaylistItemsReplaced(%d)", (int) playlistIndex);
-
-    ExecuteScript(Script);
-}
-
-/// <summary>
-/// Called when the active playlist changes.
-/// </summary>
-void UIElement::on_playlist_activate(t_size oldPlaylistIndex, t_size newPlaylistIndex)
-{
-    const std::wstring Script = ::FormatText(L"onPlaylistActivated(%d, %d)", (int) oldPlaylistIndex, (int) newPlaylistIndex);
-
-    ExecuteScript(Script);
-}
-
-/// <summary>
-/// Called when a new playlist has been created.
-/// </summary>
-void UIElement::on_playlist_created(t_size playlistIndex, const char * name, t_size size)
-{
-    const std::wstring Script = ::FormatText(L"onPlaylistCreated(%d, \"%s\")", (int) playlistIndex, ::UTF8ToWide(name, size).c_str());
-
-    ExecuteScript(Script);
-}
-
-/// <summary>
 /// Called when the playlists have beenn reordered.
 /// </summary>
-void UIElement::on_playlists_reorder(const t_size * order, t_size count)
+void UIElement::on_playlists_reorder(const t_size * playlistOrder, t_size playlistCount)
 {
-    const std::wstring Script = L"onPlaylistsReordered()";
+    const std::wstring Text = ToJSON(playlistOrder, playlistCount);
+
+    const std::wstring Script = ::FormatText(L"onPlaylistsReordered(\"%s\")", Text.c_str());
 
     ExecuteScript(Script);
 }
@@ -166,7 +198,9 @@ void UIElement::on_playlists_reorder(const t_size * order, t_size count)
 /// </summary>
 void UIElement::on_playlists_removing(const bit_array & mask, t_size oldCount, t_size newCount)
 {
-    const std::wstring Script = L"onPlaylistsRemoving()";
+    const std::wstring Text = ToJSON(mask, oldCount);
+
+    const std::wstring Script = ::FormatText(L"onPlaylistsRemoving(\"%s\", %d)", Text.c_str(), (int) newCount);
 
     ExecuteScript(Script);
 }
@@ -174,29 +208,11 @@ void UIElement::on_playlists_removing(const bit_array & mask, t_size oldCount, t
 /// <summary>
 /// Called when playlists have been removed.
 /// </summary>
-void UIElement::on_playlists_removed(const bit_array & mask, t_size oldCount, t_size newcount)
+void UIElement::on_playlists_removed(const bit_array & mask, t_size oldCount, t_size newCount)
 {
-    const std::wstring Script = L"onPlaylistsRemoved()";
+    const std::wstring Text = ToJSON(mask, oldCount);
 
-    ExecuteScript(Script);
-}
-
-/// <summary>
-/// Called when the specified playlist has been renamed.
-/// </summary>
-void UIElement::on_playlist_renamed(t_size playlistIndex, const char * name, t_size size)
-{
-    const std::wstring Script = ::FormatText(L"onPlaylistRenamed(%d, \"%s\")", (int) playlistIndex, ::UTF8ToWide(name, size).c_str());
-
-    ExecuteScript(Script);
-}
-
-/// <summary>
-/// Called when the specified playlist has been locked or unlocked.
-/// </summary>
-void UIElement::on_playlist_locked(t_size playlistIndex, bool isLocked)
-{
-    const std::wstring Script = ::FormatText(isLocked ? L"onPlaylistLocked(%d)" : L"onPlaylistUnlocked(%d)", (int) playlistIndex);
+    const std::wstring Script = ::FormatText(L"onPlaylistsRemoved(\"%s\", %d)", Text.c_str(), (int) newCount);
 
     ExecuteScript(Script);
 }
