@@ -144,7 +144,7 @@ v0.2.0.0-alpha5, 2024-12-xx, *"I'm getting framed..."*
     * isAutoPlaylist: Returns true if the specified playlist is an auto playlist. (alpha2)
     * playbackOrder: Gets or sets the playback order (0 = default, 1 = repeat playlist, 2 = repeat track, 3 = random, 4 = shuffle tracks, 5 = shuffle albums, 6 = shuffle folders). (alpha2)
 
-  * Events
+  * Callbacks
     * onPlaylistItemsAdded(playlistIndex): Called when items have been added to the specified playlist. (alpha4)
     * onPlaylistItemsReordered(playlistIndex): Called when the items of the specified playlist have been reordered. (alpha4)
     * onPlaylistItemsRemoving(playlistIndex): Called when removing items of the specified playlist. (alpha4)
@@ -172,11 +172,11 @@ v0.2.0.0-alpha5, 2024-12-xx, *"I'm getting framed..."*
 
   * Fixed: Booleans in objects are now parsed correctly. (alpha4)
   * Fixed: Boolean parameters and return values are true Javascript booleans now. (alpha4)
-  * Improved: The searchPattern parameter is now optional in ReadDirectory() and defaults to "*.*". (alpha4)
+  * Improved: The searchPattern parameter is now optional in ReadDirectory() and defaults to "\*.\*". (alpha4)
   * Improved: The CreateAutoPlaylist() sort and flags parameter can be omitted. They default to "" and 0 respectively. (alpha4)
   * Changed: Returned JSON objects now use camelCase casing. (alpha4)
-  * Changed: *Breaking Change* Events follow the Category-Noun-Verb naming convention. (alpha5)
-  * Changed: *Breaking Change* All properties, methods and events use camelCase casing. (alpha5)
+  * Changed: *Breaking Change* Callbacks follow the Category-Noun-Verb naming convention. (alpha5)
+  * Changed: *Breaking Change* All properties, methods and callbacks to use camelCase convention. (alpha5)
 
 v0.1.8.0, 2024-08-10
 
