@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.cpp (2024.12.01) P. Stuer **/
+/** $VER: UIElement.cpp (2024.12.02) P. Stuer **/
 
 #include "pch.h"
 
@@ -10,6 +10,7 @@
 #include "Support.h"
 
 #include <pathcch.h>
+
 #pragma comment(lib, "pathcch")
 
 #include <SDK/titleformat.h>
@@ -55,7 +56,7 @@ LRESULT UIElement::OnCreate(LPCREATESTRUCT cs) noexcept
         return 1;
     }
 
-    console::printf(STR_COMPONENT_BASENAME " is using WebView %s.", WideToUTF8(WebViewVersion).c_str());
+    console::printf(STR_COMPONENT_BASENAME " is using WebView %s.", ::WideToUTF8(WebViewVersion).c_str());
 
     _HostObject = Microsoft::WRL::Make<HostObject>
     (
@@ -119,7 +120,7 @@ void UIElement::OnSize(UINT type, CSize size) noexcept
 
     RECT Bounds;
 
-    ::GetClientRect(m_hWnd, &Bounds);
+    GetClientRect(&Bounds);
 
     _Controller->put_Bounds(Bounds);
 }
@@ -430,9 +431,6 @@ CWndClassInfo & UIElement::GetWndClassInfo()
 /// </summary>
 void UIElement::on_playback_starting(play_control::t_track_command command, bool paused)
 {
-    if (_WebView == nullptr)
-        return;
-
     static const wchar_t * CommandName = L"Unknown";
 
     if (command == play_control::t_track_command::track_command_play) CommandName = L"Play"; else
@@ -443,10 +441,9 @@ void UIElement::on_playback_starting(play_control::t_track_command command, bool
     if (command == play_control::t_track_command::track_command_rand) CommandName = L"Set track"; else  // For internal use only, do not use.
     if (command == play_control::t_track_command::track_command_rand) CommandName = L"Resume";          // For internal use only, do not use.
 
-    HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnPlaybackStarting(\"%s\", %s)", CommandName, (paused ? L"true" : L"false")).c_str(), nullptr);
+    const std::wstring Script = ::FormatText(L"OnPlaybackStarting(\"%s\", %s)", CommandName, (paused ? L"true" : L"false"));
 
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackStarting()").c_str());
+    ExecuteScript(Script);
 }
 
 /// <summary>
@@ -454,13 +451,9 @@ void UIElement::on_playback_starting(play_control::t_track_command command, bool
 /// </summary>
 void UIElement::on_playback_new_track(metadb_handle_ptr /*track*/)
 {
-    if (_WebView == nullptr)
-        return;
+    const std::wstring Script = L"OnPlaybackNewTrack()";
 
-    HRESULT hr = _WebView->ExecuteScript(L"OnPlaybackNewTrack()", nullptr);
-
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackNewTrack()").c_str());
+    ExecuteScript(Script);
 
     _LastPlaybackTime = 0.;
     _SampleRate = 44100; // Temporary until we get the sample rate from the chunk.
@@ -477,9 +470,6 @@ void UIElement::on_playback_stop(play_control::t_stop_reason reason)
 
     _LastPlaybackTime = 0.;
 
-    if (_WebView == nullptr)
-        return;
-
     static const wchar_t * Reason = L"unknown";
 
     if (reason == play_control::t_stop_reason::stop_reason_user)                Reason = L"User"; else
@@ -487,10 +477,9 @@ void UIElement::on_playback_stop(play_control::t_stop_reason reason)
     if (reason == play_control::t_stop_reason::stop_reason_starting_another)    Reason = L"Starting another"; else
     if (reason == play_control::t_stop_reason::stop_reason_shutting_down)       Reason = L"Shutting down";
 
-    HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnPlaybackStop(\"%s\")", Reason).c_str(), nullptr);
+    const std::wstring Script = ::FormatText(L"OnPlaybackStop(\"%s\")", Reason);
 
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackStop()").c_str());
+    ExecuteScript(Script);
 }
 
 /// <summary>
@@ -569,7 +558,7 @@ void UIElement::on_volume_change(float newValue) // in dBFS
 
 #pragma endregion
 
-#pragma region playlist_callback_single
+#pragma region playlist_callback
 
 /// <summary>
 /// Called when items have been added to the active playlist.
@@ -661,6 +650,9 @@ void UIElement::on_items_replaced(t_size playlistIndex, const bit_array & mask, 
     ExecuteScript(Script);
 }
 
+/// <summary>
+/// Called when the specified item of a playlist has been ensured to be visible.
+/// </summary>
 void UIElement::on_item_ensure_visible(t_size playlistIndex, t_size itemIndex)
 {
     const std::wstring Script = ::FormatText(L"OnEnsuredPlaylistItemIsVisible(%d, %d)", (int) playlistIndex, (int) itemIndex);
@@ -668,6 +660,9 @@ void UIElement::on_item_ensure_visible(t_size playlistIndex, t_size itemIndex)
     ExecuteScript(Script);
 }
 
+/// <summary>
+/// Called when the active playlist changes.
+/// </summary>
 void UIElement::on_playlist_activate(t_size oldPlaylistIndex, t_size newPlaylistIndex)
 {
     const std::wstring Script = ::FormatText(L"OnChangedActivePlaylist(%d, %d)", (int) oldPlaylistIndex, (int) newPlaylistIndex);
@@ -675,6 +670,9 @@ void UIElement::on_playlist_activate(t_size oldPlaylistIndex, t_size newPlaylist
     ExecuteScript(Script);
 }
 
+/// <summary>
+/// Called when a new playlist has been created.
+/// </summary>
 void UIElement::on_playlist_created(t_size playlistIndex, const char * name, t_size size)
 {
     const std::wstring Script = ::FormatText(L"OnCreatedPlaylist(%d, \"%s\")", (int) playlistIndex, UTF8ToWide(name, size).c_str());
@@ -682,6 +680,9 @@ void UIElement::on_playlist_created(t_size playlistIndex, const char * name, t_s
     ExecuteScript(Script);
 }
 
+/// <summary>
+/// Called when the playlists have beenn reordered.
+/// </summary>
 void UIElement::on_playlists_reorder(const t_size * order, t_size count)
 {
     const std::wstring Script = L"OnReorderedPlaylists()";
@@ -689,6 +690,9 @@ void UIElement::on_playlists_reorder(const t_size * order, t_size count)
     ExecuteScript(Script);
 }
 
+/// <summary>
+/// Called when playlists are being removed.
+/// </summary>
 void UIElement::on_playlists_removing(const bit_array & mask, t_size oldCount, t_size newCount)
 {
     const std::wstring Script = L"OnRemovingPlaylists()";
@@ -696,6 +700,9 @@ void UIElement::on_playlists_removing(const bit_array & mask, t_size oldCount, t
     ExecuteScript(Script);
 }
 
+/// <summary>
+/// Called when playlists have been removed.
+/// </summary>
 void UIElement::on_playlists_removed(const bit_array & mask, t_size oldCount, t_size newcount)
 {
     const std::wstring Script = L"OnRemovedPlaylists()";
@@ -703,6 +710,9 @@ void UIElement::on_playlists_removed(const bit_array & mask, t_size oldCount, t_
     ExecuteScript(Script);
 }
 
+/// <summary>
+/// Called when the specified playlist has been renamed.
+/// </summary>
 void UIElement::on_playlist_renamed(t_size playlistIndex, const char * name, t_size size)
 {
     const std::wstring Script = ::FormatText(L"OnRenamedPlaylist(%d, \"%s\")", (int) playlistIndex, UTF8ToWide(name, size).c_str());
@@ -710,6 +720,9 @@ void UIElement::on_playlist_renamed(t_size playlistIndex, const char * name, t_s
     ExecuteScript(Script);
 }
 
+/// <summary>
+/// Called when the specified playlist has been locked or unlocked.
+/// </summary>
 void UIElement::on_playlist_locked(t_size playlistIndex, bool isLocked)
 {
     const std::wstring Script = ::FormatText(isLocked ? L"OnLockedPlaylist(%d)" : L"OnUnlockedPlaylist(%d)", (int) playlistIndex);
@@ -717,6 +730,9 @@ void UIElement::on_playlist_locked(t_size playlistIndex, bool isLocked)
     ExecuteScript(Script);
 }
 
+/// <summary>
+/// Called when the default format has been changed.
+/// </summary>
 void UIElement::on_default_format_changed()
 {
     const std::wstring Script = L"OnChangedDefaultFormat()";
@@ -745,7 +761,7 @@ void UIElement::ExecuteScript(const std::wstring & script) const noexcept
     HRESULT hr = _WebView->ExecuteScript(script.c_str(), nullptr);
 
     if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, FormatText(STR_COMPONENT_BASENAME " failed to call %s", WideToUTF8(script).c_str())).c_str());
+        console::print(::GetErrorMessage(hr, FormatText(STR_COMPONENT_BASENAME " failed to call %s", ::WideToUTF8(script).c_str())).c_str());
 }
 
 #pragma endregion

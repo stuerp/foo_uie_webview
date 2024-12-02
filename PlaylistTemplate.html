@@ -102,7 +102,7 @@ div
 // Refreshes the content of all elements.
 function Refresh()
 {
-    var Index = chrome.webview.hostObjects.sync.foo_uie_webview.ActivePlaylist;
+    const Index = chrome.webview.hostObjects.sync.foo_uie_webview.ActivePlaylist;
 
     document.getElementById("PlaylistCount").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.PlaylistCount;
     document.getElementById("ActivePlaylist").textContent = Index;
@@ -129,7 +129,7 @@ document.getElementById("CreatePlaylistButton").addEventListener("click", async 
 document.getElementById("DuplicatePlaylistButton").addEventListener("click", async () =>
 {
     // Create a duplicate of playlist 0.
-    var PlaylistIndex = await chrome.webview.hostObjects.foo_uie_webview.DuplicatePlaylist(0, "Duplicate");
+    const PlaylistIndex = await chrome.webview.hostObjects.foo_uie_webview.DuplicatePlaylist(0, "Duplicate");
 
     // Activate the new playlist.
     chrome.webview.hostObjects.sync.foo_uie_webview.ActivePlaylist = PlaylistIndex;
@@ -153,7 +153,7 @@ document.getElementById("DeletePlaylistButton").addEventListener("click", async 
 document.getElementById("GetItemsButton").addEventListener("click", async () =>
 {
     // Gets the items of the specified playlist as an array of locations.
-    var Text = await chrome.webview.hostObjects.foo_uie_webview.GetPlaylistItems(0);
+    const Text = await chrome.webview.hostObjects.foo_uie_webview.GetPlaylistItems(0);
 
     const Items = JSON.parse(Text);
 
@@ -162,7 +162,7 @@ document.getElementById("GetItemsButton").addEventListener("click", async () =>
 
 document.getElementById("GetSelectedItemsButton").addEventListener("click", async () =>
 {
-    var Text = await chrome.webview.hostObjects.foo_uie_webview.GetSelectedPlaylistItems(0);
+    const Text = await chrome.webview.hostObjects.foo_uie_webview.GetSelectedPlaylistItems(0);
 
     const Items = JSON.parse(Text);
 
@@ -244,7 +244,7 @@ document.getElementById("ReadImageButton").addEventListener("click", async () =>
 
 document.getElementById("ReadDirectoryButton").addEventListener("click", async () =>
 {
-    var Text = await chrome.webview.hostObjects.foo_uie_webview.ReadDirectory("C:/Windows", "*.exe");
+    const Text = await chrome.webview.hostObjects.foo_uie_webview.ReadDirectory("C:/Windows", "*.exe");
 
     const Items = JSON.parse(Text);
 

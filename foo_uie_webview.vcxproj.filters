@@ -38,6 +38,7 @@
     <ClCompile Include="Rendering.cpp" />
     <ClCompile Include="SharedBuffer.cpp" />
     <ClCompile Include="HostObjectImplPlaylists.cpp" />
+    <ClCompile Include="HostObjectImplFiles.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources.rc" />

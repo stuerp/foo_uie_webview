@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.h (2024.12.01) P. Stuer **/
+/** $VER: UIElement.h (2024.12.02) P. Stuer **/
 
 #pragma once
 

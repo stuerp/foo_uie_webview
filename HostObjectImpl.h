@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.h (2024.12.01) P. Stuer **/
+/** $VER: HostObjectImpl.h (2024.12.02) P. Stuer **/
 
 #pragma once
 
@@ -83,12 +83,14 @@ public:
 
     STDMETHODIMP GetArtwork(BSTR type, BSTR * image) override;
 
-    // Files
+    /* Files */
+
     STDMETHODIMP ReadAllText(BSTR filePath, __int32 codePage, BSTR * text) override;
     STDMETHODIMP ReadImage(BSTR filePath, BSTR * image) override;
     STDMETHODIMP ReadDirectory(BSTR filePath, BSTR searchPattern, BSTR * json) override;
 
-    // Playlists
+    /* Playlists */
+
     STDMETHODIMP get_PlaylistCount(int * playlistCount) override;
 
     STDMETHODIMP get_ActivePlaylist(int * playlistIndex) override;
@@ -129,11 +131,13 @@ public:
 
     STDMETHODIMP DeletePlaylist(int playlistIndex) override;
 
-    // Auto Playlists
+    /* Auto Playlists */
+
     STDMETHODIMP CreateAutoPlaylist(int playlistIndex, BSTR name, BSTR query, BSTR sort, uint32_t flags, int * newPlaylistIndex) override;
     STDMETHODIMP IsAutoPlaylist(int playlistIndex, VARIANT_BOOL * result) override;
 
-    // Playback Order
+    /* Playback Order */
+
     STDMETHODIMP get_PlaybackOrder(int * playlistIndex) override;
     STDMETHODIMP put_PlaybackOrder(int playlistIndex) override;
 
@@ -150,6 +154,7 @@ public:
 
 private:
     static HRESULT GetTrackIndex(size_t & playlistIndex, size_t & itemIndex) noexcept;
+
     static HRESULT GetTypeLibFilePath(std::wstring & filePath) noexcept;
 
     static void NormalizeIndexes(int & playlistIndex, int & itemIndex) noexcept

@@ -185,9 +185,9 @@ function OnPlaybackNewTrack()
 
     Refresh()
 
-    var TestDataURI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
+    const TestDataURI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
 
-    var DataURI = chrome.webview.hostObjects.sync.foo_uie_webview.GetArtwork("front"); // "front", "back", "disc", "icon", "artist"
+    const DataURI = chrome.webview.hostObjects.sync.foo_uie_webview.GetArtwork("front"); // "front", "back", "disc", "icon", "artist"
 
     document.getElementById("Artwork").src = (DataURI.length != 0) ? DataURI : TestDataURI;
 }
