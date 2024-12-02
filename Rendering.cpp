@@ -68,15 +68,13 @@ void UIElement::OnTimer() noexcept
     if (!SUCCEEDED(hr))
         return;
 
+    hr = _WebView->ExecuteScript(::FormatText(L"onTimer(%d, %d, %d, %d)", SampleCount, _SampleRate, ChannelCount, ChannelConfig).c_str(), nullptr); // Silently continue
+
+    if (!SUCCEEDED(hr))
     {
-        hr = _WebView->ExecuteScript(::FormatText(L"OnTimer(%d, %d, %d, %d)", SampleCount, _SampleRate, ChannelCount, ChannelConfig).c_str(), nullptr); // Silently continue
+        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call onTimer()").c_str());
 
-        if (!SUCCEEDED(hr))
-        {
-            console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnTimer()").c_str());
-
-            StopTimer();
-        }
+        StopTimer();
     }
 }
 

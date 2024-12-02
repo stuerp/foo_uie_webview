@@ -20,7 +20,7 @@ inline std::wstring UTF8ToWide(const char * text, size_t size) noexcept
 
 inline std::string WideToUTF8(const std::wstring & text) noexcept
 {
-    return WideToUTF8(text.c_str(), text.length());
+    return ::WideToUTF8(text.c_str(), text.length());
 }
 
 inline std::wstring CodePageToWide(uint32_t codePage, const std::string & text) noexcept

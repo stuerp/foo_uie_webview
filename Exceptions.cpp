@@ -34,7 +34,7 @@ std::string GetErrorMessage(DWORD errorCode, const std::string & errorMessage) n
     else
         Text = ::FormatText("Failed to get error message for error code (0x%08X)", ::GetLastError());
 
-    return FormatText("%s: %s (0x%08X)", errorMessage.c_str(), Text.c_str(), errorCode);
+    return ::FormatText("%s: %s (0x%08X)", errorMessage.c_str(), Text.c_str(), errorCode);
 }
 
 /// <summary>

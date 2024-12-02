@@ -58,14 +58,46 @@ div
     Focused playlist item: <span id="FocusedPlaylistItem"></span><br/>
     <br/>
 
-    <button id="CreatePlaylistButton">Create Playlist</button>
-    <button id="DuplicatePlaylistButton">Duplicate Playlist</button>
-    <button id="FindPlaylistButton">Find Playlist</button><br/>
-    <button id="DeletePlaylistButton">Delete Playlist</button>
+    onPlaylistItemsAdded: <span id="onPlaylistItemsAddedResult"></span><br/>
+    onPlaylistItemsReordered: <span id="onPlaylistItemsReorderedResult"></span><br/>
+    onPlaylistItemsRemoving: <span id="onPlaylistItemsRemovingResult"></span><br/>
+    onPlaylistItemsRemoved: <span id="onPlaylistItemsRemovedResult"></span><br/>
     <br/>
 
-    <button id="GetItemsButton">Get Playlist Items</button>
-    <button id="GetSelectedItemsButton">Get Selected Playlist Items</button><br/>
+    onPlaylistItemEnsureVisible: <span id="onPlaylistItemEnsureVisibleResult"></span><br/>
+    onPlaylistItemsModified: <span id="onPlaylistItemsModifiedResult"></span><br/>
+    onPlaylistItemsModifiedFromPlayback: <span id="onPlaylistItemsModifiedFromPlaybackResult"></span><br/>
+    onPlaylistItemsReplaced: <span id="onPlaylistItemsReplacedResult"></span><br/>
+    <br/>
+
+    onPlaylistCreated: <span id="onPlaylistCreatedResult"></span><br/>
+    onPlaylistActivated: <span id="onPlaylistActivatedResult"></span><br/>
+    onPlaylistRenamed: <span id="onPlaylistRenamedResult"></span><br/>
+    onPlaylistLocked: <span id="onPlaylistLockedResult"></span><br/>
+    onPlaylistUnlocked: <span id="onPlaylistUnlockedResult"></span><br/>
+    onPlaylistSelectedItemsChanged: <span id="onPlaylistSelectedItemsChangedResult"></span><br/>
+    onPlaylistFocusedItemChanged: <span id="onPlaylistFocusedItemChangedResult"></span><br/>
+    <br/>
+
+    onPlaylistsReordered: <span id="onPlaylistsReorderedResult"></span><br/>
+    onPlaylistsRemoving: <span id="onPlaylistsRemovingResult"></span><br/>
+    onPlaylistsRemoved: <span id="onPlaylistsRemovedResult"></span><br/>
+    <br/>
+
+    onDefaultFormatChanged: <span id="onDefaultFormatChangedResult"></span><br/>
+    <br/>
+
+    onPlaybackOrderChanged: <span id="onPlaybackOrderChangedResult"></span><br/>
+    <br/>
+
+    <button id="createPlaylistButton">Create Playlist</button>
+    <button id="duplicatePlaylistButton">Duplicate Playlist</button>
+    <button id="findPlaylistButton">Find Playlist</button><br/>
+    <button id="deletePlaylistButton">Delete Playlist</button>
+    <br/>
+
+    <button id="getPlaylistItemsButton">Get Playlist Items</button>
+    <button id="getSelectedItemsButton">Get Selected Playlist Items</button><br/>
     <br/>
     <div id="Playlist"/>
 
@@ -94,7 +126,7 @@ div
         <img id="Image" style="max-width: 128px; height: auto; object-fit: cover;"/><br/>
     </div>
 
-    <button id="ReadDirectoryButton">Read Directory</button><br/>
+    <button id="readDirectoryButton">Read Directory</button><br/>
     <br/>
     <div id="Directory"/>
 </div>
@@ -102,26 +134,26 @@ div
 // Refreshes the content of all elements.
 function Refresh()
 {
-    const Index = chrome.webview.hostObjects.sync.foo_uie_webview.ActivePlaylist;
+    const Index = chrome.webview.hostObjects.sync.foo_uie_webview.activePlaylist;
 
-    document.getElementById("PlaylistCount").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.PlaylistCount;
+    document.getElementById("PlaylistCount").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.playlistCount;
     document.getElementById("ActivePlaylist").textContent = Index;
-    document.getElementById("PlayingPlaylist").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.PlayingPlaylist;
-    document.getElementById("PlaylistName").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetPlaylistName(Index);
-    document.getElementById("FocusedPlaylistItem").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFocusedPlaylistItem(Index);
-    document.getElementById("IsAutoPlaylist").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.IsAutoPlaylist(Index);
+    document.getElementById("PlayingPlaylist").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.playingPlaylist;
+    document.getElementById("PlaylistName").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getPlaylistName(Index);
+    document.getElementById("FocusedPlaylistItem").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFocusedPlaylistItem(Index);
+    document.getElementById("IsAutoPlaylist").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.isAutoPlaylist(Index);
 
-    document.getElementById("PlaybackOrder").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.PlaybackOrder;
+    document.getElementById("PlaybackOrder").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.playbackOrder;
 }
 
 document.getElementById("CreatePlaylistButton").addEventListener("click", async () =>
 {
     // Create a new playlist with an auto-generated name after the last playlist and activate it.
-    chrome.webview.hostObjects.sync.foo_uie_webview.ActivePlaylist = await chrome.webview.hostObjects.foo_uie_webview.CreatePlaylist(-1, "");
+    chrome.webview.hostObjects.sync.foo_uie_webview.activePlaylist = await chrome.webview.hostObjects.foo_uie_webview.createPlaylist(-1, "");
 
     // Add a new item to the active playlist after the last item using a location and select the newly added item.
-    await chrome.webview.hostObjects.foo_uie_webview.AddPath(-1, -1, "file:////C:\\Test 1.mp3", true);
-    await chrome.webview.hostObjects.foo_uie_webview.AddPath(-1, -1, "file:////C:\\Test 2.mp3", true);
+    await chrome.webview.hostObjects.foo_uie_webview.addPath(-1, -1, "file:////C:\\Test 1.mp3", true);
+    await chrome.webview.hostObjects.foo_uie_webview.addPath(-1, -1, "file:////C:\\Test 2.mp3", true);
 
     Refresh();
 });
@@ -129,31 +161,31 @@ document.getElementById("CreatePlaylistButton").addEventListener("click", async 
 document.getElementById("DuplicatePlaylistButton").addEventListener("click", async () =>
 {
     // Create a duplicate of playlist 0.
-    const PlaylistIndex = await chrome.webview.hostObjects.foo_uie_webview.DuplicatePlaylist(0, "Duplicate");
+    const PlaylistIndex = await chrome.webview.hostObjects.foo_uie_webview.duplicatePlaylist(0, "Duplicate");
 
     // Activate the new playlist.
-    chrome.webview.hostObjects.sync.foo_uie_webview.ActivePlaylist = PlaylistIndex;
+    chrome.webview.hostObjects.sync.foo_uie_webview.activePlaylist = PlaylistIndex;
 
     // Ensure that the last playlist item is visible.
-    chrome.webview.hostObjects.foo_uie_webview.EnsurePlaylistItemVisible(PlaylistIndex, chrome.webview.hostObjects.sync.foo_uie_webview.GetPlaylistItemCount(PlaylistIndex) - 1);
+    chrome.webview.hostObjects.foo_uie_webview.ensurePlaylistItemVisible(PlaylistIndex, chrome.webview.hostObjects.sync.foo_uie_webview.getPlaylistItemCount(PlaylistIndex) - 1);
 });
 
 document.getElementById("FindPlaylistButton").addEventListener("click", async () =>
 {
     // Find the playlist named "Duplicate" and activate it.
-    chrome.webview.hostObjects.sync.foo_uie_webview.ActivePlaylist = await chrome.webview.hostObjects.foo_uie_webview.FindPlaylist("Duplicate");
+    chrome.webview.hostObjects.sync.foo_uie_webview.activePlaylist = await chrome.webview.hostObjects.foo_uie_webview.findPlaylist("Duplicate");
 });
 
 document.getElementById("DeletePlaylistButton").addEventListener("click", async () =>
 {
     // Deletes the specified playlist. Use -1 for the active playlist.
-    await chrome.webview.hostObjects.foo_uie_webview.DeletePlaylist(-1);
+    await chrome.webview.hostObjects.foo_uie_webview.deletePlaylist(-1);
 });
 
-document.getElementById("GetItemsButton").addEventListener("click", async () =>
+document.getElementById("getPlaylistItemsButton").addEventListener("click", async () =>
 {
     // Gets the items of the specified playlist as an array of locations.
-    const Text = await chrome.webview.hostObjects.foo_uie_webview.GetPlaylistItems(0);
+    const Text = await chrome.webview.hostObjects.foo_uie_webview.getPlaylistItems(0);
 
     const Items = JSON.parse(Text);
 
@@ -162,7 +194,7 @@ document.getElementById("GetItemsButton").addEventListener("click", async () =>
 
 document.getElementById("GetSelectedItemsButton").addEventListener("click", async () =>
 {
-    const Text = await chrome.webview.hostObjects.foo_uie_webview.GetSelectedPlaylistItems(0);
+    const Text = await chrome.webview.hostObjects.foo_uie_webview.getSelectedPlaylistItems(0);
 
     const Items = JSON.parse(Text);
 
@@ -172,7 +204,7 @@ document.getElementById("GetSelectedItemsButton").addEventListener("click", asyn
 document.getElementById("SelectItemButton").addEventListener("click", async () =>
 {
     // Selects the last item of the active playlist.
-    await chrome.webview.hostObjects.foo_uie_webview.SelectPlaylistItem(-1, -1);
+    await chrome.webview.hostObjects.foo_uie_webview.selectPlaylistItem(-1, -1);
 
     document.getElementById("SelectItemResult").textContent = "Done (" + Now() + ")";
 });
@@ -180,7 +212,7 @@ document.getElementById("SelectItemButton").addEventListener("click", async () =
 document.getElementById("DeselectItemButton").addEventListener("click", async () =>
 {
     // Deselects the last item of the active playlist.
-    await chrome.webview.hostObjects.foo_uie_webview.DeselectPlaylistItem(-1, -1);
+    await chrome.webview.hostObjects.foo_uie_webview.deselectPlaylistItem(-1, -1);
 
     document.getElementById("DeselectItemResult").textContent = "Done (" + Now() + ")";
 });
@@ -188,36 +220,36 @@ document.getElementById("DeselectItemButton").addEventListener("click", async ()
 document.getElementById("IsSelectedButton").addEventListener("click", async () =>
 {
     // Returns true if the last item of the active playlist is selected.
-    document.getElementById("IsSelectedResult").textContent = await chrome.webview.hostObjects.foo_uie_webview.IsPlaylistItemSelected(-1, -1);
+    document.getElementById("IsSelectedResult").textContent = await chrome.webview.hostObjects.foo_uie_webview.isPlaylistItemSelected(-1, -1);
 });
 
 document.getElementById("RemoveSelectedButton").addEventListener("click", async () =>
 {
-    await chrome.webview.hostObjects.foo_uie_webview.RemoveSelectedPlaylistItems(0);
+    await chrome.webview.hostObjects.foo_uie_webview.removeSelectedPlaylistItems(0);
 
     document.getElementById("RemoveSelectedResult").textContent = "Done (" + Now() + ")";
 });
 
 document.getElementById("RemoveUnselectedButton").addEventListener("click", async () =>
 {
-    await chrome.webview.hostObjects.foo_uie_webview.RemoveUnselectedPlaylistItems(0);
+    await chrome.webview.hostObjects.foo_uie_webview.removeUnselectedPlaylistItems(0);
 
     document.getElementById("RemoveUnselectedResult").textContent = "Done (" + Now() + ")";
 });
 
 document.getElementById("PlaylistItemCountButton").addEventListener("click", async () =>
 {
-    document.getElementById("PlaylistItemCount").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetPlaylistItemCount(-1);
+    document.getElementById("PlaylistItemCount").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getPlaylistItemCount(-1);
 });
 
 document.getElementById("SelectedPlaylistItemCountButton").addEventListener("click", async () =>
 {
-    document.getElementById("SelectedPlaylistItemCount").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetSelectedPlaylistItemCount(-1, -1);
+    document.getElementById("SelectedPlaylistItemCount").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getSelectedPlaylistItemCount(-1, -1);
 });
 
 document.getElementById("RemoveItemButton").addEventListener("click", async () =>
 {
-    await chrome.webview.hostObjects.foo_uie_webview.RemovePlaylistItem(-1, -1);
+    await chrome.webview.hostObjects.foo_uie_webview.removePlaylistItem(-1, -1);
 
     document.getElementById("RemoveItemResult").textContent = "Done (" + Now() + ")";
 });
@@ -225,31 +257,151 @@ document.getElementById("RemoveItemButton").addEventListener("click", async () =
 document.getElementById("ClearPlaylistButton").addEventListener("click", async () =>
 {
     // Clear the specified playlist. Use -1 for the active playlist.
-    await chrome.webview.hostObjects.foo_uie_webview.ClearPlaylist(-1);
+    await chrome.webview.hostObjects.foo_uie_webview.clearPlaylist(-1);
 
     document.getElementById("ClearPlaylistResult").textContent = "Done (" + Now() + ")";
 });
 
 document.getElementById("CreateAutoPlaylistButton").addEventListener("click", async () =>
 {
-    chrome.webview.hostObjects.sync.foo_uie_webview.ActivePlaylist = await chrome.webview.hostObjects.foo_uie_webview.CreateAutoPlaylist(-1, "Test", "%title% HAS test", "%album artist% | %album% | %tracknumber% | %title%", 0);
+    chrome.webview.hostObjects.sync.foo_uie_webview.activePlaylist = await chrome.webview.hostObjects.foo_uie_webview.createAutoPlaylist(-1, "Test", "%title% HAS test", "%album artist% | %album% | %tracknumber% | %title%", 0);
 
     document.getElementById("CreateAutoPlaylistResult").textContent = "Done (" + Now() + ")";
 });
 
 document.getElementById("ReadImageButton").addEventListener("click", async () =>
 {
-    document.getElementById("Image").src = await chrome.webview.hostObjects.foo_uie_webview.ReadImage("C:/Windows/Web/Screen/img100.jpg");
+    document.getElementById("Image").src = await chrome.webview.hostObjects.foo_uie_webview.readImage("C:/Windows/Web/Screen/img100.jpg");
 });
 
-document.getElementById("ReadDirectoryButton").addEventListener("click", async () =>
+document.getElementById("readDirectoryButton").addEventListener("click", async () =>
 {
-    const Text = await chrome.webview.hostObjects.foo_uie_webview.ReadDirectory("C:/Windows", "*.exe");
+    const Text = await chrome.webview.hostObjects.foo_uie_webview.readDirectory("C:/Windows" /*, "*.exe" */);
 
     const Items = JSON.parse(Text);
 
-    document.getElementById('Directory').innerHTML = ArrayToTable(Items);
+    document.getElementById("Directory").innerHTML = ArrayToTable(Items);
 });
+
+// Called when items have been added to the specified playlist.
+function onPlaylistItemsAdded(playlistIndex)
+{
+    document.getElementById("onPlaylistItemsAddedResult").textContent = "Items added to playlist " + playlistIndex + " (" + Now() + ")";
+}
+
+// Called when the items of the specified playlist have been reordered.
+function onPlaylistItemsReordered(playlistIndex)
+{
+    document.getElementById("onPlaylistItemsReorderedResult").textContent = "Items of playlist " + playlistIndex + " have been reordered (" + Now() + ")";
+}
+
+// Called when removing items from the specified playlist.
+function onPlaylistItemsRemoving(playlistIndex)
+{
+    document.getElementById("onPlaylistItemsRemovingResult").textContent = "Items being removed from playlist " + playlistIndex + " (" + Now() + ")";
+}
+
+// Called when items have been removed from the specified playlist.
+function onPlaylistItemsRemoved(playlistIndex)
+{
+    document.getElementById("onPlaylistItemsRemovedResult").textContent = "Items removed from playlist " + playlistIndex + " (" + Now() + ")";
+}
+
+// Called when some playlist items of the specified playlist have been modified.
+function onPlaylistItemsModified(playlistIndex)
+{
+    document.getElementById("onPlaylistItemsModifiedResult").textContent = "Some playlist items have been modified in playlist " + playlistIndex + " (" + Now() + ")";
+}
+
+// Called when some playlist items of the specified playlist have been modified from playback.
+function onPlaylistItemsModifiedFromPlayback(playlistIndex)
+{
+    document.getElementById("onPlaylistItemsModifiedFromPlaybackResult").textContent = "Some playlist items have been modified from playback in playlist " + playlistIndex + " (" + Now() + ")";
+}
+
+// Called when items of the specified playlist have been replaced.
+function onPlaylistItemsReplaced(playlistIndex)
+{
+    document.getElementById("onPlaylistItemsReplacedResult").textContent = "Playlist items have been replaced in playlist " + playlistIndex + " (" + Now() + ")";
+}
+
+// Called when the specified item of a playlist has been ensured to be visible.
+function onPlaylistItemEnsureVisible(playlistIndex, itemIndex)
+{
+    document.getElementById("onPlaylistItemEnsureVisibleResult").textContent = "Ensured item " + itemIndex + " in playlist " + playlistIndex + " (" + Now() + ")";
+}
+
+// Called when the active playlist changes.
+function onPlaylistActivated(oldPlaylistIndex, newPlaylistIndex)
+{
+    document.getElementById("onPlaylistActivatedResult").textContent = "Active playlist changed from " + oldPlaylistIndex + " to " + newPlaylistIndex + " (" + Now() + ")";
+}
+
+// Called when a new playlist has been created.
+function onPlaylistCreated(playlistIndex, name)
+{
+    document.getElementById("onPlaylistCreatedResult").textContent = "Created playlist " + playlistIndex + " as \"" + name + "\" (" + Now() + ")";
+}
+
+/// Called when the specified playlist has been renamed.
+function onPlaylistRenamed(playlistIndex, name)
+{
+    document.getElementById("onPlaylistRenamedResult").textContent = "Playlist " + playlistIndex + " renamed to \"" + name + "\" (" + Now() + ")";
+}
+
+/// Called when the specified playlist has been locked.
+function onPlaylistLocked(playlistIndex)
+{
+    document.getElementById("onPlaylistLockedResult").textContent = "Playlist " + playlistIndex + " has been locked (" + Now() + ")";
+}
+
+/// Called when the specified playlist has been locked.
+function onPlaylistUnlocked(playlistIndex)
+{
+    document.getElementById("onPlaylistUnlockedResult").textContent = "Playlist " + playlistIndex + " has been unlocked (" + Now() + ")";
+}
+
+// Called when the selected items changed.
+function onPlaylistSelectedItemsChanged(playlistIndex)
+{
+    document.getElementById("onPlaylistSelectedItemsChangedResult").textContent = "Selected items changed in playlist " + playlistIndex + " (" + Now() + ")";
+}
+
+// Called when the focused item of a playlist changed.
+function onPlaylistFocusedItemChanged(playlistIndex, fromIndex, toIndex)
+{
+    document.getElementById("onPlaylistFocusedItemChangedResult").textContent = "Focused item changed from " + fromIndex + " to " + toIndex + " in playlist " + playlistIndex + " (" + Now() + ")";
+}
+
+// Called when the playlists have beenn reordered.
+function onPlaylistsReordered()
+{
+    document.getElementById("onPlaylistsReorderedResult").textContent = "Playlists have been reordered (" + Now() + ")";
+}
+
+// Called when playlists are being removed.
+function onPlaylistsRemoving()
+{
+    document.getElementById("onPlaylistsRemovingResult").textContent = "Playlists are being removed (" + Now() + ")";
+}
+
+/// Called when playlists have been removed.
+function onPlaylistsRemoved()
+{
+    document.getElementById("onPlaylistsRemovedResult").textContent = "Playlists have been removed (" + Now() + ")";
+}
+
+/// Called when the default format has been changed.
+function onDefaultFormatChanged()
+{
+    document.getElementById("onDefaultFormatChangedResult").textContent = "Default format has been changed (" + Now() + ")";
+}
+
+/// Called when the playback order changed.
+function onPlaybackOrderChanged(playbackOrderIndex)
+{
+    document.getElementById("onPlaybackOrderChangedResult").textContent = "Playback order changed to " + playbackOrderIndex + " (" + Now() + ")";
+}
 
 function ArrayToTable(Items)
 {

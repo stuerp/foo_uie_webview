@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImplPlaylists.cpp (2024.12.01) P. Stuer **/
+/** $VER: HostObjectImplPlaylists.cpp (2024.12.02) P. Stuer **/
 
 #include "pch.h"
 
@@ -29,7 +29,7 @@
 /// <summary>
 /// Gets the number of playlists.
 /// </summary>
-STDMETHODIMP HostObject::get_PlaylistCount(int * count)
+STDMETHODIMP HostObject::get_playlistCount(int * count)
 {
     if (count == nullptr)
         return E_INVALIDARG;
@@ -42,7 +42,7 @@ STDMETHODIMP HostObject::get_PlaylistCount(int * count)
 /// <summary>
 /// Gets the index of the active playlist.
 /// </summary>
-STDMETHODIMP HostObject::get_ActivePlaylist(int * playlistIndex)
+STDMETHODIMP HostObject::get_activePlaylist(int * playlistIndex)
 {
     if (playlistIndex == nullptr)
         return E_INVALIDARG;
@@ -55,7 +55,7 @@ STDMETHODIMP HostObject::get_ActivePlaylist(int * playlistIndex)
 /// <summary>
 /// Sets the index of the active playlist.
 /// </summary>
-STDMETHODIMP HostObject::put_ActivePlaylist(int playlistIndex)
+STDMETHODIMP HostObject::put_activePlaylist(int playlistIndex)
 {
     auto Manager = playlist_manager_v4::get();
 
@@ -70,7 +70,7 @@ STDMETHODIMP HostObject::put_ActivePlaylist(int playlistIndex)
 /// <summary>
 /// Gets the index of the playing playlist.
 /// </summary>
-STDMETHODIMP HostObject::get_PlayingPlaylist(int * playlistIndex)
+STDMETHODIMP HostObject::get_playingPlaylist(int * playlistIndex)
 {
     if (playlistIndex == nullptr)
         return E_INVALIDARG;
@@ -83,7 +83,7 @@ STDMETHODIMP HostObject::get_PlayingPlaylist(int * playlistIndex)
 /// <summary>
 /// Sets the index of the playing playlist.
 /// </summary>
-STDMETHODIMP HostObject::put_PlayingPlaylist(int playlistIndex)
+STDMETHODIMP HostObject::put_playingPlaylist(int playlistIndex)
 {
     auto Manager = playlist_manager_v4::get();
 
@@ -98,7 +98,7 @@ STDMETHODIMP HostObject::put_PlayingPlaylist(int playlistIndex)
 /// <summary>
 /// Gets the name of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::GetPlaylistName(int playlistIndex, BSTR * name)
+STDMETHODIMP HostObject::getPlaylistName(int playlistIndex, BSTR * name)
 {
     if (name == nullptr)
         return E_INVALIDARG;
@@ -120,7 +120,7 @@ STDMETHODIMP HostObject::GetPlaylistName(int playlistIndex, BSTR * name)
 /// <summary>
 /// Gets the name of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::SetPlaylistName(int playlistIndex, BSTR name)
+STDMETHODIMP HostObject::setPlaylistName(int playlistIndex, BSTR name)
 {
     if (name == nullptr)
         return E_INVALIDARG;
@@ -140,7 +140,7 @@ STDMETHODIMP HostObject::SetPlaylistName(int playlistIndex, BSTR name)
 /// <summary>
 /// Finds the index of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::FindPlaylist(BSTR name, int * playlistIndex)
+STDMETHODIMP HostObject::findPlaylist(BSTR name, int * playlistIndex)
 {
     if (name == nullptr)
         return E_INVALIDARG;
@@ -155,7 +155,7 @@ STDMETHODIMP HostObject::FindPlaylist(BSTR name, int * playlistIndex)
 /// <summary>
 /// Gets the number of items of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::GetPlaylistItemCount(int playlistIndex, int * itemCount)
+STDMETHODIMP HostObject::getPlaylistItemCount(int playlistIndex, int * itemCount)
 {
     if (itemCount == nullptr)
         return E_INVALIDARG;
@@ -173,7 +173,7 @@ STDMETHODIMP HostObject::GetPlaylistItemCount(int playlistIndex, int * itemCount
 /// <summary>
 /// Gets the number of selected items of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::GetSelectedPlaylistItemCount(int playlistIndex, int maxItems, int * itemCount)
+STDMETHODIMP HostObject::getSelectedPlaylistItemCount(int playlistIndex, int maxItems, int * itemCount)
 {
     if (itemCount == nullptr)
         return E_INVALIDARG;
@@ -191,7 +191,7 @@ STDMETHODIMP HostObject::GetSelectedPlaylistItemCount(int playlistIndex, int max
 /// <summary>
 /// Gets the index of the focused playlist item.
 /// </summary>
-STDMETHODIMP HostObject::GetFocusedPlaylistItem(int playlistIndex, int * itemIndex)
+STDMETHODIMP HostObject::getFocusedPlaylistItem(int playlistIndex, int * itemIndex)
 {
     if (itemIndex == nullptr)
         return E_INVALIDARG;
@@ -209,7 +209,7 @@ STDMETHODIMP HostObject::GetFocusedPlaylistItem(int playlistIndex, int * itemInd
 /// <summary>
 /// Gets the name of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::SetFocusedPlaylistItem(int playlistIndex, int itemIndex)
+STDMETHODIMP HostObject::setFocusedPlaylistItem(int playlistIndex, int itemIndex)
 {
     NormalizeIndexes(playlistIndex, itemIndex);
 
@@ -223,7 +223,7 @@ STDMETHODIMP HostObject::SetFocusedPlaylistItem(int playlistIndex, int itemIndex
 /// <summary>
 /// Ensures that the specified item in the specified playlist is visible.
 /// </summary>
-STDMETHODIMP HostObject::EnsurePlaylistItemVisible(int playlistIndex, int itemIndex)
+STDMETHODIMP HostObject::ensurePlaylistItemVisible(int playlistIndex, int itemIndex)
 {
     NormalizeIndexes(playlistIndex, itemIndex);
 
@@ -237,7 +237,7 @@ STDMETHODIMP HostObject::EnsurePlaylistItemVisible(int playlistIndex, int itemIn
 /// <summary>
 /// Returns true if the specified item in the specified playlist is selected.
 /// </summary>
-STDMETHODIMP HostObject::IsPlaylistItemSelected(int playlistIndex, int itemIndex, VARIANT_BOOL * result)
+STDMETHODIMP HostObject::isPlaylistItemSelected(int playlistIndex, int itemIndex, VARIANT_BOOL * result)
 {
     NormalizeIndexes(playlistIndex, itemIndex);
 
@@ -251,7 +251,7 @@ STDMETHODIMP HostObject::IsPlaylistItemSelected(int playlistIndex, int itemIndex
 /// <summary>
 /// Execute the default action on the specified item in the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::ExecutePlaylistDefaultAction(int playlistIndex, int itemIndex)
+STDMETHODIMP HostObject::executePlaylistDefaultAction(int playlistIndex, int itemIndex)
 {
     NormalizeIndexes(playlistIndex, itemIndex);
 
@@ -265,7 +265,7 @@ STDMETHODIMP HostObject::ExecutePlaylistDefaultAction(int playlistIndex, int ite
 /// <summary>
 /// Removes the specified item from the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::RemovePlaylistItem(int playlistIndex, int itemIndex)
+STDMETHODIMP HostObject::removePlaylistItem(int playlistIndex, int itemIndex)
 {
     NormalizeIndexes(playlistIndex, itemIndex);
 
@@ -281,7 +281,7 @@ STDMETHODIMP HostObject::RemovePlaylistItem(int playlistIndex, int itemIndex)
 /// <summary>
 /// Creates a new playlist at the specified index.
 /// </summary>
-STDMETHODIMP HostObject::CreatePlaylist(int playlistIndex, BSTR name, int * newPlaylistIndex)
+STDMETHODIMP HostObject::createPlaylist(int playlistIndex, BSTR name, int * newPlaylistIndex)
 {
     if (newPlaylistIndex == nullptr)
         return E_INVALIDARG;
@@ -303,7 +303,7 @@ STDMETHODIMP HostObject::CreatePlaylist(int playlistIndex, BSTR name, int * newP
 /// <summary>
 /// Adds an item to the specified playlist after the specified item using a location and optionally selects it.
 /// </summary>
-STDMETHODIMP HostObject::AddPath(int playlistIndex, int itemIndex, BSTR filePath, VARIANT_BOOL selectAddedItem)
+STDMETHODIMP HostObject::addPath(int playlistIndex, int itemIndex, BSTR filePath, VARIANT_BOOL selectAddedItem)
 {
     NormalizeIndexes(playlistIndex, itemIndex);
 
@@ -311,7 +311,7 @@ STDMETHODIMP HostObject::AddPath(int playlistIndex, int itemIndex, BSTR filePath
 
     pfc::string_list_impl LocationList;
 
-    LocationList.add_item(WideToUTF8(filePath).c_str());
+    LocationList.add_item(::WideToUTF8(filePath).c_str());
 
     playlist_incoming_item_filter_v2::get()->process_locations_async
     (
@@ -329,7 +329,7 @@ STDMETHODIMP HostObject::AddPath(int playlistIndex, int itemIndex, BSTR filePath
 /// <summary>
 /// Duplicates the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::DuplicatePlaylist(int playlistIndex, BSTR name, int * newPlaylistIndex)
+STDMETHODIMP HostObject::duplicatePlaylist(int playlistIndex, BSTR name, int * newPlaylistIndex)
 {
     if (newPlaylistIndex == nullptr)
         return E_INVALIDARG;
@@ -360,7 +360,7 @@ STDMETHODIMP HostObject::DuplicatePlaylist(int playlistIndex, BSTR name, int * n
 /// <summary>
 /// Clears the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::ClearPlaylist(int playlistIndex)
+STDMETHODIMP HostObject::clearPlaylist(int playlistIndex)
 {
     auto Manager = playlist_manager_v4::get();
 
@@ -375,7 +375,7 @@ STDMETHODIMP HostObject::ClearPlaylist(int playlistIndex)
 /// <summary>
 /// Gets the items of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::GetPlaylistItems(int playlistIndex, BSTR * json)
+STDMETHODIMP HostObject::getPlaylistItems(int playlistIndex, BSTR * json)
 {
     auto Manager = playlist_manager_v4::get();
 
@@ -394,7 +394,7 @@ STDMETHODIMP HostObject::GetPlaylistItems(int playlistIndex, BSTR * json)
 /// <summary>
 /// Selects the specified item of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::SelectPlaylistItem(int playlistIndex, int itemIndex)
+STDMETHODIMP HostObject::selectPlaylistItem(int playlistIndex, int itemIndex)
 {
     NormalizeIndexes(playlistIndex, itemIndex);
 
@@ -408,7 +408,7 @@ STDMETHODIMP HostObject::SelectPlaylistItem(int playlistIndex, int itemIndex)
 /// <summary>
 /// Deselects the specified item of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::DeselectPlaylistItem(int playlistIndex, int itemIndex)
+STDMETHODIMP HostObject::deselectPlaylistItem(int playlistIndex, int itemIndex)
 {
     NormalizeIndexes(playlistIndex, itemIndex);
 
@@ -422,7 +422,7 @@ STDMETHODIMP HostObject::DeselectPlaylistItem(int playlistIndex, int itemIndex)
 /// <summary>
 /// Gets the selected items of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::GetSelectedPlaylistItems(int playlistIndex, BSTR * json)
+STDMETHODIMP HostObject::getSelectedPlaylistItems(int playlistIndex, BSTR * json)
 {
     auto Manager = playlist_manager_v4::get();
 
@@ -441,7 +441,7 @@ STDMETHODIMP HostObject::GetSelectedPlaylistItems(int playlistIndex, BSTR * json
 /// <summary>
 /// Clears the selection of the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::ClearPlaylistSelection(int playlistIndex)
+STDMETHODIMP HostObject::clearPlaylistSelection(int playlistIndex)
 {
     auto Manager = playlist_manager_v4::get();
 
@@ -456,7 +456,7 @@ STDMETHODIMP HostObject::ClearPlaylistSelection(int playlistIndex)
 /// <summary>
 /// Removes the selected items in the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::RemoveSelectedPlaylistItems(int playlistIndex)
+STDMETHODIMP HostObject::removeSelectedPlaylistItems(int playlistIndex)
 {
     auto Manager = playlist_manager_v4::get();
 
@@ -471,7 +471,7 @@ STDMETHODIMP HostObject::RemoveSelectedPlaylistItems(int playlistIndex)
 /// <summary>
 /// Removes the unselected items in the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::RemoveUnselectedPlaylistItems(int playlistIndex)
+STDMETHODIMP HostObject::removeUnselectedPlaylistItems(int playlistIndex)
 {
     auto Manager = playlist_manager_v4::get();
 
@@ -486,7 +486,7 @@ STDMETHODIMP HostObject::RemoveUnselectedPlaylistItems(int playlistIndex)
 /// <summary>
 /// Deletes the specified playlist.
 /// </summary>
-STDMETHODIMP HostObject::DeletePlaylist(int playlistIndex)
+STDMETHODIMP HostObject::deletePlaylist(int playlistIndex)
 {
     auto Manager = playlist_manager_v4::get();
 

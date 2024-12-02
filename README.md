@@ -96,88 +96,87 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.2.0.0-alpha4, 2024-12-01, *"I'm getting framed..."*
+v0.2.0.0-alpha5, 2024-12-xx, *"I'm getting framed..."*
 
 * New: Builds with foobar2000 SDK 2024-08-07.
 * New: Updated WebView2 component to 1.0.2849.39.
 * New: Templates can contain iframes. Take a look at the included Default-FrameTemplate.html example.
 * New:
   * Methods
-    * ReadAllText(filePath, codePage): Reads a file and returns it as a string. If codePage is 0 the file is assumed to be UTF-8 encoded.
-    * ReadImage(filePath): Reads an image file and returns it as a Base64 string. (alpha2)
-    * ReadDirectory(directoryPath, searchPattern): Reads a directory and returns the matching items as a JSON string. (alpha3)
+    * readAllText(filePath, codePage): Reads a file and returns it as a string. If codePage is 0 the file is assumed to be UTF-8 encoded.
+    * readImage(filePath): Reads an image file and returns it as a Base64 string. (alpha2)
+    * readDirectory(directoryPath, searchPattern): Reads a directory and returns the matching items as a JSON string. (alpha3)
 
-    * GetPlaylistName(playlistIndex): Gets the name of a playlist. (alpha2)
-    * SetPlaylistName(playlistIndex, name): Sets the name of a playlist. (alpha2)
-    * FindPlaylist(name): Returns the index of the playlist with the specified name. (alpha2)
-    * GetPlaylistItemCount(index): Gets the number of items in a platlist. (alpha2)
-    * GetFocusedPlaylistItem(playlistIndex): Gets the index of the focused item in a playlist. (alpha2)
-    * SetFocusedPlaylistItem(playlistIndex, name): Sets the index of the focused item in a playlist. (alpha2)
-    * EnsurePlaylistItemVisible(playlistIndex, itemIndex): Ensures the specified item of a playlist is visible. (alpha2)
-    * IsPlaylistItemSelected(playlistIndex, itemIndex): Returns true if the specified item of a playlist is selected. (alpha3)   
-    * ExecutePlaylistDefaultAction(playlistIndex, itemIndex): Executes the default action on the specified item of a playlist. (alpha2)
+    * getPlaylistName(playlistIndex): Gets the name of a playlist. (alpha2)
+    * setPlaylistName(playlistIndex, name): Sets the name of a playlist. (alpha2)
+    * findPlaylist(name): Returns the index of the playlist with the specified name. (alpha2)
+    * getPlaylistItemCount(index): Gets the number of items in a platlist. (alpha2)
+    * getFocusedPlaylistItem(playlistIndex): Gets the index of the focused item in a playlist. (alpha2)
+    * setFocusedPlaylistItem(playlistIndex, name): Sets the index of the focused item in a playlist. (alpha2)
+    * ensurePlaylistItemVisible(playlistIndex, itemIndex): Ensures the specified item of a playlist is visible. (alpha2)
+    * isPlaylistItemSelected(playlistIndex, itemIndex): Returns true if the specified item of a playlist is selected. (alpha3)   
+    * executePlaylistDefaultAction(playlistIndex, itemIndex): Executes the default action on the specified item of a playlist. (alpha2)
 
-    * CreatePlaylist(playlistIndex, name): Creates a new playlist with the specified name and inserts it after the specified playlist. (alpha2)
-    * AddPath(playlistIndex, itemIndex, filePath, selectAddedItem): Adds an item to the specified playlist after the specified item using a file path and optionally selects it. (alpha3)
+    * createPlaylist(playlistIndex, name): Creates a new playlist with the specified name and inserts it after the specified playlist. (alpha2)
+    * addPath(playlistIndex, itemIndex, filePath, selectAddedItem): Adds an item to the specified playlist after the specified item using a file path and optionally selects it. (alpha3)
 
-    * DuplicatePlaylist(playlistIndex, name): Duplicates the specified playlist and sets its name. (alpha2)
-    * GetPlaylistItems(playlistIndex): Returns the items of the specified playlist as a JSON string. (alpha3)
-    * SelectPlaylistItem(playlistIndex, itemIndex): Selects the specified item in a playlist. (alpha3)
-    * DeselectPlaylistItem(playlistIndex, itemIndex): Deselects the specified item in the specified playlist. (alpha3)
-    * GetSelectedPlaylistItems(playlistIndex): Returns the selected items of the specified playlist as a JSON string. (alpha3)
-    * ClearPlaylistSelection(playlistIndex): Clears the selected items in the specified playlist. (alpha2)
-    * RemoveSelectedPlaylistItems(playlistIndex): Removes the selected items from the specfied playlist. (alpha3)
-    * RemoveUnselectedPlaylistItems(playlistIndex): Removes the unselected items from the specfied playlist. (alpha3)
+    * duplicatePlaylist(playlistIndex, name): Duplicates the specified playlist and sets its name. (alpha2)
+    * getPlaylistItems(playlistIndex): Returns the items of the specified playlist as a JSON string. (alpha3)
+    * selectPlaylistItem(playlistIndex, itemIndex): Selects the specified item in a playlist. (alpha3)
+    * deselectPlaylistItem(playlistIndex, itemIndex): Deselects the specified item in the specified playlist. (alpha3)
+    * getSelectedPlaylistItems(playlistIndex): Returns the selected items of the specified playlist as a JSON string. (alpha3)
+    * clearPlaylistSelection(playlistIndex): Clears the selected items in the specified playlist. (alpha2)
+    * removeSelectedPlaylistItems(playlistIndex): Removes the selected items from the specfied playlist. (alpha3)
+    * removeUnselectedPlaylistItems(playlistIndex): Removes the unselected items from the specfied playlist. (alpha3)
    
-    * RemovePlaylistItem(playlistIndex, itemIndex): Removes the specified item from the specified playlist. (alpha3)
+    * removePlaylistItem(playlistIndex, itemIndex): Removes the specified item from the specified playlist. (alpha3)
 
-    * ClearPlaylist(playlistIndex): Removes all items from the specified playlist. (alpha2)
-    * DeletePlaylist(playlistIndex): Deletes the specified playlist. (alpha3)
+    * clearPlaylist(playlistIndex): Removes all items from the specified playlist. (alpha2)
+    * deletePlaylist(playlistIndex): Deletes the specified playlist. (alpha3)
 
-    * CreateAutoPlaylist(playlistIndex, name, query, sort, flags): Creates an auto playlist. Possible values for flags are 0 = default, 1 = Keep sorted). (alpha2)
-    * IsAutoPlaylist(playlistIndex): Returns true if the specified playlist is an auto playlist. (alpha2)
+    * createAutoPlaylist(playlistIndex, name, query, sort, flags): Creates an auto playlist. Possible values for flags are 0 = default, 1 = Keep sorted). (alpha2)
+    * isAutoPlaylist(playlistIndex): Returns true if the specified playlist is an auto playlist. (alpha2)
 
   * Properties
-    * PlaylistCount: Returns the number of playlists. (alpha2)
-    * ActivePlaylist: Gets or sets index of the active playlist. (alpha2)
-    * PlayingPlaylist: Gets or sets index of the playing playlist. (alpha2)
-    * IsAutoPlaylist: Returns true if the specified playlist is an auto playlist. (alpha2)
-    * PlaybackOrder: Gets or sets the playback order (0 = default, 1 = repeat playlist, 2 = repeat track, 3 = random, 4 = shuffle tracks, 5 = shuffle albums, 6 = shuffle folders). (alpha2)
+    * playlistCount: Returns the number of playlists. (alpha2)
+    * activePlaylist: Gets or sets index of the active playlist. (alpha2)
+    * playingPlaylist: Gets or sets index of the playing playlist. (alpha2)
+    * isAutoPlaylist: Returns true if the specified playlist is an auto playlist. (alpha2)
+    * playbackOrder: Gets or sets the playback order (0 = default, 1 = repeat playlist, 2 = repeat track, 3 = random, 4 = shuffle tracks, 5 = shuffle albums, 6 = shuffle folders). (alpha2)
 
   * Events
-    * OnAddedPlaylistItems(playlistIndex): Called when items have been added to the specified playlist. (alpha4)
-    * OnReorderedPlaylistItems(playlistIndex): Called when the items of the specified playlist have been reordered. (alpha4)
-    * OnRemovingPlaylistItems(playlistIndex): Called when removing items of the specified playlist. (alpha4)
-    * OnRemovedPlaylistItems(playlistIndex): Called when items of the specified playlist have been removed. (alpha4)
+    * onPlaylistItemsAdded(playlistIndex): Called when items have been added to the specified playlist. (alpha4)
+    * onPlaylistItemsReordered(playlistIndex): Called when the items of the specified playlist have been reordered. (alpha4)
+    * onPlaylistItemsRemoving(playlistIndex): Called when removing items of the specified playlist. (alpha4)
+    * onPlaylistItemsRemoved(playlistIndex): Called when items of the specified playlist have been removed. (alpha4)
+    * onPlaylistItemsModified(playlistIndex): Called when some playlist items of the specified playlist have been modified. (alpha4)
+    * onPlaylistItemsModifiedFromPlayback(playlistIndex): Called when some playlist items of the specified playlist have been modified from playback. (alpha4)
+    * onPlaylistItemsReplaced(playlistIndex): Called when items of the specified playlist have been replaced. (alpha4)
 
-    * OnPlaylistSelectedItemsChanged(playlistIndex): Called when the selected items of the specified playlist have been changed. (alpha4)
-    * OnPlaylistFocusedItemChanged(playlistIndex, fromItemIndex, toItemIndex): Called when the focused item of the specified playlist has been changed. (alpha4)
+    * onPlaylistItemEnsureVisible(playlistIndex, itemIndex): Called when the specified item of a playlist was ensured to be visible. (alpha4)
 
-    * OnModifiedPlaylistItems(playlistIndex): Called when some playlist items of the specified playlist have been modified. (alpha4)
-    * OnModifiedPlaylistItemsFromPlayback(playlistIndex): Called when some playlist items of the specified playlist have been modified from playback. (alpha4)
+    * onPlaylistCreated(playlistIndex, name): Called when the specified playlist has been created. (alpha4)
+    * onPlaylistRenamed(playlistIndex, name): Called when the specified playlist has been renamed. (alpha4)
+    * onPlaylistActivated(oldPlaylistIndex, newPlaylistIndex): Called when the active playlist is changed. (alpha4)
+    * onPlaylistLocked(playlistIndex): Called when the specified playlist has been locked. (alpha4)
+    * onPlaylistUnlocked(playlistIndex): Called when the specified playlist has been unlocked. (alpha4)
+    * onPlaylistSelectedItemsChanged(playlistIndex): Called when the selected items of the specified playlist have been changed. (alpha4)
+    * onPlaylistFocusedItemChanged(playlistIndex, fromItemIndex, toItemIndex): Called when the focused item of the specified playlist has been changed. (alpha4)
 
-    * OnEnsuredPlaylistItemIsVisible(playlistIndex, itemIndex): Called when the specified item of a playlist was ensured to be visible. (alpha4)
+    * onPlaylistsReordered(): Called when the playlists have been reordered. (alpha4)
+    * onPlaylistsRemoving(): Called when playlists are being removed. (alpha4)
+    * onPlaylistsRemoved(): Called when playlists have been removed. (alpha4)
 
-    * OnReplacedPlaylistItems(playlistIndex): Called when items of the specified playlist have been replaced. (alpha4)
-
-    * OnChangedActivePlaylist(oldPlaylistIndex, newPlaylistIndex): Called when the active playlist is changed. (alpha4)
-    * OnCreatedPlaylist(playlistIndex, name): Called when the specified playlist has been created. (alpha4)
-    * OnReorderedPlaylists(): Called when the playlists have been reordered. (alpha4)
-    * OnRemovingPlaylists(): Called when playlists are being removed. (alpha4)
-    * OnRemovedPlaylists(): Called when playlists have been removed. (alpha4)
-
-    * OnRenamedPlaylist(playlistIndex, name): Called when the specified playlist has been renamed. (alpha4)
-    * OnLockedPlaylist(playlistIndex): Called when the specified playlist has been locked. (alpha4)
-    * OnUnlockedPlaylist(playlistIndex): Called when the specified playlist has been unlocked. (alpha4)
-
-    * OnDefaultFormatChanged(): Called when the default format has been changed. (alpha4)
-    * OnChangedPlaybackOrder(playbackOrderIndex): Called when the playback order has been changed. (alpha4)
+    * onDefaultFormatChanged(): Called when the default format has been changed. (alpha4)
+    * onPlaybackOrderChanged(playbackOrderIndex): Called when the playback order has been changed. (alpha4)
 
   * Fixed: Booleans in objects are now parsed correctly. (alpha4)
   * Fixed: Boolean parameters and return values are true Javascript booleans now. (alpha4)
   * Improved: The searchPattern parameter is now optional in ReadDirectory() and defaults to "*.*". (alpha4)
   * Improved: The CreateAutoPlaylist() sort and flags parameter can be omitted. They default to "" and 0 respectively. (alpha4)
-  * Changed: Returned JSON objects now use Pascal casing. (alpha4)
+  * Changed: Returned JSON objects now use camelCase casing. (alpha4)
+  * Changed: *Breaking Change* Events follow the Category-Noun-Verb naming convention. (alpha5)
+  * Changed: *Breaking Change* All properties, methods and events use camelCase casing. (alpha5)
 
 v0.1.8.0, 2024-08-10
 
@@ -190,7 +189,7 @@ v0.1.7.0, 2024-07-14
 * New: In Private mode can be enabled in the Preferences dialog and is no longer enabled by default (alpha3).
 * New:
   * Methods
-    * GetArtwork(): Gets the embedded artwork (front / back / disc / icon / artist) from the current playing item (alpha1).
+    * getArtwork(): Gets the embedded artwork (front / back / disc / icon / artist) from the current playing item (alpha1).
       * Fixed support for other artwork types (alpha2, regression).
       * Added support for WebP images (alpha2).
       * Always returns an empty data URI in case of an error or if the specified artwork type is not available (alpha2).
@@ -216,30 +215,30 @@ v0.1.5.6, 2024-07-08
   * Delete the "EBWebView" sub-directory of your user data folder to prevent caching problems.
 * New: Added methods and properties to chrome.webview.hostObjects.sync.foo_uie_webview (alpha5):
   * Properties
-    * ComponentVersion and ComponentVersionText: The version of this component as packed integer and as text.
-    * IsPlaying: Gets whether playback is active.
-    * IsPaused: Gets whether playback is active and in paused state.
-    * StopAfterCurrent: Gets or sets the stop-after-current-track option state.
-    * Length: Gets the length of the currently playing item, in seconds.
-    * Position: Gets the playback position within the currently playing item, in seconds.
-    * CanSeek: Gets whether currently playing track is seekable. If it's not, Seek/SeekDelta calls will be ignored.
-    * Volume: Gets or sets the playback volume in dBFS. Use 0 for full volume.
-    * IsMuted: Gets whether playback is muted.
+    * componentVersion and componentVersionText: The version of this component as packed integer and as text.
+    * isPlaying: Gets whether playback is active.
+    * isPaused: Gets whether playback is active and in paused state.
+    * stopAfterCurrent: Gets or sets the stop-after-current-track option state.
+    * length: Gets the length of the currently playing item, in seconds.
+    * position: Gets the playback position within the currently playing item, in seconds.
+    * canSeek: Gets whether currently playing track is seekable. If it's not, Seek/SeekDelta calls will be ignored.
+    * volume: Gets or sets the playback volume in dBFS. Use 0 for full volume.
+    * isMuted: Gets whether playback is muted.
   * Methods
-    * Print(text): Prints text from JavaScript on the foobar2000 console.
-    * Stop(): Stops playback.
-    * Play(paused): Starts playback, paused or unpaused. If playback is already active, existing process is stopped first.
-    * Pause(paused): Pauses or resumes playback.
-    * Previous(): Plays the previous track from the current playlist according to the current playback order.
-    * Next(): Plays the next track from the current playlist according to the current playback order.
-    * Random(): Plays a random track from the current playlist (aka Shuffle).
-    * TogglePause(): Toggles the pause status.
-    * ToggleMute(): Toggles playback mute state.
-    * ToggleStopAfterCurrent(): Toggles the stop-after-current mode.
-    * VolumeUp(): Increases the volume with one step.
-    * VolumeDown(): Decreases the volume with one step.
-    * Seek(time): Seeks in the currently playing track to the specified time, in seconds.
-    * SeekDelta(delta): Seeks in the currently playing track forward or backwards by the specified delta time, in seconds.
+    * print(text): Prints text from JavaScript on the foobar2000 console.
+    * stop(): Stops playback.
+    * play(paused): Starts playback, paused or unpaused. If playback is already active, existing process is stopped first.
+    * pause(paused): Pauses or resumes playback.
+    * previous(): Plays the previous track from the current playlist according to the current playback order.
+    * next(): Plays the next track from the current playlist according to the current playback order.
+    * random(): Plays a random track from the current playlist (aka Shuffle).
+    * togglePause(): Toggles the pause status.
+    * toggleMute(): Toggles playback mute state.
+    * toggleStopAfterCurrent(): Toggles the stop-after-current mode.
+    * volumeUp(): Increases the volume with one step.
+    * volumeDown(): Decreases the volume with one step.
+    * seek(time): Seeks in the currently playing track to the specified time, in seconds.
+    * seekDelta(delta): Seeks in the currently playing track forward or backwards by the specified delta time, in seconds.
 * New: Each instance of the component uses its own browser profile.
 * Improved: WebView is a Utility panel again and can be shown as a popup (alpha5).
 * Improved: Enabled more options in WebView2 to better support dark mode (alpha3).
@@ -252,7 +251,7 @@ v0.1.5.6, 2024-07-08
 v0.1.4.0, 2024-06-12
 
 * New: Support for multiple instances. Each instance can have its own configuration.
-* New: Added OnPlaybackEdited() callback.
+* New: Added onPlaybackEdited() callback.
 * Improved: The name of the component will be displayed in Layout Edit mode.
 * Fixed: Work-around for WebView not appearing after foobar2000 starts while being hosted in a hidden tab.
 
@@ -268,7 +267,7 @@ v0.1.3.0, 2024-06-04, *"It's getting dark in here..."*
 
 v0.1.2.0, 2024-06-03, *"Listening to user feedback"*
 
-* New: Added OnPlaybackDynamicInfo() and OnPlaybackDynamicTrackInfo() callback. Useful to display meta data from streamed audio.
+* New: Added onPlaybackDynamicInfo() and onPlaybackDynamicTrackInfo() callback. Useful to display meta data from streamed audio.
 * Improved: A copy of the default template file is created when the component starts the first time.
 * Improved: The context menu contains a menu item to access the preferences page.
 

@@ -16,7 +16,7 @@
     </div>
 
     <script>
-        document.getElementById("TextFile").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.ReadAllText("C:/Windows/win.ini", 65001);
+        document.getElementById("TextFile").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.readAllText("C:/Windows/win.ini", 65001);
 
         function CreateIFrame()
         {
@@ -44,7 +44,7 @@
 
         document.getElementById("GetPropertyAsyncButton").addEventListener("click", async () =>
         {
-            const Value = await chrome.webview.hostObjects.foo_uie_webview.ComponentVersionText;
+            const Value = await chrome.webview.hostObjects.foo_uie_webview.componentVersionText;
 
             document.getElementById("GetPropertyAsyncOutput").textContent = Value;
         });

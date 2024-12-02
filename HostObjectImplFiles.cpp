@@ -27,7 +27,7 @@
 /// <summary>
 /// Gets the specified artwork of the currently selected item in the current playlist.
 /// </summary>
-STDMETHODIMP HostObject::GetArtwork(BSTR type, BSTR * image)
+STDMETHODIMP HostObject::getArtwork(BSTR type, BSTR * image)
 {
     *image = ::SysAllocString(L""); // Return an empty string by default and in case of an error.
 
@@ -150,7 +150,7 @@ STDMETHODIMP HostObject::GetArtwork(BSTR type, BSTR * image)
 /// <summary>
 /// Reads the specified file and returns it as a string.
 /// </summary>
-STDMETHODIMP HostObject::ReadAllText(BSTR filePath, __int32 codePage, BSTR * text)
+STDMETHODIMP HostObject::readAllText(BSTR filePath, __int32 codePage, BSTR * text)
 {
     if ((filePath == nullptr) || (text == nullptr))
         return E_INVALIDARG;
@@ -169,16 +169,21 @@ STDMETHODIMP HostObject::ReadAllText(BSTR filePath, __int32 codePage, BSTR * tex
 
     if (::GetFileSizeEx(hFile, &FileSize))
     {
-        std::string Text;
+        if ((FileSize.HighPart == 0) && (FileSize.LowPart < 0xFFFFFFFF - 2))
+        {
+            std::string Text;
 
-        Text.resize((size_t) FileSize.LowPart + 2);
+            Text.resize((size_t) FileSize.LowPart + 2);
 
-        DWORD BytesRead;
+            DWORD BytesRead;
 
-        if (::ReadFile(hFile, (void *) Text.c_str(), FileSize.LowPart, &BytesRead, nullptr) && (BytesRead == FileSize.LowPart))
-            *text = ::SysAllocString(::CodePageToWide((uint32_t) codePage, Text).c_str());
+            if (::ReadFile(hFile, (void *) Text.c_str(), FileSize.LowPart, &BytesRead, nullptr) && (BytesRead == FileSize.LowPart))
+                *text = ::SysAllocString(::CodePageToWide((uint32_t) codePage, Text).c_str());
+            else
+                hr = HRESULT_FROM_WIN32(::GetLastError());
+        }
         else
-            hr = HRESULT_FROM_WIN32(::GetLastError());
+            hr = E_OUTOFMEMORY;
     }
     else
         hr = HRESULT_FROM_WIN32(::GetLastError());
@@ -191,7 +196,7 @@ STDMETHODIMP HostObject::ReadAllText(BSTR filePath, __int32 codePage, BSTR * tex
 /// <summary>
 /// Reads the specified file and returns it as a string.
 /// </summary>
-STDMETHODIMP HostObject::ReadDirectory(BSTR directoryPath, BSTR searchPattern, BSTR * json)
+STDMETHODIMP HostObject::readDirectory(BSTR directoryPath, BSTR searchPattern, BSTR * json)
 {
     if ((directoryPath == nullptr) || (searchPattern == nullptr) || (json == nullptr))
         return E_INVALIDARG;
@@ -230,7 +235,7 @@ STDMETHODIMP HostObject::ReadDirectory(BSTR directoryPath, BSTR searchPattern, B
 
         uint64_t FileSize = (((uint64_t) fd.nFileSizeHigh) << 32) + fd.nFileSizeLow;
 
-        Result.append(FormatText(LR"({"name": "%s", "size": %lu, "isDirectory": %s})", fd.cFileName, FileSize, ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? L"true" : L"false")).c_str());
+        Result.append(::FormatText(LR"({"name": "%s", "size": %lu, "isDirectory": %s})", fd.cFileName, FileSize, ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? L"true" : L"false")).c_str());
 
         IsFirstItem = false;
 
@@ -249,7 +254,7 @@ STDMETHODIMP HostObject::ReadDirectory(BSTR directoryPath, BSTR searchPattern, B
 /// <summary>
 /// Reads the specified file and returns it as a string.
 /// </summary>
-STDMETHODIMP HostObject::ReadImage(BSTR filePath, BSTR * image)
+STDMETHODIMP HostObject::readImage(BSTR filePath, BSTR * image)
 {
     *image = ::SysAllocString(L""); // Return an empty string by default and in case of an error.
 
@@ -267,19 +272,24 @@ STDMETHODIMP HostObject::ReadImage(BSTR filePath, BSTR * image)
 
     if (::GetFileSizeEx(hFile, &FileSize))
     {
-        BYTE * Data = new BYTE[FileSize.LowPart];
-
-        if (Data != nullptr)
+        if (FileSize.HighPart == 0)
         {
-            DWORD BytesRead;
+            BYTE * Data = new BYTE[FileSize.LowPart];
 
-            if (::ReadFile(hFile, Data, FileSize.LowPart, &BytesRead, nullptr) && (BytesRead == FileSize.LowPart))
-                ToBase64(Data, FileSize.LowPart, image);
-            else
-                hr = HRESULT_FROM_WIN32(::GetLastError());
+            if (Data != nullptr)
+            {
+                DWORD BytesRead;
 
-            delete[] Data;
+                if (::ReadFile(hFile, Data, FileSize.LowPart, &BytesRead, nullptr) && (BytesRead == FileSize.LowPart))
+                    ToBase64(Data, FileSize.LowPart, image);
+                else
+                    hr = HRESULT_FROM_WIN32(::GetLastError());
+
+                delete[] Data;
+            }
         }
+        else
+            hr = E_OUTOFMEMORY;
     }
     else
         hr = HRESULT_FROM_WIN32(::GetLastError());

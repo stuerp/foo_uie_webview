@@ -434,14 +434,14 @@ void UIElement::on_playback_starting(play_control::t_track_command command, bool
     static const wchar_t * CommandName = L"Unknown";
 
     if (command == play_control::t_track_command::track_command_play) CommandName = L"Play"; else
-    if (command == play_control::t_track_command::track_command_next) CommandName = L"Next"; else       // Plays the next track from the current playlist according to the current playback order.
-    if (command == play_control::t_track_command::track_command_prev) CommandName = L"Prev"; else       // Plays the previous track from the current playlist according to the current playback order.
-    if (command == play_control::t_track_command::track_command_rand) CommandName = L"Random"; else     // Plays a random track from the current playlist.
+    if (command == play_control::t_track_command::track_command_next) CommandName = L"Next"; else           // Plays the next track from the current playlist according to the current playback order.
+    if (command == play_control::t_track_command::track_command_prev) CommandName = L"Prev"; else           // Plays the previous track from the current playlist according to the current playback order.
+    if (command == play_control::t_track_command::track_command_rand) CommandName = L"Random"; else         // Plays a random track from the current playlist.
 
-    if (command == play_control::t_track_command::track_command_rand) CommandName = L"Set track"; else  // For internal use only, do not use.
-    if (command == play_control::t_track_command::track_command_rand) CommandName = L"Resume";          // For internal use only, do not use.
+    if (command == play_control::t_track_command::track_command_settrack) CommandName = L"Set track"; else  // For internal use only, do not use.
+    if (command == play_control::t_track_command::track_command_resume) CommandName = L"Resume";            // For internal use only, do not use.
 
-    const std::wstring Script = ::FormatText(L"OnPlaybackStarting(\"%s\", %s)", CommandName, (paused ? L"true" : L"false"));
+    const std::wstring Script = ::FormatText(L"onPlaybackStarting(\"%s\", %s)", CommandName, (paused ? L"true" : L"false"));
 
     ExecuteScript(Script);
 }
@@ -451,7 +451,7 @@ void UIElement::on_playback_starting(play_control::t_track_command command, bool
 /// </summary>
 void UIElement::on_playback_new_track(metadb_handle_ptr /*track*/)
 {
-    const std::wstring Script = L"OnPlaybackNewTrack()";
+    const std::wstring Script = L"onPlaybackNewTrack()";
 
     ExecuteScript(Script);
 
@@ -477,7 +477,7 @@ void UIElement::on_playback_stop(play_control::t_stop_reason reason)
     if (reason == play_control::t_stop_reason::stop_reason_starting_another)    Reason = L"Starting another"; else
     if (reason == play_control::t_stop_reason::stop_reason_shutting_down)       Reason = L"Shutting down";
 
-    const std::wstring Script = ::FormatText(L"OnPlaybackStop(\"%s\")", Reason);
+    const std::wstring Script = ::FormatText(L"onPlaybackStop(\"%s\")", Reason);
 
     ExecuteScript(Script);
 }
@@ -487,13 +487,9 @@ void UIElement::on_playback_stop(play_control::t_stop_reason reason)
 /// </summary>
 void UIElement::on_playback_seek(double time)
 {
-    if (_WebView == nullptr)
-        return;
+    const std::wstring Script = ::FormatText(L"onPlaybackSeek(%f)", time);
 
-    HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnPlaybackSeek(%f)", time).c_str(), nullptr);
-
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackSeek()").c_str());
+    ExecuteScript(Script);
 }
 
 /// <summary>
@@ -501,7 +497,7 @@ void UIElement::on_playback_seek(double time)
 /// </summary>
 void UIElement::on_playback_pause(bool paused)
 {
-    const std::wstring Script = ::FormatText(L"OnPlaybackPause(%s)", (paused ? L"true" : L"false"));
+    const std::wstring Script = ::FormatText(L"onPlaybackPause(%s)", (paused ? L"true" : L"false"));
 
     ExecuteScript(Script);
 }
@@ -511,7 +507,7 @@ void UIElement::on_playback_pause(bool paused)
 /// </summary>
 void UIElement::on_playback_edited(metadb_handle_ptr hTrack)
 {
-    const std::wstring Script = L"OnPlaybackEdited()";
+    const std::wstring Script = L"onPlaybackEdited()";
 
     ExecuteScript(Script);
 }
@@ -521,7 +517,7 @@ void UIElement::on_playback_edited(metadb_handle_ptr hTrack)
 /// </summary>
 void UIElement::on_playback_dynamic_info(const file_info & fileInfo)
 {
-    const std::wstring Script = L"OnPlaybackDynamicInfo()";
+    const std::wstring Script = L"onPlaybackDynamicInfo()";
 
     ExecuteScript(Script);
 }
@@ -531,7 +527,7 @@ void UIElement::on_playback_dynamic_info(const file_info & fileInfo)
 /// </summary>
 void UIElement::on_playback_dynamic_info_track(const file_info & fileInfo)
 {
-    const std::wstring Script = L"OnPlaybackDynamicTrackInfo()";
+    const std::wstring Script = L"onPlaybackDynamicTrackInfo()";
 
     ExecuteScript(Script);
 }
@@ -541,7 +537,7 @@ void UIElement::on_playback_dynamic_info_track(const file_info & fileInfo)
 /// </summary>
 void UIElement::on_playback_time(double time)
 {
-    const std::wstring Script = ::FormatText(L"OnPlaybackTime(%f)", time);
+    const std::wstring Script = ::FormatText(L"onPlaybackTime(%f)", time);
 
     ExecuteScript(Script);
 }
@@ -551,7 +547,7 @@ void UIElement::on_playback_time(double time)
 /// </summary>
 void UIElement::on_volume_change(float newValue) // in dBFS
 {
-    const std::wstring Script = ::FormatText(L"OnVolumeChange(%f)", (double) newValue);
+    const std::wstring Script = ::FormatText(L"onVolumeChange(%f)", (double) newValue);
 
     ExecuteScript(Script);
 }
@@ -561,11 +557,11 @@ void UIElement::on_volume_change(float newValue) // in dBFS
 #pragma region playlist_callback
 
 /// <summary>
-/// Called when items have been added to the active playlist.
+/// Called when items have been added to the specified playlist.
 /// </summary>
 void UIElement::on_items_added(t_size playlistIndex, t_size startIndex, metadb_handle_list_cref data, const bit_array & selection)
 {
-    const std::wstring Script = ::FormatText(L"OnAddedPlaylistItems(%d)", (int) playlistIndex);
+    const std::wstring Script = ::FormatText(L"onPlaylistItemsAdded(%d)", (int) playlistIndex);
 
     ExecuteScript(Script);
 }
@@ -575,7 +571,7 @@ void UIElement::on_items_added(t_size playlistIndex, t_size startIndex, metadb_h
 /// </summary>
 void UIElement::on_items_reordered(t_size playlistIndex, const t_size * order, t_size count)
 {
-    const std::wstring Script = ::FormatText(L"OnReorderedPlaylistItems(%d)", (int) playlistIndex);
+    const std::wstring Script = ::FormatText(L"onPlaylistItemsReordered(%d)", (int) playlistIndex);
 
     ExecuteScript(Script);
 }
@@ -585,7 +581,7 @@ void UIElement::on_items_reordered(t_size playlistIndex, const t_size * order, t
 /// </summary>
 void UIElement::on_items_removing(t_size playlistIndex, const bit_array & mask, t_size oldCount, t_size newCount)
 {
-    const std::wstring Script = ::FormatText(L"OnRemovingPlaylistItems(%d)", (int) playlistIndex);
+    const std::wstring Script = ::FormatText(L"onPlaylistItemsRemoving(%d)", (int) playlistIndex);
 
     ExecuteScript(Script);
 }
@@ -595,7 +591,7 @@ void UIElement::on_items_removing(t_size playlistIndex, const bit_array & mask, 
 /// </summary>
 void UIElement::on_items_removed(t_size playlistIndex, const bit_array & mask, t_size oldCount, t_size newCount)
 {
-    const std::wstring Script = ::FormatText(L"OnRemovedPlaylistItems(%d)", (int) playlistIndex);
+    const std::wstring Script = ::FormatText(L"onPlaylistItemsRemoved(%d)", (int) playlistIndex);
 
     ExecuteScript(Script);
 }
@@ -605,7 +601,7 @@ void UIElement::on_items_removed(t_size playlistIndex, const bit_array & mask, t
 /// </summary>
 void UIElement::on_items_selection_change(t_size playlistIndex, const bit_array & affectedItems, const bit_array & state)
 {
-    const std::wstring Script = ::FormatText(L"OnPlaylistSelectedItemsChanged(%d)", (int) playlistIndex);
+    const std::wstring Script = ::FormatText(L"onPlaylistSelectedItemsChanged(%d)", (int) playlistIndex);
 
     ExecuteScript(Script);
 }
@@ -615,37 +611,7 @@ void UIElement::on_items_selection_change(t_size playlistIndex, const bit_array 
 /// </summary>
 void UIElement::on_item_focus_change(t_size playlistIndex, t_size fromIndex, t_size toIndex)
 {
-    const std::wstring Script = ::FormatText(L"OnPlaylistFocusedItemChanged(%d, %d, %d)", (int) playlistIndex, (int) fromIndex, (int) toIndex);
-
-    ExecuteScript(Script);
-}
-
-/// <summary>
-/// Called when some playlist items of the specified playlist have been modified.
-/// </summary>
-void UIElement::on_items_modified(t_size playlistIndex, const bit_array & mask)
-{
-    const std::wstring Script = ::FormatText(L"OnModifiedPlaylistItems(%d)", (int) playlistIndex);
-
-    ExecuteScript(Script);
-}
-
-/// <summary>
-/// Called when some playlist items of the specified playlist have been modified from playback.
-/// </summary>
-void UIElement::on_items_modified_fromplayback(t_size playlistIndex, const bit_array & mask, play_control::t_display_level displayLevel)
-{
-    const std::wstring Script = ::FormatText(L"OnModifiedPlaylistItemsFromPlayback(%d)", (int) playlistIndex);
-
-    ExecuteScript(Script);
-}
-
-/// <summary>
-/// Called when items of the specified playlist have been replaced.
-/// </summary>
-void UIElement::on_items_replaced(t_size playlistIndex, const bit_array & mask, const pfc::list_base_const_t<playlist_callback::t_on_items_replaced_entry> & replacedItems)
-{
-    const std::wstring Script = ::FormatText(L"OnReplacedPlaylistItems(%d)", (int) playlistIndex);
+    const std::wstring Script = ::FormatText(L"onPlaylistFocusedItemChanged(%d, %d, %d)", (int) playlistIndex, (int) fromIndex, (int) toIndex);
 
     ExecuteScript(Script);
 }
@@ -655,7 +621,37 @@ void UIElement::on_items_replaced(t_size playlistIndex, const bit_array & mask, 
 /// </summary>
 void UIElement::on_item_ensure_visible(t_size playlistIndex, t_size itemIndex)
 {
-    const std::wstring Script = ::FormatText(L"OnEnsuredPlaylistItemIsVisible(%d, %d)", (int) playlistIndex, (int) itemIndex);
+    const std::wstring Script = ::FormatText(L"onPlaylistItemEnsureVisible(%d, %d)", (int) playlistIndex, (int) itemIndex);
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when some playlist items of the specified playlist have been modified.
+/// </summary>
+void UIElement::on_items_modified(t_size playlistIndex, const bit_array & mask)
+{
+    const std::wstring Script = ::FormatText(L"onPlaylistItemsModified(%d)", (int) playlistIndex);
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when some playlist items of the specified playlist have been modified from playback.
+/// </summary>
+void UIElement::on_items_modified_fromplayback(t_size playlistIndex, const bit_array & mask, play_control::t_display_level displayLevel)
+{
+    const std::wstring Script = ::FormatText(L"onPlaylistItemsModifiedFromPlayback(%d)", (int) playlistIndex);
+
+    ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when items of the specified playlist have been replaced.
+/// </summary>
+void UIElement::on_items_replaced(t_size playlistIndex, const bit_array & mask, const pfc::list_base_const_t<playlist_callback::t_on_items_replaced_entry> & replacedItems)
+{
+    const std::wstring Script = ::FormatText(L"onPlaylistItemsReplaced(%d)", (int) playlistIndex);
 
     ExecuteScript(Script);
 }
@@ -665,7 +661,7 @@ void UIElement::on_item_ensure_visible(t_size playlistIndex, t_size itemIndex)
 /// </summary>
 void UIElement::on_playlist_activate(t_size oldPlaylistIndex, t_size newPlaylistIndex)
 {
-    const std::wstring Script = ::FormatText(L"OnChangedActivePlaylist(%d, %d)", (int) oldPlaylistIndex, (int) newPlaylistIndex);
+    const std::wstring Script = ::FormatText(L"onPlaylistActivated(%d, %d)", (int) oldPlaylistIndex, (int) newPlaylistIndex);
 
     ExecuteScript(Script);
 }
@@ -675,7 +671,7 @@ void UIElement::on_playlist_activate(t_size oldPlaylistIndex, t_size newPlaylist
 /// </summary>
 void UIElement::on_playlist_created(t_size playlistIndex, const char * name, t_size size)
 {
-    const std::wstring Script = ::FormatText(L"OnCreatedPlaylist(%d, \"%s\")", (int) playlistIndex, UTF8ToWide(name, size).c_str());
+    const std::wstring Script = ::FormatText(L"onPlaylistCreated(%d, \"%s\")", (int) playlistIndex, ::UTF8ToWide(name, size).c_str());
 
     ExecuteScript(Script);
 }
@@ -685,7 +681,7 @@ void UIElement::on_playlist_created(t_size playlistIndex, const char * name, t_s
 /// </summary>
 void UIElement::on_playlists_reorder(const t_size * order, t_size count)
 {
-    const std::wstring Script = L"OnReorderedPlaylists()";
+    const std::wstring Script = L"onPlaylistsReordered()";
 
     ExecuteScript(Script);
 }
@@ -695,7 +691,7 @@ void UIElement::on_playlists_reorder(const t_size * order, t_size count)
 /// </summary>
 void UIElement::on_playlists_removing(const bit_array & mask, t_size oldCount, t_size newCount)
 {
-    const std::wstring Script = L"OnRemovingPlaylists()";
+    const std::wstring Script = L"onPlaylistsRemoving()";
 
     ExecuteScript(Script);
 }
@@ -705,7 +701,7 @@ void UIElement::on_playlists_removing(const bit_array & mask, t_size oldCount, t
 /// </summary>
 void UIElement::on_playlists_removed(const bit_array & mask, t_size oldCount, t_size newcount)
 {
-    const std::wstring Script = L"OnRemovedPlaylists()";
+    const std::wstring Script = L"onPlaylistsRemoved()";
 
     ExecuteScript(Script);
 }
@@ -715,7 +711,7 @@ void UIElement::on_playlists_removed(const bit_array & mask, t_size oldCount, t_
 /// </summary>
 void UIElement::on_playlist_renamed(t_size playlistIndex, const char * name, t_size size)
 {
-    const std::wstring Script = ::FormatText(L"OnRenamedPlaylist(%d, \"%s\")", (int) playlistIndex, UTF8ToWide(name, size).c_str());
+    const std::wstring Script = ::FormatText(L"onPlaylistRenamed(%d, \"%s\")", (int) playlistIndex, ::UTF8ToWide(name, size).c_str());
 
     ExecuteScript(Script);
 }
@@ -725,7 +721,7 @@ void UIElement::on_playlist_renamed(t_size playlistIndex, const char * name, t_s
 /// </summary>
 void UIElement::on_playlist_locked(t_size playlistIndex, bool isLocked)
 {
-    const std::wstring Script = ::FormatText(isLocked ? L"OnLockedPlaylist(%d)" : L"OnUnlockedPlaylist(%d)", (int) playlistIndex);
+    const std::wstring Script = ::FormatText(isLocked ? L"onPlaylistLocked(%d)" : L"onPlaylistUnlocked(%d)", (int) playlistIndex);
 
     ExecuteScript(Script);
 }
@@ -735,7 +731,7 @@ void UIElement::on_playlist_locked(t_size playlistIndex, bool isLocked)
 /// </summary>
 void UIElement::on_default_format_changed()
 {
-    const std::wstring Script = L"OnChangedDefaultFormat()";
+    const std::wstring Script = L"onDefaultFormatChanged()";
 
     ExecuteScript(Script);
 }
@@ -745,7 +741,7 @@ void UIElement::on_default_format_changed()
 /// </summary>
 void UIElement::on_playback_order_changed(t_size playbackOrderIndex)
 {
-    const std::wstring Script = ::FormatText(L"OnChangedPlaybackOrder(%d)", (int) playbackOrderIndex);
+    const std::wstring Script = ::FormatText(L"onPlaybackOrderChanged(%d)", (int) playbackOrderIndex);
 
     ExecuteScript(Script);
 }
@@ -761,7 +757,7 @@ void UIElement::ExecuteScript(const std::wstring & script) const noexcept
     HRESULT hr = _WebView->ExecuteScript(script.c_str(), nullptr);
 
     if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, FormatText(STR_COMPONENT_BASENAME " failed to call %s", ::WideToUTF8(script).c_str())).c_str());
+        console::print(::GetErrorMessage(hr, ::FormatText(STR_COMPONENT_BASENAME " failed to call %s", ::WideToUTF8(script).c_str())).c_str());
 }
 
 #pragma endregion

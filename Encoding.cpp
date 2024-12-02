@@ -45,7 +45,7 @@ std::wstring CodePageToWide(uint32_t codePage, const char * text, size_t size) n
 /// </summary>
 std::string CodePageToUTF8(uint32_t codePage, const char * text, size_t size) noexcept
 {
-    return WideToUTF8(CodePageToWide(codePage, text, size));
+    return ::WideToUTF8(CodePageToWide(codePage, text, size));
 }
 
 /// <summary>
@@ -232,10 +232,10 @@ std::wstring TextToWide(const char * text, size_t size) noexcept
         size = ::strlen(text);
 
     if (IsASCII(text))
-        return UTF8ToWide(text);
+        return ::UTF8ToWide(text);
 
     if (IsUTF8(text, size))
-        return UTF8ToWide(text);
+        return ::UTF8ToWide(text);
 
     if (IsShiftJIS(text, size))
         return CodePageToWide(932, text);

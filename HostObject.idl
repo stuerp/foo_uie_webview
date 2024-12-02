@@ -18,100 +18,100 @@ library HostObjectLibrary
     [uuid(3a14c9c0-bc3e-453f-a314-4ce4a0ec81d8), object, local]
     interface IHostObject : IUnknown
     {
-        [propget] HRESULT ComponentVersion([out, retval] __int32 * version);
-        [propget] HRESULT ComponentVersionText([out, retval] BSTR * versionText);
+        [propget] HRESULT componentVersion([out, retval] __int32 * version);
+        [propget] HRESULT componentVersionText([out, retval] BSTR * versionText);
 
-        HRESULT Print([in] BSTR text);
+        HRESULT print([in] BSTR text);
 
-        HRESULT Stop();
-        HRESULT Play([in] VARIANT_BOOL paused);
-        HRESULT Pause([in] VARIANT_BOOL paused);
-        HRESULT Previous();
-        HRESULT Next();
-        HRESULT Random();
+        HRESULT stop();
+        HRESULT play([in] VARIANT_BOOL paused);
+        HRESULT pause([in] VARIANT_BOOL paused);
+        HRESULT previous();
+        HRESULT next();
+        HRESULT random();
 
-        HRESULT TogglePause();
-        HRESULT ToggleMute();
-        HRESULT ToggleStopAfterCurrent();
+        HRESULT togglePause();
+        HRESULT toggleMute();
+        HRESULT toggleStopAfterCurrent();
 
-        HRESULT VolumeUp();
-        HRESULT VolumeDown();
+        HRESULT volumeUp();
+        HRESULT volumeDown();
 
-        HRESULT Seek([in] double time);
-        HRESULT SeekDelta([in] double delta);
+        HRESULT seek([in] double time);
+        HRESULT seekDelta([in] double delta);
 
-        [propget] HRESULT IsPlaying([out, retval] VARIANT_BOOL * value);
-        [propget] HRESULT IsPaused([out, retval] VARIANT_BOOL * value);
+        [propget] HRESULT isPlaying([out, retval] VARIANT_BOOL * value);
+        [propget] HRESULT isPaused([out, retval] VARIANT_BOOL * value);
 
-        [propget] HRESULT StopAfterCurrent([out, retval] VARIANT_BOOL * value);
-        [propput] HRESULT StopAfterCurrent([in] VARIANT_BOOL value);
+        [propget] HRESULT stopAfterCurrent([out, retval] VARIANT_BOOL * value);
+        [propput] HRESULT stopAfterCurrent([in] VARIANT_BOOL value);
 
-        [propget] HRESULT Length([out, retval] double * value);
-        [propget] HRESULT Position([out, retval] double * value);
-        [propget] HRESULT CanSeek([out, retval] VARIANT_BOOL * value);
+        [propget] HRESULT length([out, retval] double * value);
+        [propget] HRESULT position([out, retval] double * value);
+        [propget] HRESULT canSeek([out, retval] VARIANT_BOOL * value);
 
-        [propget] HRESULT Volume([out, retval] double * value);
-        [propput] HRESULT Volume([in] double value);
+        [propget] HRESULT volume([out, retval] double * value);
+        [propput] HRESULT volume([in] double value);
 
-        [propget] HRESULT IsMuted([out, retval] VARIANT_BOOL * value);
+        [propget] HRESULT isMuted([out, retval] VARIANT_BOOL * value);
 
-        HRESULT GetFormattedText([in] BSTR text, [out, retval] BSTR * formattedText);
+        HRESULT getFormattedText([in] BSTR text, [out, retval] BSTR * formattedText);
 
-        HRESULT GetArtwork([in] BSTR type, [out, retval] BSTR * image);
+        HRESULT getArtwork([in] BSTR type, [out, retval] BSTR * image);
 
         // Files
-        HRESULT ReadAllText([in] BSTR filePath, [in] __int32 codePage, [out, retval] BSTR * text);
-        HRESULT ReadImage([in] BSTR filePath, [out, retval] BSTR * image);
-        HRESULT ReadDirectory([in] BSTR pathName, [in, defaultvalue("*.*")] BSTR searchPattern, [out, retval] BSTR * json);
+        HRESULT readAllText([in] BSTR filePath, [in] __int32 codePage, [out, retval] BSTR * text);
+        HRESULT readImage([in] BSTR filePath, [out, retval] BSTR * image);
+        HRESULT readDirectory([in] BSTR pathName, [in, defaultvalue("*.*")] BSTR searchPattern, [out, retval] BSTR * json);
 
         // Playlists
-        [propget] HRESULT PlaylistCount([out, retval] int * count);
+        [propget] HRESULT playlistCount([out, retval] int * count);
 
-        [propget] HRESULT ActivePlaylist([out, retval] int * index);
-        [propput] HRESULT ActivePlaylist([in] int index);
+        [propget] HRESULT activePlaylist([out, retval] int * index);
+        [propput] HRESULT activePlaylist([in] int index);
 
-        [propget] HRESULT PlayingPlaylist([out, retval] int * index);
-        [propput] HRESULT PlayingPlaylist([in] int index);
+        [propget] HRESULT playingPlaylist([out, retval] int * index);
+        [propput] HRESULT playingPlaylist([in] int index);
 
-        HRESULT GetPlaylistName([in] int index, [out, retval] BSTR * name);
-        HRESULT SetPlaylistName([in] int index, [in] BSTR name);
+        HRESULT getPlaylistName([in] int index, [out, retval] BSTR * name);
+        HRESULT setPlaylistName([in] int index, [in] BSTR name);
 
-        HRESULT FindPlaylist([in] BSTR name, [out, retval] int * index);
+        HRESULT findPlaylist([in] BSTR name, [out, retval] int * index);
 
-        HRESULT GetPlaylistItemCount([in] int playlistIndex, [out, retval] int * itemCount);
-        HRESULT GetSelectedPlaylistItemCount([in] int playlistIndex, [in] int maxItems, [out, retval] int * itemCount);
+        HRESULT getPlaylistItemCount([in] int playlistIndex, [out, retval] int * itemCount);
+        HRESULT getSelectedPlaylistItemCount([in] int playlistIndex, [in] int maxItems, [out, retval] int * itemCount);
 
-        HRESULT GetFocusedPlaylistItem([in] int playlistIndex, [out, retval] int * itemIndex);
-        HRESULT SetFocusedPlaylistItem([in] int playlistIndex, [in] int itemIndex);
-        HRESULT EnsurePlaylistItemVisible([in] int playlistIndex, [in] int itemIndex);
-        HRESULT ExecutePlaylistDefaultAction([in] int playlistIndex, [in] int itemIndex);
-        HRESULT IsPlaylistItemSelected([in] int playlistIndex, [in] int itemIndex, [out, retval] VARIANT_BOOL * result);
+        HRESULT getFocusedPlaylistItem([in] int playlistIndex, [out, retval] int * itemIndex);
+        HRESULT setFocusedPlaylistItem([in] int playlistIndex, [in] int itemIndex);
+        HRESULT ensurePlaylistItemVisible([in] int playlistIndex, [in] int itemIndex);
+        HRESULT executePlaylistDefaultAction([in] int playlistIndex, [in] int itemIndex);
+        HRESULT isPlaylistItemSelected([in] int playlistIndex, [in] int itemIndex, [out, retval] VARIANT_BOOL * result);
 
-        HRESULT CreatePlaylist([in] int playlistIndex, [in] BSTR name, [out, retval] int * newPlaylistIndex);
-        HRESULT AddPath([in] int playlistIndex, [in] int itemIndex, [in] BSTR filePath, [in] VARIANT_BOOL selectAddedItem);
+        HRESULT createPlaylist([in] int playlistIndex, [in] BSTR name, [out, retval] int * newPlaylistIndex);
+        HRESULT addPath([in] int playlistIndex, [in] int itemIndex, [in] BSTR filePath, [in] VARIANT_BOOL selectAddedItem);
 
-        HRESULT DuplicatePlaylist([in] int playlistIndex, [in] BSTR name, [out, retval] int * newPlaylistIndex);
-        HRESULT GetPlaylistItems([in] int playlistIndex, [out, retval] BSTR * json);
+        HRESULT duplicatePlaylist([in] int playlistIndex, [in] BSTR name, [out, retval] int * newPlaylistIndex);
+        HRESULT getPlaylistItems([in] int playlistIndex, [out, retval] BSTR * json);
 
-        HRESULT SelectPlaylistItem([in] int playlistIndex, [in] int itemIndex);
-        HRESULT DeselectPlaylistItem([in] int playlistIndex, [in] int itemIndex);
-        HRESULT GetSelectedPlaylistItems([in] int playlistIndex, [out, retval] BSTR * json);
-        HRESULT RemoveSelectedPlaylistItems([in] int playlistIndex);
-        HRESULT RemoveUnselectedPlaylistItems([in] int playlistIndex);
-        HRESULT ClearPlaylistSelection([in] int playlistIndex);
+        HRESULT selectPlaylistItem([in] int playlistIndex, [in] int itemIndex);
+        HRESULT deselectPlaylistItem([in] int playlistIndex, [in] int itemIndex);
+        HRESULT getSelectedPlaylistItems([in] int playlistIndex, [out, retval] BSTR * json);
+        HRESULT removeSelectedPlaylistItems([in] int playlistIndex);
+        HRESULT removeUnselectedPlaylistItems([in] int playlistIndex);
+        HRESULT clearPlaylistSelection([in] int playlistIndex);
 
-        HRESULT RemovePlaylistItem([in] int playlistIndex, [in] int itemIndex);
+        HRESULT removePlaylistItem([in] int playlistIndex, [in] int itemIndex);
 
-        HRESULT ClearPlaylist([in] int playlistIndex);
-        HRESULT DeletePlaylist([in] int playlistIndex);
+        HRESULT clearPlaylist([in] int playlistIndex);
+        HRESULT deletePlaylist([in] int playlistIndex);
 
         // Auto Playlists
-        HRESULT CreateAutoPlaylist([in] int playlistIndex, [in] BSTR name, [in] BSTR query, [in, defaultvalue("*.*")] BSTR sort, [in, defaultvalue(0)] unsigned __int32 flags, [out, retval] int * newPlaylistIndex);
-        HRESULT IsAutoPlaylist([in] int playlistIndex, [out, retval] VARIANT_BOOL * result);
+        HRESULT createAutoPlaylist([in] int playlistIndex, [in] BSTR name, [in] BSTR query, [in, defaultvalue("*.*")] BSTR sort, [in, defaultvalue(0)] unsigned __int32 flags, [out, retval] int * newPlaylistIndex);
+        HRESULT isAutoPlaylist([in] int playlistIndex, [out, retval] VARIANT_BOOL * result);
 
         // Playback Order
-        [propget] HRESULT PlaybackOrder([out, retval] int * index);
-        [propput] HRESULT PlaybackOrder([in] int index);
+        [propget] HRESULT playbackOrder([out, retval] int * index);
+        [propput] HRESULT playbackOrder([in] int index);
     };
 
     [uuid(637abc45-11f7-4dde-84b4-317d62a638d3)]
