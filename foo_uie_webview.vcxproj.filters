@@ -55,6 +55,7 @@
     <None Include="docs\README.md" />
     <None Include="PlaylistTemplate.html" />
     <None Include="FrameTemplate.html" />
+    <None Include="docs\index.md" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="LICENSE.txt" />
@@ -64,5 +65,8 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Main.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
 </Project>

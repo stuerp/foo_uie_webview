@@ -96,7 +96,7 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.2.0.0-alpha5, 2024-12-xx, *"I'm getting framed..."*
+v0.2.0.0, 2024-12-07, *"I'm getting framed..."*
 
 * New: Builds with foobar2000 SDK 2024-08-07.
 * New: Updated WebView2 component to 1.0.2849.39.
