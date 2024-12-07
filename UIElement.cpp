@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.cpp (2024.07.08) P. Stuer **/
+/** $VER: UIElement.cpp (2024.12.02) P. Stuer **/
 
 #include "pch.h"
 
@@ -10,6 +10,7 @@
 #include "Support.h"
 
 #include <pathcch.h>
+
 #pragma comment(lib, "pathcch")
 
 #include <SDK/titleformat.h>
@@ -24,9 +25,17 @@
 /// </summary>
 UIElement::UIElement() : m_bMsgHandled(FALSE)
 {
-    playlist_callback_single_impl_base::set_callback_flags(flag_on_item_focus_change);
-
     _PlaybackControl = playback_control::get();
+
+    playlist_manager::get()->register_callback(this, (t_uint32) flag_all);
+}
+
+/// <summary>
+/// Deletes this instance.
+/// </summary>
+UIElement::~UIElement()
+{
+    playlist_manager::get()->unregister_callback(this);
 }
 
 #pragma region User Interface
@@ -47,7 +56,7 @@ LRESULT UIElement::OnCreate(LPCREATESTRUCT cs) noexcept
         return 1;
     }
 
-    console::printf(STR_COMPONENT_BASENAME " is using WebView %s.", WideToUTF8(WebViewVersion).c_str());
+    console::printf(STR_COMPONENT_BASENAME " is using WebView %s.", ::WideToUTF8(WebViewVersion).c_str());
 
     _HostObject = Microsoft::WRL::Make<HostObject>
     (
@@ -111,7 +120,7 @@ void UIElement::OnSize(UINT type, CSize size) noexcept
 
     RECT Bounds;
 
-    ::GetClientRect(m_hWnd, &Bounds);
+    GetClientRect(&Bounds);
 
     _Controller->put_Bounds(Bounds);
 }
@@ -422,23 +431,19 @@ CWndClassInfo & UIElement::GetWndClassInfo()
 /// </summary>
 void UIElement::on_playback_starting(play_control::t_track_command command, bool paused)
 {
-    if (_WebView == nullptr)
-        return;
-
     static const wchar_t * CommandName = L"Unknown";
 
     if (command == play_control::t_track_command::track_command_play) CommandName = L"Play"; else
-    if (command == play_control::t_track_command::track_command_next) CommandName = L"Next"; else       // Plays the next track from the current playlist according to the current playback order.
-    if (command == play_control::t_track_command::track_command_prev) CommandName = L"Prev"; else       // Plays the previous track from the current playlist according to the current playback order.
-    if (command == play_control::t_track_command::track_command_rand) CommandName = L"Random"; else     // Plays a random track from the current playlist.
+    if (command == play_control::t_track_command::track_command_next) CommandName = L"Next"; else           // Plays the next track from the current playlist according to the current playback order.
+    if (command == play_control::t_track_command::track_command_prev) CommandName = L"Prev"; else           // Plays the previous track from the current playlist according to the current playback order.
+    if (command == play_control::t_track_command::track_command_rand) CommandName = L"Random"; else         // Plays a random track from the current playlist.
 
-    if (command == play_control::t_track_command::track_command_rand) CommandName = L"Set track"; else  // For internal use only, do not use.
-    if (command == play_control::t_track_command::track_command_rand) CommandName = L"Resume";          // For internal use only, do not use.
+    if (command == play_control::t_track_command::track_command_settrack) CommandName = L"Set track"; else  // For internal use only, do not use.
+    if (command == play_control::t_track_command::track_command_resume) CommandName = L"Resume";            // For internal use only, do not use.
 
-    HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnPlaybackStarting(\"%s\", %s)", CommandName, (paused ? L"true" : L"false")).c_str(), nullptr);
+    const std::wstring Script = ::FormatText(L"onPlaybackStarting(\"%s\", %s)", CommandName, (paused ? L"true" : L"false"));
 
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackStarting()").c_str());
+    ExecuteScript(Script);
 }
 
 /// <summary>
@@ -446,13 +451,9 @@ void UIElement::on_playback_starting(play_control::t_track_command command, bool
 /// </summary>
 void UIElement::on_playback_new_track(metadb_handle_ptr /*track*/)
 {
-    if (_WebView == nullptr)
-        return;
+    const std::wstring Script = L"onPlaybackNewTrack()";
 
-    HRESULT hr = _WebView->ExecuteScript(L"OnPlaybackNewTrack()", nullptr);
-
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackNewTrack()").c_str());
+    ExecuteScript(Script);
 
     _LastPlaybackTime = 0.;
     _SampleRate = 44100; // Temporary until we get the sample rate from the chunk.
@@ -469,9 +470,6 @@ void UIElement::on_playback_stop(play_control::t_stop_reason reason)
 
     _LastPlaybackTime = 0.;
 
-    if (_WebView == nullptr)
-        return;
-
     static const wchar_t * Reason = L"unknown";
 
     if (reason == play_control::t_stop_reason::stop_reason_user)                Reason = L"User"; else
@@ -479,10 +477,9 @@ void UIElement::on_playback_stop(play_control::t_stop_reason reason)
     if (reason == play_control::t_stop_reason::stop_reason_starting_another)    Reason = L"Starting another"; else
     if (reason == play_control::t_stop_reason::stop_reason_shutting_down)       Reason = L"Shutting down";
 
-    HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnPlaybackStop(\"%s\")", Reason).c_str(), nullptr);
+    const std::wstring Script = ::FormatText(L"onPlaybackStop(\"%s\")", Reason);
 
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackStop()").c_str());
+    ExecuteScript(Script);
 }
 
 /// <summary>
@@ -490,13 +487,9 @@ void UIElement::on_playback_stop(play_control::t_stop_reason reason)
 /// </summary>
 void UIElement::on_playback_seek(double time)
 {
-    if (_WebView == nullptr)
-        return;
+    const std::wstring Script = ::FormatText(L"onPlaybackSeek(%f)", time);
 
-    HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnPlaybackSeek(%f)", time).c_str(), nullptr);
-
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackSeek()").c_str());
+    ExecuteScript(Script);
 }
 
 /// <summary>
@@ -504,13 +497,9 @@ void UIElement::on_playback_seek(double time)
 /// </summary>
 void UIElement::on_playback_pause(bool paused)
 {
-    if (_WebView == nullptr)
-        return;
+    const std::wstring Script = ::FormatText(L"onPlaybackPause(%s)", (paused ? L"true" : L"false"));
 
-    HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnPlaybackPause(%s)", (paused ? L"true" : L"false")).c_str(), nullptr);
-
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackPause()").c_str());
+    ExecuteScript(Script);
 }
 
 /// <summary>
@@ -518,13 +507,9 @@ void UIElement::on_playback_pause(bool paused)
 /// </summary>
 void UIElement::on_playback_edited(metadb_handle_ptr hTrack)
 {
-    if (_WebView == nullptr)
-        return;
+    const std::wstring Script = L"onPlaybackEdited()";
 
-    HRESULT hr = _WebView->ExecuteScript(L"OnPlaybackEdited()", nullptr);
-
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackEdited()").c_str());
+    ExecuteScript(Script);
 }
 
 /// <summary>
@@ -532,13 +517,9 @@ void UIElement::on_playback_edited(metadb_handle_ptr hTrack)
 /// </summary>
 void UIElement::on_playback_dynamic_info(const file_info & fileInfo)
 {
-    if (_WebView == nullptr)
-        return;
+    const std::wstring Script = L"onPlaybackDynamicInfo()";
 
-    HRESULT hr = _WebView->ExecuteScript(L"OnPlaybackDynamicInfo()", nullptr);
-
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackDynamicInfo()").c_str());
+    ExecuteScript(Script);
 }
 
 /// <summary>
@@ -546,13 +527,9 @@ void UIElement::on_playback_dynamic_info(const file_info & fileInfo)
 /// </summary>
 void UIElement::on_playback_dynamic_info_track(const file_info & fileInfo)
 {
-    if (_WebView == nullptr)
-        return;
+    const std::wstring Script = L"onPlaybackDynamicTrackInfo()";
 
-    HRESULT hr = _WebView->ExecuteScript(L"OnPlaybackDynamicTrackInfo()", nullptr);
-
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackDynamicTrackInfo()").c_str());
+    ExecuteScript(Script);
 }
 
 /// <summary>
@@ -560,13 +537,9 @@ void UIElement::on_playback_dynamic_info_track(const file_info & fileInfo)
 /// </summary>
 void UIElement::on_playback_time(double time)
 {
-    if (_WebView == nullptr)
-        return;
+    const std::wstring Script = ::FormatText(L"onPlaybackTime(%f)", time);
 
-    HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnPlaybackTime(%f)", time).c_str(), nullptr);
-
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaybackTime()").c_str());
+    ExecuteScript(Script);
 }
 
 /// <summary>
@@ -574,31 +547,9 @@ void UIElement::on_playback_time(double time)
 /// </summary>
 void UIElement::on_volume_change(float newValue) // in dBFS
 {
-    if (_WebView == nullptr)
-        return;
+    const std::wstring Script = ::FormatText(L"onVolumeChange(%f)", (double) newValue);
 
-    HRESULT hr = _WebView->ExecuteScript(::FormatText(L"OnVolumeChange(%f)", (double) newValue).c_str(), nullptr);
-
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnVolumeChange()").c_str());
-}
-
-#pragma endregion
-
-#pragma region playlist_callback_single
-
-/// <summary>
-/// Called when the selected item changes.
-/// </summary>
-void UIElement::on_item_focus_change(t_size fromIndex, t_size toIndex)
-{
-    if (_WebView == nullptr)
-        return;
-
-    HRESULT hr = _WebView->ExecuteScript(L"OnPlaylistFocusedItemChanged()", nullptr);
-
-    if (!SUCCEEDED(hr))
-        console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to call OnPlaylistFocusedItemChanged()").c_str());
+    ExecuteScript(Script);
 }
 
 #pragma endregion

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Example template with iframe</title>
+<meta charset="UTF-8">
+</head>
+<body>
+    <button id="GetPropertyAsyncButton">Get Component Version (async)</button>
+    <label for="GetPropertyAsyncButton">Value:</label>
+    <div><code><pre><span id="GetPropertyAsyncOutput"></span></pre></code></div>
+
+    <span id="TextFile"></span><br/>
+
+    <div id="Frame" style="display: none;">
+        <h2>IFrame</h2>
+    </div>
+
+    <script>
+        document.getElementById("TextFile").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.readAllText("C:/Windows/win.ini", 65001);
+
+        function CreateIFrame()
+        {
+            var i = document.createElement("iframe");
+
+            i.src = "http://foo_uie_webview.local/FrameTemplate.html";
+            i.scrolling = "auto";
+            i.frameborder = "0";
+            i.height = "90%";
+            i.width = "100%";
+            i.name = "iframe_name";
+
+            var div = document.getElementById("Frame");
+
+            div.appendChild(i); div.style.display = 'block';
+        };
+
+        window.onload = function()
+        {
+            if (window.top === window)
+            {
+                CreateIFrame();
+            }
+        };
+
+        document.getElementById("GetPropertyAsyncButton").addEventListener("click", async () =>
+        {
+            const Value = await chrome.webview.hostObjects.foo_uie_webview.componentVersionText;
+
+            document.getElementById("GetPropertyAsyncOutput").textContent = Value;
+        });
+    </script>
+</body>
+</html>

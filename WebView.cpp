@@ -1,5 +1,5 @@
 
-/** $VER: WebView.cpp (2024.08.04) P. Stuer - Creates the WebView. **/
+/** $VER: WebView.cpp (2024.11.20) P. Stuer - Creates the WebView. **/
 
 #include "pch.h"
 
@@ -221,11 +221,11 @@ HRESULT UIElement::CreateWebView()
 
                     // Set a mapping between a virtual host name and a folder path to make it available to web sites via that host name. (E.g. L"<img src="http://foo_uie_webview.local/wv2.png"/>")
                     {
-                        wil::com_ptr<ICoreWebView2_3> WebView03 = _WebView.try_query<ICoreWebView2_3>();
+                        wil::com_ptr<ICoreWebView2_3> WebView23 = _WebView.try_query<ICoreWebView2_3>();
 
-                        if (WebView03 != nullptr)
+                        if (WebView23 != nullptr)
                         {
-                            hr = WebView03->SetVirtualHostNameToFolderMapping(_HostName, _Configuration._UserDataFolderPath.c_str(), COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
+                            hr = WebView23->SetVirtualHostNameToFolderMapping(_HostName, _Configuration._UserDataFolderPath.c_str(), COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
 
                             if (!SUCCEEDED(hr))
                                 console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to set virtual host name").c_str());
@@ -306,6 +306,81 @@ HRESULT UIElement::CreateWebView()
 
                         if (!SUCCEEDED(hr))
                             console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to add NavigationCompleted event handler").c_str());
+                    }
+
+                    // Add an event handler for the FrameCreated event. This handler can be used to add host objects to the created iframe.
+                    {
+                        wil::com_ptr<ICoreWebView2_4> WebView24 = _WebView.try_query<ICoreWebView2_4>();
+
+                        if (WebView24 != nullptr)
+                        {
+                            hr = WebView24->add_FrameCreated(Callback<ICoreWebView2FrameCreatedEventHandler>
+                            (
+                                [this](ICoreWebView2 * sender, ICoreWebView2FrameCreatedEventArgs * args) -> HRESULT
+                                {
+                                    wil::com_ptr<ICoreWebView2Frame> Frame;
+
+                                    HRESULT hr = args->get_Frame(&Frame);
+
+                                    if (Frame == nullptr)
+                                    {
+                                        console::print(::GetErrorMessage(E_NOINTERFACE, STR_COMPONENT_BASENAME " failed to get frame interface").c_str());
+
+                                        return hr;
+                                    }
+
+                                    wil::unique_cotaskmem_string FrameName;
+
+                                    hr = Frame->get_Name(&FrameName);
+
+                                    if (std::wcscmp(FrameName.get(), L"iframe_name") == 0)
+                                    {
+                                        wil::unique_variant RemoteObject;
+
+                                        _HostObject.query_to<IDispatch>(&RemoteObject.pdispVal);
+
+                                        if (RemoteObject.pdispVal == nullptr)
+                                        {
+                                            console::print(::GetErrorMessage(E_NOINTERFACE, STR_COMPONENT_BASENAME " failed to get IDispatch interface from host object").c_str());
+
+                                            return E_NOINTERFACE;
+                                        }
+
+                                        RemoteObject.vt = VT_DISPATCH;
+
+                                        // Create list of origins which will be checked. The frame will have access to the host object only if its origin belongs to this list.
+                                        std::wstring Origin = ::FormatText(L"http://%s/", _HostName).c_str();
+
+                                        LPCWSTR Origins[] = { Origin.c_str() };
+
+                                        hr = Frame->AddHostObjectToScriptWithOrigins(TEXT(STR_COMPONENT_BASENAME), &RemoteObject, _countof(Origins), Origins);
+
+                                        if (!SUCCEEDED(hr))
+                                            console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to add host object to frame script").c_str());
+                                    }
+
+                                    // Add an event handler for the NameChanged event.
+                                    Frame->add_NameChanged(Callback<ICoreWebView2FrameNameChangedEventHandler>([](ICoreWebView2Frame * sender, IUnknown * args) -> HRESULT
+                                    {
+                                        wil::unique_cotaskmem_string FrameName;
+
+                                        HRESULT hr = sender->get_Name(&FrameName);
+
+                                        return hr;
+                                    }).Get(), NULL);
+
+                                    // Add an event handler for the Destroyed event.
+                                    Frame->add_Destroyed(Callback<ICoreWebView2FrameDestroyedEventHandler>([](ICoreWebView2Frame * sender, IUnknown * args) -> HRESULT
+                                    {
+                                        return S_OK;
+                                    }).Get(), NULL);
+
+                                    return S_OK;
+                                }
+                            ).Get(), &_FrameCreatedToken);
+                        }
+                        else
+                            console::print(::GetErrorMessage(E_NOINTERFACE, STR_COMPONENT_BASENAME " failed to get ICoreWebView2_4 interface").c_str());
                     }
 
                     // Add custom context menu items.

@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.h (2024.07.10) P. Stuer **/
+/** $VER: HostObjectImpl.h (2024.12.02) P. Stuer **/
 
 #pragma once
 
@@ -40,48 +40,106 @@ public:
 
     #pragma region IHostObject
 
-    STDMETHODIMP get_ComponentVersion(__int32 * version) override;
-    STDMETHODIMP get_ComponentVersionText(BSTR * versionText) override;
+    STDMETHODIMP get_componentVersion(__int32 * version) override;
+    STDMETHODIMP get_componentVersionText(BSTR * versionText) override;
 
-    STDMETHODIMP Print(BSTR text) override;
+    STDMETHODIMP print(BSTR text) override;
 
     /* Playback control **/
 
-    STDMETHODIMP Stop() override;
-    STDMETHODIMP Play(BOOL paused) override;
-    STDMETHODIMP Pause(BOOL paused) override;
-    STDMETHODIMP Previous() override;
-    STDMETHODIMP Next() override;
-    STDMETHODIMP Random() override;
+    STDMETHODIMP stop() override;
+    STDMETHODIMP play(VARIANT_BOOL paused) override;
+    STDMETHODIMP pause(VARIANT_BOOL paused) override;
+    STDMETHODIMP previous() override;
+    STDMETHODIMP next() override;
+    STDMETHODIMP random() override;
 
-    STDMETHODIMP TogglePause() override;
-    STDMETHODIMP ToggleMute() override;
-    STDMETHODIMP ToggleStopAfterCurrent() override;
+    STDMETHODIMP togglePause() override;
+    STDMETHODIMP toggleMute() override;
+    STDMETHODIMP toggleStopAfterCurrent() override;
 
-    STDMETHODIMP VolumeUp() override;
-    STDMETHODIMP VolumeDown() override;
+    STDMETHODIMP volumeUp() override;
+    STDMETHODIMP volumeDown() override;
 
-    STDMETHODIMP Seek(double time) override;
-    STDMETHODIMP SeekDelta(double delta) override;
+    STDMETHODIMP seek(double time) override;
+    STDMETHODIMP seekDelta(double delta) override;
 
-    STDMETHODIMP get_IsPlaying(BOOL * value) override;
-    STDMETHODIMP get_IsPaused(BOOL * value) override;
+    STDMETHODIMP get_isPlaying(VARIANT_BOOL * value) override;
+    STDMETHODIMP get_isPaused(VARIANT_BOOL * value) override;
 
-    STDMETHODIMP get_StopAfterCurrent(BOOL * value) override;
-    STDMETHODIMP put_StopAfterCurrent(BOOL value) override;
+    STDMETHODIMP get_stopAfterCurrent(VARIANT_BOOL * value) override;
+    STDMETHODIMP put_stopAfterCurrent(VARIANT_BOOL value) override;
 
-    STDMETHODIMP get_Length(double * value) override;
-    STDMETHODIMP get_Position(double * value) override;
-    STDMETHODIMP get_CanSeek(BOOL * value) override;
+    STDMETHODIMP get_length(double * value) override;
+    STDMETHODIMP get_position(double * value) override;
+    STDMETHODIMP get_canSeek(VARIANT_BOOL * value) override;
 
-    STDMETHODIMP get_Volume(double * value) override;
-    STDMETHODIMP put_Volume(double value) override;
+    STDMETHODIMP get_volume(double * value) override;
+    STDMETHODIMP put_volume(double value) override;
 
-    STDMETHODIMP get_IsMuted(BOOL * value) override;
+    STDMETHODIMP get_isMuted(VARIANT_BOOL * value) override;
 
-    STDMETHODIMP GetFormattedText(BSTR text, BSTR * formattedText) override;
+    STDMETHODIMP getFormattedText(BSTR text, BSTR * formattedText) override;
 
-    STDMETHODIMP GetArtwork(BSTR type, BSTR * image) override;
+    STDMETHODIMP getArtwork(BSTR type, BSTR * image) override;
+
+    /* Files */
+
+    STDMETHODIMP readAllText(BSTR filePath, __int32 codePage, BSTR * text) override;
+    STDMETHODIMP readImage(BSTR filePath, BSTR * image) override;
+    STDMETHODIMP readDirectory(BSTR filePath, BSTR searchPattern, BSTR * json) override;
+
+    /* Playlists */
+
+    STDMETHODIMP get_playlistCount(int * playlistCount) override;
+
+    STDMETHODIMP get_activePlaylist(int * playlistIndex) override;
+    STDMETHODIMP put_activePlaylist(int playlistIndex) override;
+
+    STDMETHODIMP get_playingPlaylist(int * playlistIndex) override;
+    STDMETHODIMP put_playingPlaylist(int playlistIndex) override;
+
+    STDMETHODIMP getPlaylistName(int playlistIndex, BSTR * name) override;
+    STDMETHODIMP setPlaylistName(int playlistIndex, BSTR name) override;
+
+    STDMETHODIMP findPlaylist(BSTR name, int * playlistIndex) override;
+
+    STDMETHODIMP getPlaylistItemCount(int playlistIndex, int * itemCount) override;
+    STDMETHODIMP getSelectedPlaylistItemCount(int playlistIndex, int maxItems, int * itemCount) override;
+
+    STDMETHODIMP getFocusedPlaylistItem(int playlistIndex, int * itemIndex) override;
+    STDMETHODIMP setFocusedPlaylistItem(int playlistIndex, int itemIndex) override;
+    STDMETHODIMP ensurePlaylistItemVisible(int playlistIndex, int itemIndex) override;
+    STDMETHODIMP executePlaylistDefaultAction(int playlistIndex, int itemIndex) override;
+    STDMETHODIMP isPlaylistItemSelected(int playlistIndex, int itemIndex, VARIANT_BOOL * result) override;
+
+    STDMETHODIMP createPlaylist(int playlistIndex, BSTR name, int * newPlaylistIndex) override;
+    STDMETHODIMP addPath(int playlistIndex, int itemIndex, BSTR filePath, VARIANT_BOOL selectAddedItems) override;
+
+    STDMETHODIMP duplicatePlaylist(int playlistIndex, BSTR name, int * newPlaylistIndex) override;
+    STDMETHODIMP clearPlaylist(int playlistIndex) override;
+    STDMETHODIMP getPlaylistItems(int playlistIndex, BSTR * json) override;
+
+    STDMETHODIMP selectPlaylistItem(int playlistIndex, int itemIndex) override;
+    STDMETHODIMP deselectPlaylistItem(int playlistIndex, int itemIndex) override;
+    STDMETHODIMP getSelectedPlaylistItems(int playlistIndex, BSTR * json) override;
+    STDMETHODIMP clearPlaylistSelection(int playlistIndex) override;
+    STDMETHODIMP removeSelectedPlaylistItems(int playlistIndex) override;
+    STDMETHODIMP removeUnselectedPlaylistItems(int playlistIndex) override;
+
+    STDMETHODIMP removePlaylistItem(int playlistIndex, int itemIndex) override;
+
+    STDMETHODIMP deletePlaylist(int playlistIndex) override;
+
+    /* Auto Playlists */
+
+    STDMETHODIMP createAutoPlaylist(int playlistIndex, BSTR name, BSTR query, BSTR sort, uint32_t flags, int * newPlaylistIndex) override;
+    STDMETHODIMP isAutoPlaylist(int playlistIndex, VARIANT_BOOL * result) override;
+
+    /* Playback Order */
+
+    STDMETHODIMP get_playbackOrder(int * playlistIndex) override;
+    STDMETHODIMP put_playbackOrder(int playlistIndex) override;
 
     #pragma endregion
 
@@ -95,8 +153,20 @@ public:
     #pragma endregion
 
 private:
-    static HRESULT GetTrackIndex(t_size & playlistIndex, t_size & itemIndex) noexcept;
+    static HRESULT GetTrackIndex(size_t & playlistIndex, size_t & itemIndex) noexcept;
+
     static HRESULT GetTypeLibFilePath(std::wstring & filePath) noexcept;
+
+    static void NormalizeIndexes(int & playlistIndex, int & itemIndex) noexcept
+    {
+        auto Manager = playlist_manager_v4::get();
+
+        if (playlistIndex == -1)
+            playlistIndex = (int) Manager->get_active_playlist();
+
+        if (itemIndex == -1)
+            itemIndex = (int) Manager->playlist_get_item_count((size_t) playlistIndex) - 1;
+    }
 
 private:
     wil::com_ptr<ITypeLib> _TypeLibrary;
@@ -139,3 +209,11 @@ private:
 
     service_ptr_t<album_art_manager_config_t> _AlbumArtManagerConfig = new service_impl_t<album_art_manager_config_t>;
 };
+
+extern void ToBase64(const BYTE * data, DWORD size, BSTR * base64);
+extern const std::string Stringify(const char * s);
+extern const std::wstring Stringify(const std::wstring & s);
+
+extern std::wstring ToJSON(const metadb_handle_list & hItems);
+extern std::wstring ToJSON(const bit_array & mask, t_size count);
+extern std::wstring ToJSON(const t_size * array, t_size count);

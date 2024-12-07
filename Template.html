@@ -105,19 +105,19 @@ div
     </p>
     <p>
     <div id="Controls">
-        <button id="Stop" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.Stop(); RefreshProperties();"></button>
-        <button id="Play" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.Play(false); RefreshProperties();"></button>
-        <button id="Pause" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.TogglePause(); RefreshProperties();"></button>
-        <button id="Prev" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.Previous(); RefreshProperties();"></button>
-        <button id="Next" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.Next(); RefreshProperties();"></button>
-        <button id="Random" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.Random(); RefreshProperties();"></button>
-        <button id="VolumeDown" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.VolumeDown(); RefreshProperties();"></button>
-        <button id="VolumeUp" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.VolumeUp(); RefreshProperties();"></button>
-        <button id="Mute" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.ToggleMute(); RefreshProperties();"></button>
-        <button id="Seek" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.Seek(Math.random() * chrome.webview.hostObjects.sync.foo_uie_webview.Length); RefreshProperties();">Seek</button>
-        <button id="Delta" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.SeekDelta((Math.random() - 0.5) * 5.0); RefreshProperties();">Delta</button>
+        <button id="Stop" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.stop(); RefreshProperties();"></button>
+        <button id="Play" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.play(false); RefreshProperties();"></button>
+        <button id="Pause" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.togglePause(); RefreshProperties();"></button>
+        <button id="Prev" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.previous(); RefreshProperties();"></button>
+        <button id="Next" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.next(); RefreshProperties();"></button>
+        <button id="Random" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.random(); RefreshProperties();"></button>
+        <button id="VolumeDown" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.volumeDown(); RefreshProperties();"></button>
+        <button id="VolumeUp" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.volumeUp(); RefreshProperties();"></button>
+        <button id="Mute" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.toggleMute(); RefreshProperties();"></button>
+        <button id="Seek" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.seek(Math.random() * chrome.webview.hostObjects.sync.foo_uie_webview.length); RefreshProperties();">Seek</button>
+        <button id="Delta" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.seekDelta((Math.random() - 0.5) * 5.0); RefreshProperties();">Delta</button>
         <br/>
-        <input type="checkbox" id="ToggleStopAfterCurrent" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.ToggleStopAfterCurrent(); RefreshProperties();"/><label for="ToggleStopAfterCurrent">Stop after current item</label>
+        <input type="checkbox" id="ToggleStopAfterCurrent" onclick="chrome.webview.hostObjects.sync.foo_uie_webview.toggleStopAfterCurrent(); RefreshProperties();"/><label for="ToggleStopAfterCurrent">Stop after current item</label>
     </div>
     </p>
     <div>Timestamp: <span id="Timestamp"></span>, <span id="SampleCount"></span> samples, <span id="SampleRate"></span>Hz, <span id="ChannelCount"></span> channels (<span id="ChannelConfig"></span>)<br/>
@@ -131,17 +131,17 @@ window.onload = function()
 {
     window.chrome.webview.addEventListener("sharedbufferreceived", e =>
     {
-        chrome.webview.hostObjects.sync.foo_uie_webview.Print("foo_uie_webview JavaScript says hello.");
+        chrome.webview.hostObjects.sync.foo_uie_webview.print("foo_uie_webview JavaScript says hello.");
 
-        document.getElementById("VersionText").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.ComponentVersionText;
+        document.getElementById("VersionText").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.componentVersionText;
 
-        var Version = chrome.webview.hostObjects.sync.foo_uie_webview.ComponentVersion;
+        var Version = chrome.webview.hostObjects.sync.foo_uie_webview.componentVersion;
 
         document.getElementById("Version").textContent = 'v' + ((Version >> 24) & 255) + '.' + ((Version >> 16) & 255) + '.' + ((Version >> 8) & 255) + '.' + (Version & 255);
 
-        document.getElementById("Volume2").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.Volume;
+        document.getElementById("Volume2").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.volume;
 
-        chrome.webview.hostObjects.sync.foo_uie_webview.Volume = 0;
+//      chrome.webview.hostObjects.sync.foo_uie_webview.volume = 0; // The volume can be set from code.
 
         document.getElementById("Stop").textContent = '\u23F9';
         document.getElementById("Play").textContent = '\u23F5';
@@ -151,11 +151,16 @@ window.onload = function()
         document.getElementById("Random").textContent = '\u{1F500}';
         document.getElementById("VolumeDown").textContent = '\u{1F509}';
         document.getElementById("VolumeUp").textContent = '\u{1F50A}';
-        document.getElementById("Mute").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.IsMuted ? '\u{1F508}' : '\u{1F507}';
+        document.getElementById("Mute").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.isMuted ? '\u{1F508}' : '\u{1F507}';
 
-        document.getElementById("ToggleStopAfterCurrent").checked = chrome.webview.hostObjects.sync.foo_uie_webview.StopAfterCurrent;
+        document.getElementById("ToggleStopAfterCurrent").checked = chrome.webview.hostObjects.sync.foo_uie_webview.stopAfterCurrent;
 
         OnSharedBufferReceived(e);
+    });
+
+    window.chrome.webview.addEventListener("playlistItemFocusChanged", e =>
+    {
+        alert("Focus changed");
     });
 
     Refresh();
@@ -165,7 +170,7 @@ let SharedBuffer;
 let Samples;
 
 // Called when playback is being initialized.
-function OnPlaybackStarting(command, paused)
+function onPlaybackStarting(command, paused)
 {
     document.getElementById("Info").style.display = 'inline';
     document.getElementById("Starting").textContent = command + " (" + (paused ? "Paused" : "Playing") + ")";
@@ -174,21 +179,21 @@ function OnPlaybackStarting(command, paused)
 }
 
 // Called when playback advances to a new track.
-function OnPlaybackNewTrack()
+function onPlaybackNewTrack()
 {
     document.getElementById("Info").style.display = 'inline';
 
     Refresh()
 
-    var TestDataURI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
+    const TestDataURI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
 
-    var DataURI = chrome.webview.hostObjects.sync.foo_uie_webview.GetArtwork("front"); // "front", "back", "disc", "icon", "artist"
+    const DataURI = chrome.webview.hostObjects.sync.foo_uie_webview.getArtwork("front"); // "front", "back", "disc", "icon", "artist"
 
     document.getElementById("Artwork").src = (DataURI.length != 0) ? DataURI : TestDataURI;
 }
 
 // Called when playback stops.
-function OnPlaybackStop(reason)
+function onPlaybackStop(reason)
 {
 //  document.getElementById("Info").style.display = 'none';
     document.getElementById("StopReason").textContent = reason; // "User" / "EOF" / "Starting another" / "Shutting down"
@@ -197,13 +202,13 @@ function OnPlaybackStop(reason)
 }
 
 // Called when the user seeks to a specific time.
-function OnPlaybackSeek(time)
+function onPlaybackSeek(time)
 {
     document.getElementById("Time").textContent = time; // in seconds
 }
 
 // Called when playback pauses or resumes.
-function OnPlaybackPause(paused)
+function onPlaybackPause(paused)
 {
     document.getElementById("Paused").textContent = paused; // true / false
 
@@ -211,28 +216,28 @@ function OnPlaybackPause(paused)
 }
 
 // Called when the currently played file gets edited.
-function OnPlaybackEdited()
+function onPlaybackEdited()
 {
     Refresh();
 }
 
 // Called when dynamic info (VBR bitrate etc...) changes.
-function OnPlaybackDynamicInfo()
+function onPlaybackDynamicInfo()
 {
     Refresh();
 }
 
 // Called when the per-track dynamic info (stream track titles etc...) change. Happens less often than OnPlaybackDynamicInfo().
-function OnPlaybackDynamicTrackInfo()
+function onPlaybackDynamicTrackInfo()
 {
     Refresh();
 }
 
 // Called, every second, for time display.
-function OnPlaybackTime(time)
+function onPlaybackTime(time)
 {
     document.getElementById("Time").textContent = time; // in seconds
-    document.getElementById("TrackTime").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%playback_time%[/%length%]]");
+    document.getElementById("TrackTime").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("[%playback_time%[/%length%]]");
 }
 
 // Called when the user changes the volume.
@@ -241,47 +246,41 @@ function OnVolumeChange(newValue)
     document.getElementById("Volume").textContent = newValue; // in dBFS
 }
 
-// Called when the focused playlist item changes.
-function OnPlaylistFocusedItemChanged()
-{
-    Refresh();
-}
-
 // Refreshes the content of all elements.
 function Refresh()
 {
-    document.getElementById("Album").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%album%[: %subtitle%]]");
-    document.getElementById("AlbumArtist").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%album artist%]");
-    document.getElementById("AlbumDate").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%album recorded%]['/'%album released%]");
-    document.getElementById("AlbumPublisher").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%publisher%[' ('%album country%')']]");
-    document.getElementById("AlbumGenre").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%album genre%]");
+    document.getElementById("Album").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("[%album%[: %subtitle%]]");
+    document.getElementById("AlbumArtist").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("[%album artist%]");
+    document.getElementById("AlbumDate").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("[%album recorded%]['/'%album released%]");
+    document.getElementById("AlbumPublisher").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("[%publisher%[' ('%album country%')']]");
+    document.getElementById("AlbumGenre").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("[%album genre%]");
 
-    document.getElementById("TrackTitle").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("%title%[' ['%remix%']']");
-    document.getElementById("TrackArtist").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%artist%]");
-    document.getElementById("TrackCountry").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[' ('%country%')']");
-    document.getElementById("TrackFeaturing").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['ft. '%featuring%]");
-    document.getElementById("TrackDate").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%date%]");
-    document.getElementById("TrackNumber").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%tracknumber%[/%totaltracks%]]");
-    document.getElementById("TrackGenre").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("%genre%[/%subgenre%]");
-    document.getElementById("TrackLanguage").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[ %language%]");
+    document.getElementById("TrackTitle").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("%title%[' ['%remix%']']");
+    document.getElementById("TrackArtist").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("[%artist%]");
+    document.getElementById("TrackCountry").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("[' ('%country%')']");
+    document.getElementById("TrackFeaturing").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("['ft. '%featuring%]");
+    document.getElementById("TrackDate").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("[%date%]");
+    document.getElementById("TrackNumber").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("[%tracknumber%[/%totaltracks%]]");
+    document.getElementById("TrackGenre").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("%genre%[/%subgenre%]");
+    document.getElementById("TrackLanguage").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("[ %language%]");
 
-    document.getElementById("TrackTime").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("[%playback_time%[/%length%]]");
+    document.getElementById("TrackTime").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("[%playback_time%[/%length%]]");
 
-    document.getElementById("TrackCodec").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("%codec_long%[, $info(codec_profile)], $caps($info(encoding))");
-    document.getElementById("TrackInfo").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("%samplerate%Hz, %bitrate% kbps[, $info(bitspersample) bit], $caps(%channels%)[, $caps($info(channel_mode))]");
+    document.getElementById("TrackCodec").textContent = chrome.webview.hostObjects.sync.getFormattedText("%codec_long%[, $info(codec_profile)], $caps($info(encoding))");
+    document.getElementById("TrackInfo").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("%samplerate%Hz, %bitrate% kbps[, $info(bitspersample) bit], $caps(%channels%)[, $caps($info(channel_mode))]");
 
-    document.getElementById("TrackComposer").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Composer: '%composer%]");
-    document.getElementById("TrackLyricist").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Lyricist: '%lyricist%]");
-    document.getElementById("TrackComposed").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Composed in: ' %composed%]");
-    document.getElementById("TrackConductor").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Conductor: '%conductor%]");
-    document.getElementById("TrackOrchestra").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Orchestra: '%orchestra%]");
-    document.getElementById("TrackArranger").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Arranger: ' %arranger%]");
+    document.getElementById("TrackComposer").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("['Composer: '%composer%]");
+    document.getElementById("TrackLyricist").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("['Lyricist: '%lyricist%]");
+    document.getElementById("TrackComposed").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("['Composed in: ' %composed%]");
+    document.getElementById("TrackConductor").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("['Conductor: '%conductor%]");
+    document.getElementById("TrackOrchestra").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("['Orchestra: '%orchestra%]");
+    document.getElementById("TrackArranger").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("['Arranger: ' %arranger%]");
 
-    document.getElementById("OriginalAlbum").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Original Album: '%original album%]");
+    document.getElementById("OriginalAlbum").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("['Original Album: '%original album%]");
 
-    document.getElementById("Medium").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Medium: '%medium%]");
-    document.getElementById("Comment").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['Comments: '%comment%]");
-    document.getElementById("MIDI").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.GetFormattedText("['MIDI: '$info(midi_player)][, $info(midi_active_voices) voices '(peak ' $info(midi_peak_voices)')'][, extra percussion channel $info(midi_extra_percussion_channel)]");
+    document.getElementById("Medium").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("['Medium: '%medium%]");
+    document.getElementById("Comment").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("['Comments: '%comment%]");
+    document.getElementById("MIDI").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("['MIDI: '$info(midi_player)][, $info(midi_active_voices) voices '(peak ' $info(midi_peak_voices)')'][, extra percussion channel $info(midi_extra_percussion_channel)]");
 
     RefreshProperties();
 }
@@ -289,14 +288,14 @@ function Refresh()
 // Refreshes the content of the property elements.
 function RefreshProperties()
 {
-    document.getElementById("IsPlaying").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.IsPlaying ? 'True' : 'False';
-    document.getElementById("IsPaused").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.IsPaused ? 'True' : 'False';
-    document.getElementById("StopAfterCurrent").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.StopAfterCurrent ? 'True' : 'False';
+    document.getElementById("IsPlaying").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.isPlaying ? 'True' : 'False';
+    document.getElementById("IsPaused").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.isPaused ? 'True' : 'False';
+    document.getElementById("StopAfterCurrent").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.stopAfterCurrent ? 'True' : 'False';
 
-    document.getElementById("Length").textContent = (Math.round(chrome.webview.hostObjects.sync.foo_uie_webview.Length * 100) / 100).toFixed(2) + 's';
-    document.getElementById("CanSeek").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.CanSeek ? 'True' : 'False';
+    document.getElementById("Length").textContent = (Math.round(chrome.webview.hostObjects.sync.foo_uie_webview.length * 100) / 100).toFixed(2) + 's';
+    document.getElementById("CanSeek").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.canSeek ? 'True' : 'False';
 
-    document.getElementById("Mute").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.IsMuted ? '\u{1F508}' :  '\u{1F507}';
+    document.getElementById("Mute").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.isMuted ? '\u{1F508}' :  '\u{1F507}';
 }
 
 // Called when the shared buffer does not exist yet or when the channel configuration changes.
@@ -325,7 +324,7 @@ function OnSharedBufferReceived(e)
 // Called when the visualisation timer ticks.
 function OnTimer(sampleCount, sampleRate, channelCount, channelConfig)
 {
-    document.getElementById("Position").textContent = (Math.round(chrome.webview.hostObjects.sync.foo_uie_webview.Position * 100) / 100).toFixed(2) + 's';
+    document.getElementById("Position").textContent = (Math.round(chrome.webview.hostObjects.sync.foo_uie_webview.position * 100) / 100).toFixed(2) + 's';
 
     var L = 0, R = 0;
 

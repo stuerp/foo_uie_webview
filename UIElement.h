@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.h (2024.07.10) P. Stuer **/
+/** $VER: UIElement.h (2024.12.02) P. Stuer **/
 
 #pragma once
 
@@ -33,7 +33,7 @@ using namespace Microsoft::WRL;
 /// <summary>
 /// Implements the UIElement and Playback interface.
 /// </summary>
-class UIElement : public CWindowImpl<UIElement>, private play_callback_impl_base, private playlist_callback_single_impl_base
+class UIElement : public CWindowImpl<UIElement>, public playlist_callback, private play_callback_impl_base
 {
 public:
     UIElement();
@@ -43,7 +43,7 @@ public:
     UIElement(UIElement &&) = delete;
     UIElement & operator=(UIElement &&) = delete;
 
-    virtual ~UIElement() { }
+    virtual ~UIElement();
 
     #pragma region CWindowImpl
 
@@ -140,11 +140,40 @@ private:
 
     #pragma endregion
 
-    #pragma region playlist_callback_single
+public:
+    #pragma region playlist_callback
 
-    virtual void on_item_focus_change(t_size fromIndex, t_size toIndex) override;
+    void on_items_added(t_size playlistIndex, t_size startIndex, metadb_handle_list_cref data, const bit_array & selection);
+    void on_items_reordered(t_size playlistIndex, const t_size * order, t_size count);
+    void on_items_removing(t_size playlistIndex, const bit_array & mask, t_size oldCount, t_size newCount);
+    void on_items_removed(t_size playlistIndex, const bit_array & mask, t_size oldCount, t_size newCount);
+
+    void on_items_selection_change(t_size playlistIndex, const bit_array & affectedItems, const bit_array & state);
+
+    void on_items_modified(t_size playlistIndex, const bit_array & mask);
+    void on_items_modified_fromplayback(t_size playlistIndex, const bit_array & mask, play_control::t_display_level displayLevel);
+    void on_items_replaced(t_size playlistIndex, const bit_array & mask, const pfc::list_base_const_t<playlist_callback::t_on_items_replaced_entry> & data);
+
+    void on_item_focus_change(t_size playlistIndex, t_size oldItemIndex, t_size newItemIndex);
+    void on_item_ensure_visible(t_size playlistIndex, t_size itemIndex);
+
+    void on_playlist_activate(t_size oldPlaylistIndex, t_size newPlaylistIndex);
+    void on_playlist_created(t_size playlistIndex, const char * name, t_size size);
+    void on_playlists_reorder(const t_size * order, t_size count);
+    void on_playlists_removing(const bit_array & mask, t_size oldCount, t_size newCount);
+    void on_playlists_removed(const bit_array & mask, t_size oldCount, t_size newCount);
+    void on_playlist_renamed(t_size playlistIndex, const char * name, t_size size);
+
+    void on_playlist_locked(t_size playlistIndex, bool isLocked);
+
+    void on_default_format_changed() override;
+
+    void on_playback_order_changed(t_size playbackOrderIndex);
 
     #pragma endregion
+
+private:
+    void ExecuteScript(const std::wstring & script) const noexcept;
 
     #pragma region CWindowImpl
 
@@ -224,6 +253,7 @@ private:
 
     EventRegistrationToken _NavigationStartingToken = {};
     EventRegistrationToken _NavigationCompletedToken = {};
+    EventRegistrationToken _FrameCreatedToken = {};
     EventRegistrationToken _ContextMenuRequestedToken = {};
     EventRegistrationToken _BrowserProcessExitedToken = {};
 

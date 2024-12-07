@@ -1,5 +1,5 @@
 ﻿
-/** $VER: Encoding.cpp (2024.05.27) P. Stuer **/
+/** $VER: Encoding.cpp (2024.11.27) P. Stuer **/
 
 #include "pch.h"
 
@@ -45,7 +45,7 @@ std::wstring CodePageToWide(uint32_t codePage, const char * text, size_t size) n
 /// </summary>
 std::string CodePageToUTF8(uint32_t codePage, const char * text, size_t size) noexcept
 {
-    return WideToUTF8(CodePageToWide(codePage, text, size));
+    return ::WideToUTF8(CodePageToWide(codePage, text, size));
 }
 
 /// <summary>
@@ -79,9 +79,14 @@ std::wstring FormatText(const wchar_t * format, ...) noexcept
 
     std::wstring Text;
 
-    Text.resize(256);
+    int Size = _vscwprintf(format, vl) + 1;
 
-    ::vswprintf_s(Text.data(), Text.size(), format, vl);
+    if (Size != -1)
+    {
+        Text.resize((size_t) Size);
+
+        ::vswprintf_s(Text.data(), Text.size(), format, vl);
+    }
 
     va_end(vl);
 
@@ -227,10 +232,10 @@ std::wstring TextToWide(const char * text, size_t size) noexcept
         size = ::strlen(text);
 
     if (IsASCII(text))
-        return UTF8ToWide(text);
+        return ::UTF8ToWide(text);
 
     if (IsUTF8(text, size))
-        return UTF8ToWide(text);
+        return ::UTF8ToWide(text);
 
     if (IsShiftJIS(text, size))
         return CodePageToWide(932, text);

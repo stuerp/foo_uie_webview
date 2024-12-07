@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.cpp (2024.07.10) P. Stuer **/
+/** $VER: HostObjectImpl.cpp (2024.12.02) P. Stuer **/
 
 #include "pch.h"
 
@@ -14,12 +14,15 @@
 #include "Resources.h"
 #include "Encoding.h"
 
+#include "ProcessLocationsHandler.h"
+
 #include <SDK/titleformat.h>
 #include <SDK/playlist.h>
 #include <SDK/ui.h>
 #include <SDK/contextmenu.h>
 
 #include <pfc/string-conv-lite.h>
+#include <pfc/bit_array_impl.h>
 
 /// <summary>
 /// Initializes a new instance
@@ -32,7 +35,7 @@ HostObject::HostObject(HostObject::RunCallbackAsync runCallbackAsync) : _RunCall
 /// <summary>
 /// Gets the version of the component as packed integer.
 /// </summary>
-STDMETHODIMP HostObject::get_ComponentVersion(__int32 * version)
+STDMETHODIMP HostObject::get_componentVersion(__int32 * version)
 {
     if (version == nullptr)
         return E_INVALIDARG;
@@ -45,7 +48,7 @@ STDMETHODIMP HostObject::get_ComponentVersion(__int32 * version)
 /// <summary>
 /// Gets the version of the component as a string.
 /// </summary>
-STDMETHODIMP HostObject::get_ComponentVersionText(BSTR * versionText)
+STDMETHODIMP HostObject::get_componentVersionText(BSTR * versionText)
 {
     if (versionText == nullptr)
         return E_INVALIDARG;
@@ -58,7 +61,7 @@ STDMETHODIMP HostObject::get_ComponentVersionText(BSTR * versionText)
 /// <summary>
 /// Prints the specified text on the foobar2000 console.
 /// </summary>
-STDMETHODIMP HostObject::Print(BSTR text)
+STDMETHODIMP HostObject::print(BSTR text)
 {
     if (text == nullptr)
         return E_INVALIDARG;
@@ -71,7 +74,7 @@ STDMETHODIMP HostObject::Print(BSTR text)
 /// <summary>
 /// Stops playback.
 /// </summary>
-STDMETHODIMP HostObject::Stop()
+STDMETHODIMP HostObject::stop()
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -84,12 +87,12 @@ STDMETHODIMP HostObject::Stop()
 /// <summary>
 /// Starts playback, paused or unpaused. If playback is already active, existing process is stopped first.
 /// </summary>
-STDMETHODIMP HostObject::Play(BOOL paused)
+STDMETHODIMP HostObject::play(VARIANT_BOOL paused)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
 
-    _PlaybackControl->start(playback_control::track_command_play, paused);
+    _PlaybackControl->start(playback_control::track_command_play, (bool) paused);
 
     return S_OK;
 }
@@ -97,12 +100,12 @@ STDMETHODIMP HostObject::Play(BOOL paused)
 /// <summary>
 /// Pauses or resumes playback.
 /// </summary>
-STDMETHODIMP HostObject::Pause(BOOL paused)
+STDMETHODIMP HostObject::pause(VARIANT_BOOL paused)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
 
-    _PlaybackControl->pause(paused);
+    _PlaybackControl->pause((bool) paused);
 
     return S_OK;
 }
@@ -110,7 +113,7 @@ STDMETHODIMP HostObject::Pause(BOOL paused)
 /// <summary>
 /// Plays the previous track from the current playlist according to the current playback order.
 /// </summary>
-STDMETHODIMP HostObject::Previous()
+STDMETHODIMP HostObject::previous()
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -123,7 +126,7 @@ STDMETHODIMP HostObject::Previous()
 /// <summary>
 /// Plays the next track from the current playlist according to the current playback order.
 /// </summary>
-STDMETHODIMP HostObject::Next()
+STDMETHODIMP HostObject::next()
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -136,7 +139,7 @@ STDMETHODIMP HostObject::Next()
 /// <summary>
 /// Plays a random track from the current playlist (aka Shuffle).
 /// </summary>
-STDMETHODIMP HostObject::Random()
+STDMETHODIMP HostObject::random()
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -149,7 +152,7 @@ STDMETHODIMP HostObject::Random()
 /// <summary>
 /// Toggles the pause status.
 /// </summary>
-STDMETHODIMP HostObject::TogglePause()
+STDMETHODIMP HostObject::togglePause()
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -162,7 +165,7 @@ STDMETHODIMP HostObject::TogglePause()
 /// <summary>
 /// Toggles playback mute state.
 /// </summary>
-STDMETHODIMP HostObject::ToggleMute()
+STDMETHODIMP HostObject::toggleMute()
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -175,7 +178,7 @@ STDMETHODIMP HostObject::ToggleMute()
 /// <summary>
 /// Toggles the stop-after-current mode.
 /// </summary>
-STDMETHODIMP HostObject::ToggleStopAfterCurrent()
+STDMETHODIMP HostObject::toggleStopAfterCurrent()
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -188,7 +191,7 @@ STDMETHODIMP HostObject::ToggleStopAfterCurrent()
 /// <summary>
 /// Increases the volume with one step.
 /// </summary>
-STDMETHODIMP HostObject::VolumeUp()
+STDMETHODIMP HostObject::volumeUp()
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -201,7 +204,7 @@ STDMETHODIMP HostObject::VolumeUp()
 /// <summary>
 /// Decreases the volume with one step.
 /// </summary>
-STDMETHODIMP HostObject::VolumeDown()
+STDMETHODIMP HostObject::volumeDown()
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -214,7 +217,7 @@ STDMETHODIMP HostObject::VolumeDown()
 /// <summary>
 /// Seeks in the currently playing track to the specified time, in seconds.
 /// </summary>
-STDMETHODIMP HostObject::Seek(double time)
+STDMETHODIMP HostObject::seek(double time)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -227,7 +230,7 @@ STDMETHODIMP HostObject::Seek(double time)
 /// <summary>
 /// Seeks in the currently playing track forward or backwards by the specified delta time, in seconds.
 /// </summary>
-STDMETHODIMP HostObject::SeekDelta(double delta)
+STDMETHODIMP HostObject::seekDelta(double delta)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -240,7 +243,7 @@ STDMETHODIMP HostObject::SeekDelta(double delta)
 /// <summary>
 /// Gets whether playback is active.
 /// </summary>
-STDMETHODIMP HostObject::get_IsPlaying(BOOL * isPlaying)
+STDMETHODIMP HostObject::get_isPlaying(VARIANT_BOOL * isPlaying)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -256,7 +259,7 @@ STDMETHODIMP HostObject::get_IsPlaying(BOOL * isPlaying)
 /// <summary>
 /// Gets whether playback is active and in paused state.
 /// </summary>
-STDMETHODIMP HostObject::get_IsPaused(BOOL * isPaused)
+STDMETHODIMP HostObject::get_isPaused(VARIANT_BOOL * isPaused)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -272,7 +275,7 @@ STDMETHODIMP HostObject::get_IsPaused(BOOL * isPaused)
 /// <summary>
 /// Gets the stop-after-current-track option state.
 /// </summary>
-STDMETHODIMP HostObject::get_StopAfterCurrent(BOOL * stopAfterCurrent)
+STDMETHODIMP HostObject::get_stopAfterCurrent(VARIANT_BOOL * stopAfterCurrent)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -288,12 +291,12 @@ STDMETHODIMP HostObject::get_StopAfterCurrent(BOOL * stopAfterCurrent)
 /// <summary>
 /// Sets the stop-after-current-track option state.
 /// </summary>
-STDMETHODIMP HostObject::put_StopAfterCurrent(BOOL stopAfterCurrent)
+STDMETHODIMP HostObject::put_stopAfterCurrent(VARIANT_BOOL stopAfterCurrent)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
 
-    _PlaybackControl->set_stop_after_current(stopAfterCurrent);
+    _PlaybackControl->set_stop_after_current((bool) stopAfterCurrent);
 
     return S_OK;
 }
@@ -301,7 +304,7 @@ STDMETHODIMP HostObject::put_StopAfterCurrent(BOOL stopAfterCurrent)
 /// <summary>
 /// Gets the length of the currently playing item, in seconds.
 /// </summary>
-STDMETHODIMP HostObject::get_Length(double * length)
+STDMETHODIMP HostObject::get_length(double * length)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -317,7 +320,7 @@ STDMETHODIMP HostObject::get_Length(double * length)
 /// <summary>
 /// Gets the playback position within the currently playing track, in seconds.
 /// </summary>
-STDMETHODIMP HostObject::get_Position(double * position)
+STDMETHODIMP HostObject::get_position(double * position)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -333,7 +336,7 @@ STDMETHODIMP HostObject::get_Position(double * position)
 /// <summary>
 /// Gets whether currently played track is seekable. If it's not, playback_seek/playback_seek_delta calls will be ignored.
 /// </summary>
-STDMETHODIMP HostObject::get_CanSeek(BOOL * canSeek)
+STDMETHODIMP HostObject::get_canSeek(VARIANT_BOOL * canSeek)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -349,7 +352,7 @@ STDMETHODIMP HostObject::get_CanSeek(BOOL * canSeek)
 /// <summary>
 /// Gets the playback volume.
 /// </summary>
-STDMETHODIMP HostObject::get_Volume(double * volume)
+STDMETHODIMP HostObject::get_volume(double * volume)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -365,7 +368,7 @@ STDMETHODIMP HostObject::get_Volume(double * volume)
 /// <summary>
 /// Sets the playback volume.
 /// </summary>
-STDMETHODIMP HostObject::put_Volume(double volume)
+STDMETHODIMP HostObject::put_volume(double volume)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -378,7 +381,7 @@ STDMETHODIMP HostObject::put_Volume(double volume)
 /// <summary>
 /// Gets whether playback is muted.
 /// </summary>
-STDMETHODIMP HostObject::get_IsMuted(BOOL * isMuted)
+STDMETHODIMP HostObject::get_isMuted(VARIANT_BOOL * isMuted)
 {
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
@@ -394,7 +397,7 @@ STDMETHODIMP HostObject::get_IsMuted(BOOL * isMuted)
 /// <summary>
 /// Gets the interpreted version of the specified text containing Title Formating instructions.
 /// </summary>
-STDMETHODIMP HostObject::GetFormattedText(BSTR text, BSTR * formattedText)
+STDMETHODIMP HostObject::getFormattedText(BSTR text, BSTR * formattedText)
 {
     if ((text == nullptr) || (formattedText == nullptr))
         return E_INVALIDARG;
@@ -426,210 +429,85 @@ STDMETHODIMP HostObject::GetFormattedText(BSTR text, BSTR * formattedText)
     return S_OK;
 }
 
-/// <summary>
-/// Gets the index of the active playlist and the focused item, taking into account the user preferences.
-/// </summary>
-HRESULT HostObject::GetTrackIndex(t_size & playlistIndex, t_size & itemIndex) noexcept
-{
-    auto SelectionManager = ui_selection_manager::get();
+#pragma endregion
 
-    auto SelectionType = SelectionManager->get_selection_type();
-
-    // Description as used in the Preferences dialog (Display / Selection Viewers).
-    const bool PreferCurrentlyPlayingTrack = (SelectionType == contextmenu_item::caller_now_playing);
-    const bool PreferCurrentSelection      = (SelectionType == contextmenu_item::caller_active_playlist_selection);
-
-    bool IsTrackPlaying = false;
-
-    static_api_ptr_t<playlist_manager> PlaylistManager;
-
-    if (PreferCurrentlyPlayingTrack)
-        IsTrackPlaying = PlaylistManager->get_playing_item_location(&playlistIndex, &itemIndex);
-
-    if (PreferCurrentSelection || !IsTrackPlaying)
-    {
-        playlistIndex = PlaylistManager->get_active_playlist();
-
-        if (playlistIndex == ~0u)
-            return E_FAIL;
-
-        itemIndex = PlaylistManager->playlist_get_focus_item(playlistIndex);
-
-        if (itemIndex == ~0u)
-            return E_FAIL;
-    }
-
-    return S_OK;
-}
+#pragma region Auto Playlists
 
 /// <summary>
-/// Gets the specified artwork of the currently selected item in the current playlist.
+/// Creates a new auto playlist at the specified index.
 /// </summary>
-STDMETHODIMP HostObject::GetArtwork(BSTR type, BSTR * image)
+STDMETHODIMP HostObject::createAutoPlaylist(int playlistIndex, BSTR name, BSTR query, BSTR sort, uint32_t flags, int * newPlaylistIndex)
 {
-    *image = ::SysAllocString(L""); // Return an empty string by default and in case of an error.
+    HRESULT hr = createPlaylist(playlistIndex, name, newPlaylistIndex);
 
-    if (type == nullptr)
-        return E_INVALIDARG;
-
-    // Verify the requested artwork type.
-    GUID AlbumArtId;
-
-    if (::_wcsicmp(type, L"front") == 0)
-    {
-        AlbumArtId = album_art_ids::cover_front;
-    }
-    else
-    if (::_wcsicmp(type, L"back") == 0)
-    {
-        AlbumArtId = album_art_ids::cover_back;
-    }
-    else
-    if (::_wcsicmp(type, L"disc") == 0)
-    {
-        AlbumArtId = album_art_ids::disc;
-    }
-    else
-    if (::_wcsicmp(type, L"icon") == 0)
-    {
-        AlbumArtId = album_art_ids::icon;
-    }
-    else
-    if (::_wcsicmp(type, L"artist") == 0)
-    {
-        AlbumArtId = album_art_ids::artist;
-    }
-    else
-        return S_OK;
-
-    metadb_handle_ptr Handle;
-
-    if (!_PlaybackControl->get_now_playing(Handle))
-        return S_OK;
-
-    static_api_ptr_t<album_art_manager_v3> Manager;
-
-    album_art_data::ptr aad;
+    if (!SUCCEEDED(hr))
+        return hr;
 
     try
     {
-        album_art_extractor_instance_v2::ptr Extractor = Manager->open_v3(pfc::list_single_ref_t<metadb_handle_ptr>(Handle), pfc::list_single_ref_t<GUID>(AlbumArtId), nullptr, fb2k::noAbort);
+        pfc::string Query = pfc::utf8FromWide(query).c_str();
+        pfc::string Sort = pfc::utf8FromWide(sort).c_str();
 
-        if (Extractor.is_empty())
-            return S_OK;
+        autoplaylist_manager::get()->add_client_simple(Query.c_str(), Sort.c_str(), (size_t) *newPlaylistIndex, flags);
 
-        // Query the external search patterns first.
-        try
-        {
-            album_art_path_list::ptr Paths = Extractor->query_paths(AlbumArtId, fb2k::noAbort);
-
-            if (Paths.is_valid())
-            {
-                for (size_t i = 0; i < Paths->get_count(); ++i)
-                {
-                    pfc::string Extension = pfc::io::path::getFileExtension(Paths->get_path(i));
-
-                    if (!Extension.isEmpty() && ((::_stricmp(Extension.c_str(), ".jpg") == 0) || (::_stricmp(Extension.c_str(), ".png") == 0) || (::_stricmp(Extension.c_str(), ".webp") == 0) || (::_stricmp(Extension.c_str(), ".gif") == 0)))
-                    {
-                        ::SysFreeString(*image); // Free the empty string.
-
-                        *image = ::SysAllocString(::UTF8ToWide(Paths->get_path(i)).c_str());
-                
-                        return S_OK;
-                    }
-                }
-            }
-        }
-        catch (...)
-        {
-        }
-
-        // Query the embedded art.
-        if (!Extractor->query(AlbumArtId, aad, fb2k::noAbort))
-        {
-            // Query the stub the stub path.
-            try
-            {
-                Extractor = Manager->open_stub(fb2k::noAbort);
-
-                if (!Extractor->query(AlbumArtId, aad, fb2k::noAbort))
-                    return S_OK;
-            }
-            catch (std::exception & e)
-            {
-                console::print(STR_COMPONENT_BASENAME " failed to query album art stub: ", e.what());
-            }
-        }
+        return S_OK;
     }
-    catch (...)
+    catch (const pfc::exception &)
     {
-        // Query the stub the stub path.
-        try
-        {
-            album_art_extractor_instance_v2::ptr Extractor = Manager->open_stub(fb2k::noAbort);
+        playlist_manager::get()->remove_playlist((size_t) *newPlaylistIndex);
 
-            if (!Extractor->query(AlbumArtId, aad, fb2k::noAbort))
-                return S_OK;
-        }
-        catch (std::exception & e)
-        {
-            console::print(STR_COMPONENT_BASENAME " failed to query album art stub: ", e.what());
-        }
+        return E_FAIL;
     }
+}
 
-    if (aad.is_empty())
-        return S_OK;
+STDMETHODIMP HostObject::isAutoPlaylist(int playlistIndex, VARIANT_BOOL * result)
+{
+    if (result == nullptr)
+        return E_INVALIDARG;
 
-    // Convert the binary image data into a JavaScript data URI.
-    const WCHAR * MIMEType = nullptr;
+    if (playlistIndex == -1)
+        playlistIndex = (int) playlist_manager_v4::get()->get_active_playlist();
 
-    const BYTE * p = (const BYTE *) aad->data();
-
-    // Determine the MIME type of the image data.
-    if ((aad->size() > 2) && p[0] == 0xFF && p[1] == 0xD8)
-        MIMEType = L"image/jpeg";
-    else
-    if ((aad->size() > 15) && (p[0] == 'R' && p[1] == 'I' && p[2] == 'F' && p[3] == 'F') && (::memcmp(p + 8, "WEBPVP8", 7) == 0))
-        MIMEType = L"image/webp";
-    else
-    if ((aad->size() > 4) && p[0] == 0x89 && p[1] == 0x50 && p[2] == 0x4E && p[3] == 0x47)
-        MIMEType = L"image/png";
-    else
-    if ((aad->size() > 3) && p[0] == 0x47 && p[1] == 0x49 && p[2] == 0x46)
-        MIMEType = L"image/gif";
-
-    if (MIMEType == nullptr)
-        return S_OK;
-
-    // Convert the image data to base64.
-    const DWORD Flags = CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF;
-
-    DWORD Size = 0;
-
-    if (!::CryptBinaryToStringW(p, (DWORD) aad->size(), Flags, nullptr, &Size))
-        return S_OK;
-
-    Size += 16 + (DWORD) ::wcslen(MIMEType);
-
-    WCHAR * Base64 = new WCHAR[Size];
-
-    if (Base64 == nullptr)
-        return S_OK;
-
-    ::swprintf_s(Base64, Size, L"data:%s;base64,", MIMEType);
-
-    // Create the result.
-    if (::CryptBinaryToStringW(p, (DWORD) aad->size(), Flags, Base64 + ::wcslen(Base64), &Size))
-    {
-        ::SysFreeString(*image); // Free the empty string.
-
-        *image = ::SysAllocString(Base64);
-    }
-
-    delete[] Base64;
+    *result = autoplaylist_manager::get()->is_client_present((size_t) playlistIndex);
 
     return S_OK;
 }
+
+#pragma endregion
+
+#pragma region Playback Order
+
+/// <summary>
+/// Gets the playback order (0 = default, 1 = repeat playlist, 2 = repeat track, 3 = random, 4 = shuffle tracks, 5 = shuffle albums, 6 = shuffle folders).
+/// </summary>
+STDMETHODIMP HostObject::get_playbackOrder(int * playlistIndex)
+{
+    if (playlistIndex == nullptr)
+        return E_INVALIDARG;
+
+    auto Manager = playlist_manager::get();
+
+    *playlistIndex = (int) Manager->playback_order_get_active();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Sets the playback order (0 = default, 1 = repeat playlist, 2 = repeat track, 3 = random, 4 = shuffle tracks, 5 = shuffle albums, 6 = shuffle folders).
+/// </summary>
+STDMETHODIMP HostObject::put_playbackOrder(int playlistIndex)
+{
+    auto Manager = playlist_manager::get();
+
+    if (playlistIndex == -1)
+        playlistIndex = (int) Manager->get_active_playlist();
+
+    Manager->playback_order_set_active((size_t) playlistIndex);
+
+    return S_OK;
+}
+
+#pragma endregion
 
 #pragma region IDispatch
 
@@ -730,3 +608,228 @@ HRESULT HostObject::GetTypeLibFilePath(std::wstring & filePath) noexcept
 }
 
 #pragma endregion
+
+/// <summary>
+/// Gets the index of the active playlist and the focused item, taking into account the user preferences.
+/// </summary>
+HRESULT HostObject::GetTrackIndex(size_t & playlistIndex, size_t & itemIndex) noexcept
+{
+    auto SelectionManager = ui_selection_manager::get();
+
+    auto SelectionType = SelectionManager->get_selection_type();
+
+    // Description as used in the Preferences dialog (Display / Selection Viewers).
+    const bool PreferCurrentlyPlayingTrack = (SelectionType == contextmenu_item::caller_now_playing);
+    const bool PreferCurrentSelection      = (SelectionType == contextmenu_item::caller_active_playlist_selection);
+
+    bool IsTrackPlaying = false;
+
+    static_api_ptr_t<playlist_manager> PlaylistManager;
+
+    if (PreferCurrentlyPlayingTrack)
+        IsTrackPlaying = PlaylistManager->get_playing_item_location(&playlistIndex, &itemIndex);
+
+    if (PreferCurrentSelection || !IsTrackPlaying)
+    {
+        playlistIndex = PlaylistManager->get_active_playlist();
+
+        if (playlistIndex == ~0u)
+            return E_FAIL;
+
+        itemIndex = PlaylistManager->playlist_get_focus_item(playlistIndex);
+
+        if (itemIndex == ~0u)
+            return E_FAIL;
+    }
+
+    return S_OK;
+}
+
+/// <summary>
+/// Converts the specified data to a JavaScript data URI.
+/// </summary>
+void ToBase64(const BYTE * data, DWORD size, BSTR * base64)
+{
+    // Convert the binary image data into a JavaScript data URI.
+    const WCHAR * MIMEType = nullptr;
+
+    const BYTE * p = data;
+
+    // Determine the MIME type of the image data.
+    if ((size > 2) && p[0] == 0xFF && p[1] == 0xD8)
+        MIMEType = L"image/jpeg";
+    else
+    if ((size > 15) && (p[0] == 'R' && p[1] == 'I' && p[2] == 'F' && p[3] == 'F') && (::memcmp(p + 8, "WEBPVP8", 7) == 0))
+        MIMEType = L"image/webp";
+    else
+    if ((size > 4) && p[0] == 0x89 && p[1] == 0x50 && p[2] == 0x4E && p[3] == 0x47)
+        MIMEType = L"image/png";
+    else
+    if ((size > 3) && p[0] == 0x47 && p[1] == 0x49 && p[2] == 0x46)
+        MIMEType = L"image/gif";
+
+    if (MIMEType == nullptr)
+        return;
+
+    // Convert the image data to base64.
+    const DWORD Flags = CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF;
+
+    DWORD Size = 0;
+
+    if (!::CryptBinaryToStringW(p, size, Flags, nullptr, &Size))
+        return;
+
+    Size += 16 + (DWORD) ::wcslen(MIMEType);
+
+    WCHAR * Base64 = new WCHAR[Size];
+
+    if (Base64 == nullptr)
+        return;
+
+    ::swprintf_s(Base64, Size, L"data:%s;base64,", MIMEType);
+
+    // Create the result.
+    if (::CryptBinaryToStringW(p, size, Flags, Base64 + ::wcslen(Base64), &Size))
+    {
+        ::SysFreeString(*base64); // Free the empty string.
+
+        *base64 = ::SysAllocString(Base64);
+    }
+
+    delete[] Base64;
+}
+
+/// <summary>
+/// Escapes all restricted JSON characters in a string.
+/// </summary>
+const std::string Stringify(const char * s)
+{
+    std::string t;
+
+    t.reserve(::strlen(s));
+
+    for (; *s; ++s)
+    {
+        switch (*s)
+        {
+            case '"':  t += '\\'; t += '\"'; break;
+            case '\\': t += '\\'; t += '\\'; break;
+            case '\b': t += '\\'; t += 'b'; break;
+            case '\t': t += '\\'; t += 't'; break;
+            case '\n': t += '\\'; t += 'n'; break;
+            case '\f': t += '\\'; t += 'f'; break;
+            case '\r': t += '\\'; t += 'r'; break;
+            default:
+                if ('\x00' <= *s && *s <= '\x1f')
+                    t += ::FormatText("\\u04x", *s).c_str();
+                else
+                    t += *s;
+        }
+    }
+
+    return t;
+}
+
+/// <summary>
+/// Escapes all restricted JSON characters in a string.
+/// </summary>
+const std::wstring Stringify(const std::wstring & s)
+{
+    std::wstring t;
+
+    t.reserve(s.length());
+
+    for (auto & Iter : s)
+    {
+        switch (Iter)
+        {
+            case '"':  t += '\\'; t += '\"'; break;
+            case '\\': t += '\\'; t += '\\'; break;
+            case '\b': t += '\\'; t += 'b'; break;
+            case '\t': t += '\\'; t += 't'; break;
+            case '\n': t += '\\'; t += 'n'; break;
+            case '\f': t += '\\'; t += 'f'; break;
+            case '\r': t += '\\'; t += 'r'; break;
+            default:
+                if ('\x00' <= Iter && Iter <= '\x1f')
+                    t += ::FormatText(L"\\u04x", Iter).c_str();
+                else
+                    t += Iter;
+        }
+    }
+
+    return t;
+}
+
+/// <summary>
+/// Converts a metadb handle list to a JSON string.
+/// </summary>
+std::wstring ToJSON(const metadb_handle_list & hItems)
+{
+    std::wstring Result = L"[";
+    bool IsFirstItem = true;
+
+    for (const auto & hItem : hItems)
+    {
+        if (!IsFirstItem)
+            Result.append(L",");
+
+        const playable_location & Location = hItem->get_location();
+
+        std::string Path = Stringify(Location.get_path());
+
+        Result.append(::FormatText(LR"({"path": "%s", "subsong": %u})", ::UTF8ToWide(Path).c_str(), Location.get_subsong_index()).c_str());
+
+        IsFirstItem = false;
+    }
+
+    Result.append(L"]");
+
+    return Result;
+}
+
+/// <summary>
+/// Converts a bit array to a JSON string.
+/// </summary>
+std::wstring ToJSON(const bit_array & mask, t_size count)
+{
+    std::wstring Result = L"[";
+    bool IsFirstItem = true;
+
+    for (t_size Iter = mask.find_first(true, 0, count); Iter < count; Iter = mask.find_next(true, Iter, count))
+    {
+        if (!IsFirstItem)
+            Result.append(L",");
+
+        Result.append(::FormatText(LR"(%d)", Iter).c_str());
+
+        IsFirstItem = false;
+    }
+
+    Result.append(L"]");
+
+    return Result;
+}
+
+/// <summary>
+/// Converts a t_size array to a JSON string.
+/// </summary>
+std::wstring ToJSON(const t_size * array, t_size count)
+{
+    std::wstring Result = L"[";
+    bool IsFirstItem = true;
+
+    for (t_size i = 0; i < count; ++i)
+    {
+        if (!IsFirstItem)
+            Result.append(L",");
+
+        Result.append(::FormatText(LR"(%d)", (int) *array++).c_str());
+
+        IsFirstItem = false;
+    }
+
+    Result.append(L"]");
+
+    return Result;
+}
