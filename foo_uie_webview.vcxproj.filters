@@ -18,6 +18,7 @@
     <ClInclude Include="UIElementTracker.h" />
     <ClInclude Include="SharedBuffer.h" />
     <ClInclude Include="ProcessLocationsHandler.h" />
+    <ClInclude Include="Callbacks.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -40,6 +41,7 @@
     <ClCompile Include="HostObjectImplPlaylists.cpp" />
     <ClCompile Include="HostObjectImplFiles.cpp" />
     <ClCompile Include="UIElementPlaylistCallback.cpp" />
+    <ClCompile Include="CallbacksLibrary.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources.rc" />
@@ -56,6 +58,7 @@
     <None Include="PlaylistTemplate.html" />
     <None Include="FrameTemplate.html" />
     <None Include="docs\index.md" />
+    <None Include="LibraryTemplate.html" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="LICENSE.txt" />

@@ -1,5 +1,5 @@
 
-/** $VER: UIElementTracker.h (2024.06.12) P. Stuer - Tracks the instances of the panel. **/
+/** $VER: UIElementTracker.h (2024.12.07) P. Stuer - Tracks the instances of the panel. **/
 
 #pragma once
 
@@ -16,6 +16,8 @@ public:
 
     void Add(UIElement * element) noexcept
     {
+        std::unique_lock Lock(_Mutex);
+
         _UIElements.push_back(element);
 
         SetCurrentElement(element);
@@ -23,6 +25,8 @@ public:
 
     void Remove(UIElement * element) noexcept
     {
+        std::unique_lock Lock(_Mutex);
+
         auto Iter = std::find(_UIElements.begin(), _UIElements.end(), element); 
   
         if (Iter != _UIElements.end())
@@ -44,6 +48,8 @@ public:
     }
 
 private:
+    std::mutex _Mutex;
+
     UIElement * _CurrentUIElement;
     std::vector<UIElement *> _UIElements;
 };

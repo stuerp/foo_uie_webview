@@ -204,6 +204,7 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Callbacks.h" />
     <ClInclude Include="Configuration.h" />
     <ClInclude Include="CUIElement.h" />
     <ClInclude Include="DUIElement.h" />
@@ -249,6 +250,7 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
     </ClCompile>
     <ClCompile Include="Rendering.cpp" />
     <ClCompile Include="SharedBuffer.cpp" />
+    <ClCompile Include="CallbacksLibrary.cpp" />
     <ClCompile Include="UIElementPlaylistCallback.cpp" />
     <ClCompile Include="UIElementTracker.cpp" />
     <ClCompile Include="pch.cpp">
@@ -293,6 +295,7 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
     <None Include="docs\index.md" />
     <None Include="docs\README.md" />
     <None Include="FrameTemplate.html" />
+    <None Include="LibraryTemplate.html" />
     <None Include="packages.config" />
     <None Include="PlaylistTemplate.html" />
     <None Include="README.md" />

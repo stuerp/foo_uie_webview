@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.h (2024.12.02) P. Stuer **/
+/** $VER: UIElement.h (2024.12.07) P. Stuer **/
 
 #pragma once
 
@@ -14,6 +14,7 @@
 #include <SDK/playback_control.h>
 #include <SDK/play_callback.h>
 #include <SDK/playlist.h>
+#include <SDK/library_callbacks.h>
 #include <SDK/ui_element.h>
 #include <SDK/vis.h>
 
@@ -172,9 +173,9 @@ public:
 
     #pragma endregion
 
-private:
     void ExecuteScript(const std::wstring & script) const noexcept;
 
+private:
     #pragma region CWindowImpl
 
     LRESULT OnCreate(LPCREATESTRUCT cs) noexcept;

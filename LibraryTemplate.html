@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Example template for Library callbacks</title>
+<meta charset="UTF-8">
+<style>
+:root
+{
+    color-scheme: light dark; /* Opt the entire page into the user's color scheme preferences */
+}
+
+html
+{
+    margin: 0;
+    padding: 0;
+}
+body
+{
+    margin: 0; 
+    padding: 0;
+    display: flex;
+    align-items: start;
+    justify-content: left;
+    height: 100vh;
+    font: 10.5pt "Calibri Light", Sans-serif;
+    line-height: 1.2;
+    color: #555753;
+/*  background-color: #e0e0e0; *//* Don't set a background color to use the theme background color of the foobar2000 panel */
+}
+div
+{ 
+    margin: 0; 
+    padding: 0;
+}
+</style>
+</head>
+<body>
+<div>
+onLibraryItemsAdded: <span id="onLibraryItemsAddedResult"></span><br/>
+onLibraryItemsModified: <span id="onLibraryItemsModifiedResult"></span><br/>
+onLibraryItemsRemoved: <span id="onLibraryItemsRemovedResult"></span><br/>
+<div id="Items"/>
+</div>
+<script>
+// Called when items have been added to the library.
+function onLibraryItemsAdded(items)
+{
+    document.getElementById("onLibraryItemsAddedResult").textContent = "Items added to library (" + Now() + ")";
+
+    const Items = JSON.parse(items);
+
+    document.getElementById("Items").innerHTML = ArrayToTable(Items);
+}
+
+function onLibraryItemsModified(items)
+{
+    document.getElementById("onLibraryItemsModifiedResult").textContent = "Items in library modified (" + Now() + ")";
+
+    const Items = JSON.parse(items);
+
+    document.getElementById("Items").innerHTML = ArrayToTable(Items);
+}
+
+function onLibraryItemsRemoved(items)
+{
+    document.getElementById("onLibraryItemsRemovedResult").textContent = "Items removed to library (" + Now() + ")";
+
+    const Items = JSON.parse(items);
+
+    document.getElementById("Items").innerHTML = ArrayToTable(Items);
+}
+
+function ArrayToTable(Items)
+{
+    const Headers = Object.keys(Items[0]);
+
+    let Table = '<table><thead><tr>';
+    Headers.forEach(Header => Table += `<th>${Header}</th>`);
+    Table += '</tr></thead><tbody>';
+
+    Items.forEach(Row =>
+    {
+        Table += '<tr>';
+        Headers.forEach(Header => Table += `<td>${Row[Header]}</td>`);
+        Table += '</tr>';
+    });
+
+    Table += '</tbody></table>';
+
+    return Table;
+}
+
+function Now()
+{
+    return new Date().toISOString().slice(-24).replace(/\D/g,'').slice(0, 14);
+}
+</script>
+</body>
+</html>
