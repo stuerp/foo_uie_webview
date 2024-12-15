@@ -96,13 +96,17 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.3.0.0, 2024-12-xx
+v0.3.0.0-alpha1, 2024-12-xx
 
 * New:
   * Callbacks
-    * onLibraryItemsAdded(items): Called when items have been added to the library.
-    * onLibraryItemsModified(items): Called when library items have been modified.
-    * onLibraryItemsRemoved(items): Called when library items have been removed.
+    * onLibraryItemsAdded(items): Called when items have been added to the library. (alpha1)
+    * onLibraryItemsModified(items): Called when library items have been modified. (alpha1)
+    * onLibraryItemsRemoved(items): Called when library items have been removed. (alpha1)
+
+v0.2.1.0, 2024-12-15
+
+* Fixed: Misinterpreted true Booleans values. This caused various isXXX properties like isPlaying to stop working. (Regression)
 
 v0.2.0.0, 2024-12-07, *"I'm getting framed..."*
 
