@@ -96,6 +96,10 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
+v0.2.1.0, 2024-12-15
+
+* Fixed: Misinterpreted true Booleans values. (Regression)
+
 v0.2.0.0, 2024-12-07, *"I'm getting framed..."*
 
 * New: Builds with foobar2000 SDK 2024-08-07.

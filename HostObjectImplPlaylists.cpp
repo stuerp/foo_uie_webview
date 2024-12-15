@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImplPlaylists.cpp (2024.12.02) P. Stuer **/
+/** $VER: HostObjectImplPlaylists.cpp (2024.12.15) P. Stuer **/
 
 #include "pch.h"
 
@@ -243,7 +243,7 @@ STDMETHODIMP HostObject::isPlaylistItemSelected(int playlistIndex, int itemIndex
 
     auto Manager = playlist_manager_v4::get();
 
-    *result = Manager->playlist_is_item_selected((size_t) playlistIndex, (size_t) itemIndex);
+    *result = Manager->playlist_is_item_selected((size_t) playlistIndex, (size_t) itemIndex) ? VARIANT_TRUE : VARIANT_FALSE;
 
     return S_OK;
 }
@@ -320,7 +320,7 @@ STDMETHODIMP HostObject::addPath(int playlistIndex, int itemIndex, BSTR filePath
         nullptr,
         nullptr,
         nullptr,
-        fb2k::service_new<ProcessLocationsHandler>(playlistIndex, itemIndex, selectAddedItem)
+        fb2k::service_new<ProcessLocationsHandler>(playlistIndex, itemIndex, selectAddedItem == VARIANT_TRUE)
     );
 
     return S_OK;
