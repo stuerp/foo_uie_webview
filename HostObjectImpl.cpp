@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.cpp (2024.12.02) P. Stuer **/
+/** $VER: HostObjectImpl.cpp (2024.12.15) P. Stuer **/
 
 #include "pch.h"
 
@@ -92,7 +92,7 @@ STDMETHODIMP HostObject::play(VARIANT_BOOL paused)
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
 
-    _PlaybackControl->start(playback_control::track_command_play, (bool) paused);
+    _PlaybackControl->start(playback_control::track_command_play, paused == VARIANT_TRUE);
 
     return S_OK;
 }
@@ -105,7 +105,7 @@ STDMETHODIMP HostObject::pause(VARIANT_BOOL paused)
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
 
-    _PlaybackControl->pause((bool) paused);
+    _PlaybackControl->pause(paused == VARIANT_TRUE);
 
     return S_OK;
 }
@@ -251,7 +251,7 @@ STDMETHODIMP HostObject::get_isPlaying(VARIANT_BOOL * isPlaying)
     if (isPlaying == nullptr)
         return E_INVALIDARG;
 
-    *isPlaying = _PlaybackControl->is_playing();
+    *isPlaying = _PlaybackControl->is_playing() ? VARIANT_TRUE : VARIANT_FALSE;
 
     return S_OK;
 }
@@ -267,7 +267,7 @@ STDMETHODIMP HostObject::get_isPaused(VARIANT_BOOL * isPaused)
     if (isPaused == nullptr)
         return E_INVALIDARG;
 
-    *isPaused = _PlaybackControl->is_paused();
+    *isPaused = _PlaybackControl->is_paused() ? VARIANT_TRUE : VARIANT_FALSE;
 
     return S_OK;
 }
@@ -283,7 +283,7 @@ STDMETHODIMP HostObject::get_stopAfterCurrent(VARIANT_BOOL * stopAfterCurrent)
     if (stopAfterCurrent == nullptr)
         return E_INVALIDARG;
 
-    *stopAfterCurrent = _PlaybackControl->get_stop_after_current();
+    *stopAfterCurrent = _PlaybackControl->get_stop_after_current() ? VARIANT_TRUE : VARIANT_FALSE;
 
     return S_OK;
 }
@@ -296,7 +296,7 @@ STDMETHODIMP HostObject::put_stopAfterCurrent(VARIANT_BOOL stopAfterCurrent)
     if (_PlaybackControl == nullptr)
         return E_UNEXPECTED;
 
-    _PlaybackControl->set_stop_after_current((bool) stopAfterCurrent);
+    _PlaybackControl->set_stop_after_current(stopAfterCurrent == VARIANT_TRUE);
 
     return S_OK;
 }
@@ -344,7 +344,7 @@ STDMETHODIMP HostObject::get_canSeek(VARIANT_BOOL * canSeek)
     if (canSeek == nullptr)
         return E_INVALIDARG;
 
-    *canSeek = _PlaybackControl->playback_can_seek();
+    *canSeek = _PlaybackControl->playback_can_seek() ? VARIANT_TRUE : VARIANT_FALSE;
 
     return S_OK;
 }
@@ -389,7 +389,7 @@ STDMETHODIMP HostObject::get_isMuted(VARIANT_BOOL * isMuted)
     if (isMuted == nullptr)
         return E_INVALIDARG;
 
-    *isMuted = _PlaybackControl->is_muted();
+    *isMuted = _PlaybackControl->is_muted() ? VARIANT_TRUE : VARIANT_FALSE;
 
     return S_OK;
 }
@@ -468,7 +468,7 @@ STDMETHODIMP HostObject::isAutoPlaylist(int playlistIndex, VARIANT_BOOL * result
     if (playlistIndex == -1)
         playlistIndex = (int) playlist_manager_v4::get()->get_active_playlist();
 
-    *result = autoplaylist_manager::get()->is_client_present((size_t) playlistIndex);
+    *result = autoplaylist_manager::get()->is_client_present((size_t) playlistIndex) ? VARIANT_TRUE : VARIANT_FALSE;
 
     return S_OK;
 }
