@@ -45,25 +45,27 @@ onLibraryItemsRemoved: <span id="onLibraryItemsRemovedResult"></span><br/>
 // Called when items have been added to the library.
 function onLibraryItemsAdded(items)
 {
-    document.getElementById("onLibraryItemsAddedResult").textContent = "Items added to library (" + Now() + ")";
+    document.getElementById("onLibraryItemsAddedResult").textContent = "Items have been added to the library (" + Now() + ")";
 
     const Items = JSON.parse(items);
 
     document.getElementById("Items").innerHTML = ArrayToTable(Items);
 }
 
+// Called when library items have been modified.
 function onLibraryItemsModified(items)
 {
-    document.getElementById("onLibraryItemsModifiedResult").textContent = "Items in library modified (" + Now() + ")";
+    document.getElementById("onLibraryItemsModifiedResult").textContent = "Library items have been modified (" + Now() + ")";
 
     const Items = JSON.parse(items);
 
     document.getElementById("Items").innerHTML = ArrayToTable(Items);
 }
 
+// Called when library items have been removed.
 function onLibraryItemsRemoved(items)
 {
-    document.getElementById("onLibraryItemsRemovedResult").textContent = "Items removed to library (" + Now() + ")";
+    document.getElementById("onLibraryItemsRemovedResult").textContent = "Library items have been removed (" + Now() + ")";
 
     const Items = JSON.parse(items);
 

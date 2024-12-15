@@ -100,9 +100,9 @@ v0.3.0.0, 2024-12-xx
 
 * New:
   * Callbacks
-    * onLibraryItemsAdded(items)
-    * onLibraryItemsModified(items)
-    * onLibraryItemsRemoved(items)
+    * onLibraryItemsAdded(items): Called when items have been added to the library.
+    * onLibraryItemsModified(items): Called when library items have been modified.
+    * onLibraryItemsRemoved(items): Called when library items have been removed.
 
 v0.2.0.0, 2024-12-07, *"I'm getting framed..."*
 
