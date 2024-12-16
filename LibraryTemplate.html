@@ -35,6 +35,7 @@ div
 </style>
 </head>
 <body>
+<button id="executeButton">Execute</button>
 <div>
 onLibraryItemsAdded: <span id="onLibraryItemsAddedResult"></span><br/>
 onLibraryItemsModified: <span id="onLibraryItemsModifiedResult"></span><br/>
@@ -42,6 +43,15 @@ onLibraryItemsRemoved: <span id="onLibraryItemsRemovedResult"></span><br/>
 <div id="Items"/>
 </div>
 <script>
+document.getElementById("executeButton").addEventListener("click", async () =>
+{
+//  await chrome.webview.hostObjects.foo_uie_webview.execute("notepad.exe");
+//  await chrome.webview.hostObjects.foo_uie_webview.execute("notepad.exe", "%SystemRoot%\\win.ini");
+//  await chrome.webview.hostObjects.foo_uie_webview.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%");
+//  await chrome.webview.hostObjects.foo_uie_webview.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%", "runas"); // Run notepad with elevated integrity
+    await chrome.webview.hostObjects.foo_uie_webview.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%", "open", 1);
+});
+
 // Called when items have been added to the library.
 function onLibraryItemsAdded(items)
 {

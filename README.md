@@ -99,6 +99,8 @@ To create the component first build the x86 configuration and next the x64 confi
 v0.3.0.0-alpha1, 2024-12-xx
 
 * New:
+  * Methods
+    * execute(filePath, arguments, directoryPath, operation, showMode): Performs the specified shell operation on a file. Mostly used to run applications.
   * Callbacks
     * onLibraryItemsAdded(items): Called when items have been added to the library. (alpha1)
     * onLibraryItemsModified(items): Called when library items have been modified. (alpha1)

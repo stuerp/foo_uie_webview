@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.h (2024.12.02) P. Stuer **/
+/** $VER: HostObjectImpl.h (2024.12.16) P. Stuer **/
 
 #pragma once
 
@@ -140,6 +140,9 @@ public:
 
     STDMETHODIMP get_playbackOrder(int * playlistIndex) override;
     STDMETHODIMP put_playbackOrder(int playlistIndex) override;
+
+    /* OS */
+    STDMETHODIMP execute(BSTR filePath, BSTR parameters, BSTR directoryPath, BSTR operation, int showMode) override;
 
     #pragma endregion
 

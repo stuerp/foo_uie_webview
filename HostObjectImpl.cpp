@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.cpp (2024.12.15) P. Stuer **/
+/** $VER: HostObjectImpl.cpp (2024.12.16) P. Stuer **/
 
 #include "pch.h"
 
@@ -503,6 +503,41 @@ STDMETHODIMP HostObject::put_playbackOrder(int playlistIndex)
         playlistIndex = (int) Manager->get_active_playlist();
 
     Manager->playback_order_set_active((size_t) playlistIndex);
+
+    return S_OK;
+}
+
+#pragma endregion
+
+#pragma region OS
+
+/// <summary>
+/// Executes an operation on the specified file.
+/// </summary>
+STDMETHODIMP HostObject::execute(BSTR filePath, BSTR parameters, BSTR directoryPath, BSTR operation, int showMode)
+{
+    std::wstring FilePath      = ::ExpandEnvironmentStrings(filePath);
+    std::wstring Parameters    = ::ExpandEnvironmentStrings(parameters);
+    std::wstring DirectoryPath = ::ExpandEnvironmentStrings(directoryPath);
+
+    SHELLEXECUTEINFOW sei = { };
+
+    sei.cbSize       = sizeof(sei);
+    sei.fMask        = SEE_MASK_FLAG_NO_UI;
+    sei.lpVerb       = operation;
+    sei.lpFile       = FilePath.c_str();
+    sei.lpParameters = Parameters.c_str();;
+    sei.lpDirectory  = DirectoryPath.c_str();
+    sei.nShow        = showMode;
+
+    BOOL Success = ::ShellExecuteExW(&sei);
+
+    if (!Success)
+    {
+        DWORD LastError = ::GetLastError();
+
+        return HRESULT_FROM_WIN32(LastError);
+    }
 
     return S_OK;
 }
