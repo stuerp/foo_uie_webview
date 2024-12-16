@@ -1,5 +1,5 @@
 
-/** $VER: UIElementTracker.h (2024.12.07) P. Stuer - Tracks the instances of the panel. **/
+/** $VER: UIElementTracker.h (2024.12.15) P. Stuer - Tracks the instances of the panel. **/
 
 #pragma once
 
@@ -13,6 +13,13 @@ public:
     uielement_tracker_t() : _CurrentUIElement()
     {
     }
+
+    uielement_tracker_t(const uielement_tracker_t &) = delete;
+    uielement_tracker_t & operator=(const uielement_tracker_t &) = delete;
+    uielement_tracker_t(uielement_tracker_t &&) = delete;
+    uielement_tracker_t & operator=(uielement_tracker_t &&) = delete;
+
+    virtual ~uielement_tracker_t() { };
 
     void Add(UIElement * element) noexcept
     {

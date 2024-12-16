@@ -1,5 +1,5 @@
 
-/** $VER: CallbacksLibrary.cpp (2024.12.07) P. Stuer **/
+/** $VER: CallbacksLibrary.cpp (2024.12.15) P. Stuer **/
 
 #include "pch.h"
 
@@ -28,7 +28,7 @@ void LibraryCallback::on_items_added(metadb_handle_list_cref data)
 }
 
 /// <summary>
-/// Called when items have been added to the library.
+/// Called when library items have been modified.
 /// </summary>
 void LibraryCallback::on_items_modified(metadb_handle_list_cref data)
 {
@@ -43,7 +43,7 @@ void LibraryCallback::on_items_modified(metadb_handle_list_cref data)
 }
 
 /// <summary>
-/// Called when items have been added to the library.
+/// Called when library items have been removed.
 /// </summary>
 void LibraryCallback::on_items_removed(metadb_handle_list_cref data)
 {
@@ -55,6 +55,28 @@ void LibraryCallback::on_items_removed(metadb_handle_list_cref data)
 
     if (CurrentElement != nullptr)
         CurrentElement->ExecuteScript(Script);
+}
+
+/// <summary>
+/// Called when library items have been modified.
+/// </summary>
+void LibraryCallback::on_items_modified_v2(metadb_handle_list_cref items, metadb_io_callback_v2_data & data)
+{
+}
+
+/// <summary>
+/// Called when the library has been initialized.
+/// </summary>
+void LibraryCallback::on_library_initialized()
+{
+/* Reserved: WebView is not instantiated yet when this callback happens.
+    const std::wstring Script = L"onLibraryInitialized()";
+
+    auto CurrentElement = _UIElementTracker.GetCurrentElement();
+
+    if (CurrentElement != nullptr)
+        CurrentElement->ExecuteScript(Script);
+*/
 }
 
 #pragma endregion

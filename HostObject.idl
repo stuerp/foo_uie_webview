@@ -112,6 +112,8 @@ library HostObjectLibrary
         // Playback Order
         [propget] HRESULT playbackOrder([out, retval] int * index);
         [propput] HRESULT playbackOrder([in] int index);
+
+        // 
     };
 
     [uuid(637abc45-11f7-4dde-84b4-317d62a638d3)]

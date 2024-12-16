@@ -14,7 +14,6 @@
 #include <SDK/playback_control.h>
 #include <SDK/play_callback.h>
 #include <SDK/playlist.h>
-#include <SDK/library_callbacks.h>
 #include <SDK/ui_element.h>
 #include <SDK/vis.h>
 

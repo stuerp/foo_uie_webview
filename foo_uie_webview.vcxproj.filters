@@ -40,7 +40,7 @@
     <ClCompile Include="SharedBuffer.cpp" />
     <ClCompile Include="HostObjectImplPlaylists.cpp" />
     <ClCompile Include="HostObjectImplFiles.cpp" />
-    <ClCompile Include="UIElementPlaylistCallback.cpp" />
+    <ClCompile Include="CallbacksPlaylist.cpp" />
     <ClCompile Include="CallbacksLibrary.cpp" />
   </ItemGroup>
   <ItemGroup>
