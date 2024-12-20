@@ -100,7 +100,7 @@ v0.3.0.0-alpha1, 2024-12-xx
 
 * New:
   * Methods
-    * execute(filePath, arguments, directoryPath, operation, showMode): Performs the specified shell operation on a file. Mostly used to run applications.
+    * execute(filePath, arguments, directoryPath, operation, showMode): Performs the specified shell operation on a file. Mostly used to run applications. Check the [SHELLEXECUTEINFOW](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shellexecuteinfow) documentation for the possible values of the parameters.
   * Callbacks
     * onLibraryItemsAdded(items): Called when items have been added to the library. (alpha1)
     * onLibraryItemsModified(items): Called when library items have been modified. (alpha1)

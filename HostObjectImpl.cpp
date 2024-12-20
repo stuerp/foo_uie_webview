@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.cpp (2024.12.16) P. Stuer **/
+/** $VER: HostObjectImpl.cpp (2024.12.20) P. Stuer **/
 
 #include "pch.h"
 
@@ -20,6 +20,8 @@
 #include <SDK/playlist.h>
 #include <SDK/ui.h>
 #include <SDK/contextmenu.h>
+#include <SDK/search_tools.h>
+#include <SDK/library_callbacks.h>
 
 #include <pfc/string-conv-lite.h>
 #include <pfc/bit_array_impl.h>
@@ -537,6 +539,66 @@ STDMETHODIMP HostObject::execute(BSTR filePath, BSTR parameters, BSTR directoryP
         DWORD LastError = ::GetLastError();
 
         return HRESULT_FROM_WIN32(LastError);
+    }
+
+    return S_OK;
+}
+
+#pragma endregion
+
+#pragma region Search
+
+/// <summary>
+/// Searches the library for matching tracks.
+/// </summary>
+STDMETHODIMP HostObject::search(BSTR query, __int64 * tracks)
+{
+    *tracks = 0;
+
+    const char * Query = "%title% HAS reminder";
+
+    auto Selection = new metadb_handle_list();
+/*
+    ui_selection_manager::get()->get_selection(Selection);
+
+    if (Selection.get_count() == 0)
+        return E_FAIL;
+*/
+    library_manager::get()->get_all_items(*Selection);
+
+    try
+    {
+        static const auto SearchFilter = search_filter_manager_v2::get()->create_ex(Query, fb2k::service_new<completion_notify_dummy>(), search_filter_manager_v2::KFlagSuppressNotify);
+
+        pfc::array_t<bool> Mask;
+
+        Mask.set_size(Selection->get_count());
+
+        SearchFilter->test_multi(*Selection, Mask.get_ptr());
+
+        Selection->filter_mask(Mask.get_ptr());
+    }
+    catch (const pfc::exception& e)
+    {
+    }
+
+    *tracks = (__int64) Selection;
+
+    return S_OK;
+}
+
+/// <summary>
+/// Enumerate the track list.
+/// </summary>
+STDMETHODIMP HostObject::enumerate(__int64 tracks)
+{
+    auto Tracks = (metadb_handle_list *) tracks;
+
+    for (const auto & Track : *Tracks)
+    {
+        const playable_location & Location = Track->get_location();
+
+        ::OutputDebugStringA(Location.get_path());
     }
 
     return S_OK;

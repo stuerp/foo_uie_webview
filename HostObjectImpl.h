@@ -144,6 +144,10 @@ public:
     /* OS */
     STDMETHODIMP execute(BSTR filePath, BSTR parameters, BSTR directoryPath, BSTR operation, int showMode) override;
 
+    /* Media Library */
+    STDMETHODIMP search(BSTR query, __int64 * tracks);
+    STDMETHODIMP enumerate(__int64 tracks);
+
     #pragma endregion
 
     #pragma region IDispatch

@@ -35,6 +35,7 @@ div
 </style>
 </head>
 <body>
+<button id="searchButton">Search</button>
 <button id="executeButton">Execute</button>
 <div>
 onLibraryItemsAdded: <span id="onLibraryItemsAddedResult"></span><br/>
@@ -43,6 +44,13 @@ onLibraryItemsRemoved: <span id="onLibraryItemsRemovedResult"></span><br/>
 <div id="Items"/>
 </div>
 <script>
+document.getElementById("searchButton").addEventListener("click", async () =>
+{
+    var Tracks = await chrome.webview.hostObjects.foo_uie_webview.search("%title% HAS reminder");
+
+    await chrome.webview.hostObjects.foo_uie_webview.enumerate(Tracks);
+});
+
 document.getElementById("executeButton").addEventListener("click", async () =>
 {
 //  await chrome.webview.hostObjects.foo_uie_webview.execute("notepad.exe");

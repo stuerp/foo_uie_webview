@@ -1,5 +1,5 @@
 
-/** $VER: HostObject.idl (2024.12.16) P. Stuer **/
+/** $VER: HostObject.idl (2024.12.20) P. Stuer **/
 
 import "oaidl.idl";
 import "ocidl.idl";
@@ -115,6 +115,10 @@ library HostObjectLibrary
 
         // OS
         HRESULT execute([in] BSTR filePath, [in, defaultvalue("")] BSTR arguments, [in, defaultvalue("")] BSTR directoryPath, [in, defaultvalue("")] BSTR operation, [in, defaultvalue(1)] int showMode);
+
+        // Media Library
+        HRESULT search([in, defaultvalue("")] BSTR query, [out, retval] __int64 * tracks);
+        HRESULT enumerate([in] __int64 tracks);
     };
 
     [uuid(637abc45-11f7-4dde-84b4-317d62a638d3)]
