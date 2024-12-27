@@ -1,5 +1,5 @@
 
-/** $VER: UIElement.cpp (2024.12.02) P. Stuer **/
+/** $VER: UIElement.cpp (2024.12.27) P. Stuer **/
 
 #include "pch.h"
 
@@ -65,6 +65,8 @@ LRESULT UIElement::OnCreate(LPCREATESTRUCT cs) noexcept
             RunAsync(callback);
         }
     );
+
+    _HostObject->SetConfiguration(&_Configuration);
 
     Initialize();
 

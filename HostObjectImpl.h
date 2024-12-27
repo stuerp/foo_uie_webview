@@ -19,6 +19,7 @@
 #include <winrt/Windows.Foundation.h>
 
 #include "HostObject_h.h"
+#include "Configuration.h"
 
 #include <SDK/playback_control.h>
 #include <SDK/album_art.h>
@@ -37,6 +38,11 @@ public:
     typedef std::function<void(Callback)> RunCallbackAsync;
 
     HostObject(RunCallbackAsync runCallbackAsync);
+
+    void SetConfiguration(const configuration_t * configuration) noexcept
+    {
+        _Configuration = configuration;
+    }
 
     #pragma region IHostObject
 
@@ -159,6 +165,12 @@ public:
     STDMETHODIMP getMetaDBHandlePath(__int64 metaDBHandle, BSTR * path) override;
     STDMETHODIMP getMetaDBHandleRelativePath(__int64 metaDBHandle, BSTR * path) override;
 
+    /* Permissions */
+
+    STDMETHODIMP get_canReadFiles(VARIANT_BOOL * value) override;
+    STDMETHODIMP get_canReadDirectories(VARIANT_BOOL * value) override;
+    STDMETHODIMP get_canExecuteShellOperations(VARIANT_BOOL * value) override;
+
     #pragma endregion
 
     #pragma region IDispatch
@@ -187,6 +199,8 @@ private:
     }
 
 private:
+    const configuration_t * _Configuration;
+
     wil::com_ptr<ITypeLib> _TypeLibrary;
 
     wil::com_ptr<IDispatch> _Callback;

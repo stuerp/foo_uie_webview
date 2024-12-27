@@ -1,5 +1,5 @@
 ﻿
-/** $VER: Configuration.h (2024.08.04) P. Stuer **/
+/** $VER: Configuration.h (2024.12.27) P. Stuer **/
 
 #pragma once
 
@@ -33,6 +33,18 @@ enum ScrollbarStyle : uint32_t
     Default = 0,
     Fluent,
 };
+
+enum Permission : uint64_t
+{
+    ReadFiles = 1,
+    ReadDirectories = 2,
+    ExecuteShellOperations = 4,
+};
+
+inline Permission operator|(Permission a, Permission b)
+{
+    return static_cast<Permission>(static_cast<int>(a) | static_cast<int>(b));
+}
 
 /// <summary>
 /// Represents the configuration of the component.
@@ -68,6 +80,8 @@ public:
     bool _InPrivateMode;
     ScrollbarStyle _ScrollbarStyle;
 
+    Permission _Permissions;
+
 private:
-    const int32_t _CurrentVersion = 7;
+    const int32_t _CurrentVersion = 8;
 };

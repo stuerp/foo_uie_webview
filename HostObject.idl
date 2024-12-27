@@ -128,6 +128,11 @@ library HostObjectLibrary
 
         HRESULT getMetaDBHandlePath([in] __int64 handle, [out, retval] BSTR * path);
         HRESULT getMetaDBHandleRelativePath([in] __int64 handle, [out, retval] BSTR * path);
+
+        // Permissions
+        [propget] HRESULT canReadFiles([out, retval] VARIANT_BOOL * value);
+        [propget] HRESULT canReadDirectories([out, retval] VARIANT_BOOL * value);
+        [propget] HRESULT canExecuteShellOperations([out, retval] VARIANT_BOOL * value);
     };
 
     [uuid(637abc45-11f7-4dde-84b4-317d62a638d3)]

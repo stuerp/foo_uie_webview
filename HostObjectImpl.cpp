@@ -516,6 +516,9 @@ STDMETHODIMP HostObject::put_playbackOrder(int playlistIndex)
 /// </summary>
 STDMETHODIMP HostObject::execute(BSTR filePath, BSTR parameters, BSTR directoryPath, BSTR operation, int showMode)
 {
+    if ((_Configuration->_Permissions & Permission::ExecuteShellOperations) == 0)
+        return E_ACCESSDENIED;
+
     std::wstring FilePath      = ::ExpandEnvironmentStrings(filePath);
     std::wstring Parameters    = ::ExpandEnvironmentStrings(parameters);
     std::wstring DirectoryPath = ::ExpandEnvironmentStrings(directoryPath);
@@ -538,6 +541,40 @@ STDMETHODIMP HostObject::execute(BSTR filePath, BSTR parameters, BSTR directoryP
 
         return HRESULT_FROM_WIN32(LastError);
     }
+
+    return S_OK;
+}
+
+#pragma endregion
+
+#pragma region Permissions
+
+STDMETHODIMP HostObject::get_canReadFiles(VARIANT_BOOL * result)
+{
+    if (result == nullptr)
+        return E_INVALIDARG;
+
+    *result = (_Configuration->_Permissions & Permission::ReadFiles) ? VARIANT_TRUE : VARIANT_FALSE;
+
+    return S_OK;
+}
+
+STDMETHODIMP HostObject::get_canReadDirectories(VARIANT_BOOL * result)
+{
+    if (result == nullptr)
+        return E_INVALIDARG;
+
+    *result = (_Configuration->_Permissions & Permission::ReadDirectories) ? VARIANT_TRUE : VARIANT_FALSE;
+
+    return S_OK;
+}
+
+STDMETHODIMP HostObject::get_canExecuteShellOperations(VARIANT_BOOL * result)
+{
+    if (result == nullptr)
+        return E_INVALIDARG;
+
+    *result = (_Configuration->_Permissions & Permission::ExecuteShellOperations) ? VARIANT_TRUE : VARIANT_FALSE;
 
     return S_OK;
 }

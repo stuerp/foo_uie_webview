@@ -53,6 +53,8 @@ onLibraryItemsRemoved: <span id="onLibraryItemsRemovedResult"></span><br/>
 <script>
 document.getElementById("isLibraryEnabledResult").textContent = mediaLibrary.isEnabled();
 
+document.getElementById("executeButton").disabled = !chrome.webview.hostObjects.sync.foo_uie_webview.canExecuteShellOperations; //webView.canExecuteShellOperations();
+
 document.getElementById("showLibraryPreferencesButton").addEventListener("click", async () =>
 {
     mediaLibrary.showPreferences();

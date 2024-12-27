@@ -16,6 +16,11 @@ const webView =
     {
         chrome.webview.hostObjects.foo_uie_webview.execute(filePath, parameters, directoryPath, operation, showMode);
     }
+/*
+    canExecuteShellOperations: fuction()
+    {
+        return chrome.webview.hostObjects.sync.foo_uie_webview.canExecuteShellOperations;
+    }*/
 };
 
 const SW_HIDE = 0;              // Hides the window and activates another window.

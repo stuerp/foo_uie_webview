@@ -1,5 +1,5 @@
 
-/** $VER: configuration_t.cpp (2024.08.04) P. Stuer **/
+/** $VER: configuration_t.cpp (2024.12.27) P. Stuer **/
 
 #include "pch.h"
 
@@ -78,6 +78,8 @@ void configuration_t::Reset() noexcept
     _InPrivateMode = false;
 
     _ScrollbarStyle = ScrollbarStyle::Fluent;
+
+    _Permissions = (Permission::ReadFiles | Permission::ReadDirectories);
 }
 
 /// <summary>
@@ -100,6 +102,8 @@ configuration_t & configuration_t::operator=(const configuration_t & other)
 
     _ScrollbarStyle = other._ScrollbarStyle;
  
+    _Permissions = other._Permissions;
+
     return *this;
 }
 
@@ -159,6 +163,12 @@ void configuration_t::Read(stream_reader * reader, size_t size, abort_callback &
         {
             uint32_t Value; reader->read_object_t(Value, abortHandler); _ScrollbarStyle = (ScrollbarStyle) Value;
         }
+
+        // Version 8, v0.3.0.0
+        if (Version >= 8)
+        {
+            uint64_t Value; reader->read_object_t(Value, abortHandler); _Permissions = (Permission) Value;
+        }
     }
     catch (exception & ex)
     {
@@ -200,6 +210,9 @@ void configuration_t::Write(stream_writer * writer, abort_callback & abortHandle
 
         // Version 7, v0.1.8.0
         Value = (uint32_t) _ScrollbarStyle; writer->write_object_t(Value, abortHandler);
+
+        // Version 8, v0.3.0.0
+        uint64_t Value64 = (uint64_t) _Permissions; writer->write_object_t(Value64, abortHandler);
     }
     catch (exception & ex)
     {

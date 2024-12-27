@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImplFiles.cpp (2024.12.02) P. Stuer **/
+/** $VER: HostObjectImplFiles.cpp (2024.12.27) P. Stuer **/
 
 #include "pch.h"
 
@@ -152,6 +152,9 @@ STDMETHODIMP HostObject::getArtwork(BSTR type, BSTR * image)
 /// </summary>
 STDMETHODIMP HostObject::readAllText(BSTR filePath, __int32 codePage, BSTR * text)
 {
+    if ((_Configuration->_Permissions & Permission::ReadFiles) == 0)
+        return E_ACCESSDENIED;
+
     if ((filePath == nullptr) || (text == nullptr))
         return E_INVALIDARG;
 
@@ -194,10 +197,13 @@ STDMETHODIMP HostObject::readAllText(BSTR filePath, __int32 codePage, BSTR * tex
 }
 
 /// <summary>
-/// Reads the specified file and returns it as a string.
+/// Reads the specified directory.
 /// </summary>
 STDMETHODIMP HostObject::readDirectory(BSTR directoryPath, BSTR searchPattern, BSTR * json)
 {
+    if ((_Configuration->_Permissions & Permission::ReadDirectories) == 0)
+        return E_ACCESSDENIED;
+
     if ((directoryPath == nullptr) || (searchPattern == nullptr) || (json == nullptr))
         return E_INVALIDARG;
 
@@ -256,6 +262,9 @@ STDMETHODIMP HostObject::readDirectory(BSTR directoryPath, BSTR searchPattern, B
 /// </summary>
 STDMETHODIMP HostObject::readImage(BSTR filePath, BSTR * image)
 {
+    if ((_Configuration->_Permissions & Permission::ReadFiles) == 0)
+        return E_ACCESSDENIED;
+
     *image = ::SysAllocString(L""); // Return an empty string by default and in case of an error.
 
     if ((filePath == nullptr) || (image == nullptr))
