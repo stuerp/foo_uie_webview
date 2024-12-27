@@ -1,5 +1,5 @@
 
-/** $VER: HostObject.idl (2024.12.20) P. Stuer **/
+/** $VER: HostObject.idl (2024.12.27) P. Stuer **/
 
 import "oaidl.idl";
 import "ocidl.idl";
@@ -117,8 +117,16 @@ library HostObjectLibrary
         HRESULT execute([in] BSTR filePath, [in, defaultvalue("")] BSTR arguments, [in, defaultvalue("")] BSTR directoryPath, [in, defaultvalue("")] BSTR operation, [in, defaultvalue(1)] int showMode);
 
         // Media Library
-        HRESULT search([in, defaultvalue("")] BSTR query, [out, retval] __int64 * tracks);
-        HRESULT enumerate([in] __int64 tracks);
+        [propget] HRESULT isLibraryEnabled([out, retval] VARIANT_BOOL * value);
+        HRESULT showLibraryPreferences();
+
+        HRESULT searchLibrary([in, defaultvalue("")] BSTR query, [out, retval] __int64 * tracks);
+
+        HRESULT getMetaDBHandleListCount([in] __int64 list, [out, retval] __int64 * count);
+        HRESULT getMetaDBHandleListItem([in] __int64 list, [in] size_t index, [out, retval] __int64 * metaDBHandle);
+        HRESULT releaseMetaDBHandleList([in] __int64 list);
+
+        HRESULT getMetaDBHandlePath([in] __int64 handle, [out, retval] BSTR * path);
     };
 
     [uuid(637abc45-11f7-4dde-84b4-317d62a638d3)]

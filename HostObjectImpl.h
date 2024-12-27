@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.h (2024.12.16) P. Stuer **/
+/** $VER: HostObjectImpl.h (2024.12.27) P. Stuer **/
 
 #pragma once
 
@@ -142,11 +142,21 @@ public:
     STDMETHODIMP put_playbackOrder(int playlistIndex) override;
 
     /* OS */
+
     STDMETHODIMP execute(BSTR filePath, BSTR parameters, BSTR directoryPath, BSTR operation, int showMode) override;
 
     /* Media Library */
-    STDMETHODIMP search(BSTR query, __int64 * tracks);
-    STDMETHODIMP enumerate(__int64 tracks);
+
+    STDMETHODIMP get_isLibraryEnabled(VARIANT_BOOL * value) override;
+    STDMETHODIMP showLibraryPreferences() override;
+
+    STDMETHODIMP searchLibrary(BSTR query, __int64 * tracks) override;
+
+    STDMETHODIMP getMetaDBHandleListCount(__int64 list, __int64 * count) override;
+    STDMETHODIMP getMetaDBHandleListItem(__int64 list, size_t index, __int64 * metaDBHandle) override;
+    STDMETHODIMP releaseMetaDBHandleList(__int64 list) override;
+
+    STDMETHODIMP getMetaDBHandlePath(__int64 metaDBHandle, BSTR * path) override;
 
     #pragma endregion
 

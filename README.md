@@ -99,8 +99,16 @@ To create the component first build the x86 configuration and next the x64 confi
 v0.3.0.0-alpha1, 2024-12-xx
 
 * New:
+  * Properties
+    * isLibraryEnabled: Gets whether the library is enabled. (alpha1)
   * Methods
-    * execute(filePath, arguments, directoryPath, operation, showMode): Performs the specified shell operation on a file. Mostly used to run applications. Check the [SHELLEXECUTEINFOW](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shellexecuteinfow) documentation for the possible values of the parameters.
+    * execute(filePath, arguments, directoryPath, operation, showMode): Performs the specified shell operation on a file. Mostly used to run applications. Check the [SHELLEXECUTEINFOW](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shellexecuteinfow) documentation for the possible values of the parameters. (alpha1)
+    * showLibraryPreferences(): Shows the library preferences dialog. (alpha1)
+    * searchLibrary(query): Searches the library for matching tracks. Returns a metadb handle list. (alpha1)
+    * getMetaDBHandleListCount(list): Returns the number of items in a list of metadb handles. (alpha1)
+    * getMetaDBHandleListItem(list, index): Returns the item at the specified index in a list of metadb handles. (alpha1)
+    * releaseMetaDBHandleList(list): Releases a list of metadb handles. (alpha1)
+    * getMetaDBHandlePath(handle): Returns the file path of a metadb handle. (alpha1)
   * Callbacks
     * onLibraryItemsAdded(items): Called when items have been added to the library. (alpha1)
     * onLibraryItemsModified(items): Called when library items have been modified. (alpha1)

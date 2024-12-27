@@ -42,6 +42,7 @@
     <ClCompile Include="HostObjectImplFiles.cpp" />
     <ClCompile Include="CallbacksPlaylist.cpp" />
     <ClCompile Include="CallbacksLibrary.cpp" />
+    <ClCompile Include="HostObjectImplLibrary.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources.rc" />

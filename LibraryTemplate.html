@@ -16,16 +16,14 @@ html
 }
 body
 {
-    margin: 0; 
+    margin: 0.5em; 
     padding: 0;
-    display: flex;
     align-items: start;
     justify-content: left;
     height: 100vh;
     font: 10.5pt "Calibri Light", Sans-serif;
     line-height: 1.2;
     color: #555753;
-/*  background-color: #e0e0e0; *//* Don't set a background color to use the theme background color of the foobar2000 panel */
 }
 div
 { 
@@ -35,20 +33,47 @@ div
 </style>
 </head>
 <body>
+<p>
+<button id="showLibraryPreferencesButton">Show library preferences</button>
 <button id="searchButton">Search</button>
 <button id="executeButton">Execute</button>
+</p>
+<p>
+isLibraryEnabled: <span id="isLibraryEnabledResult"></span><br/>
+</p>
 <div>
+<p>
 onLibraryItemsAdded: <span id="onLibraryItemsAddedResult"></span><br/>
 onLibraryItemsModified: <span id="onLibraryItemsModifiedResult"></span><br/>
 onLibraryItemsRemoved: <span id="onLibraryItemsRemovedResult"></span><br/>
 <div id="Items"/>
+</p>
 </div>
 <script>
+document.getElementById("isLibraryEnabledResult").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.isLibraryEnabled;
+
+document.getElementById("showLibraryPreferencesButton").addEventListener("click", async () =>
+{
+    chrome.webview.hostObjects.foo_uie_webview.showLibraryPreferences();
+});
+
 document.getElementById("searchButton").addEventListener("click", async () =>
 {
-    var Tracks = await chrome.webview.hostObjects.foo_uie_webview.search("%title% HAS reminder");
+    var Tracks = await chrome.webview.hostObjects.foo_uie_webview.searchLibrary("");
 
-    await chrome.webview.hostObjects.foo_uie_webview.enumerate(Tracks);
+    var Count = await chrome.webview.hostObjects.sync.foo_uie_webview.getMetaDBHandleListCount(Tracks);
+    var Text = "";
+
+    for (var i = 0; i < Count; ++i)
+    {
+        var Track = chrome.webview.hostObjects.sync.foo_uie_webview.getMetaDBHandleListItem(Tracks, i);
+
+        Text += chrome.webview.hostObjects.sync.foo_uie_webview.getMetaDBHandlePath(Track) + "<br/>";
+    }
+
+    document.getElementById("Items").innerHTML = Text;
+
+    await chrome.webview.hostObjects.foo_uie_webview.releaseMetaDBHandleList(Tracks);
 });
 
 document.getElementById("executeButton").addEventListener("click", async () =>
