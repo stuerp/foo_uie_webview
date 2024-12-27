@@ -46,6 +46,11 @@ inline Permission operator|(Permission a, Permission b)
     return static_cast<Permission>(static_cast<int>(a) | static_cast<int>(b));
 }
 
+inline Permission& operator |=(Permission& a, Permission b)
+{
+    return a = a |b;
+}
+
 /// <summary>
 /// Represents the configuration of the component.
 /// </summary>

@@ -79,7 +79,7 @@ void configuration_t::Reset() noexcept
 
     _ScrollbarStyle = ScrollbarStyle::Fluent;
 
-    _Permissions = (Permission::ReadFiles | Permission::ReadDirectories);
+    _Permissions = (Permission) 0;
 }
 
 /// <summary>

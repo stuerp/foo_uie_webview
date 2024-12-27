@@ -1,5 +1,5 @@
 
-/** $VER: Resources.h (2024.12.15) P. Stuer **/
+/** $VER: Resources.h (2024.12.27) P. Stuer **/
 
 #pragma once
 
@@ -82,6 +82,10 @@
 #define IDC_CLEAR_BROWSING_DATA             1040
 #define IDC_IN_PRIVATE_MODE                 1042
 #define IDC_SCROLLBAR_STYLE                 1044
+
+#define IDC_READ_FILES                      2000
+#define IDC_READ_DIRECTORIES                2002
+#define IDC_EXECUTE_SHELL_OPERATIONS        2004
 
 #define IDC_WARNING                         9999
 

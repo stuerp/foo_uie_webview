@@ -1,5 +1,5 @@
 
-/** $VER: Preferences.cpp (2024.08.04) P. Stuer **/
+/** $VER: Preferences.cpp (2024.12.27) P. Stuer **/
 
 #include "pch.h"
 
@@ -105,9 +105,14 @@ public:
         }
 
         _Configuration._ClearOnStartup = (SendDlgItemMessageW(IDC_CLEAR_BROWSING_DATA, BM_GETCHECK) == BST_CHECKED) ? ClearOnStartup::All : ClearOnStartup::None;
-
         _Configuration._InPrivateMode = (SendDlgItemMessageW(IDC_IN_PRIVATE_MODE, BM_GETCHECK) == BST_CHECKED);
         _Configuration._ScrollbarStyle = (SendDlgItemMessageW(IDC_SCROLLBAR_STYLE, BM_GETCHECK) == BST_CHECKED) ? ScrollbarStyle::Fluent : ScrollbarStyle::Default;
+
+        _Configuration._Permissions = (Permission) 0;
+
+        if (SendDlgItemMessageW(IDC_READ_FILES, BM_GETCHECK) == BST_CHECKED) _Configuration._Permissions |= Permission::ReadFiles;
+        if (SendDlgItemMessageW(IDC_READ_DIRECTORIES, BM_GETCHECK) == BST_CHECKED) _Configuration._Permissions |= Permission::ReadDirectories;
+        if (SendDlgItemMessageW(IDC_EXECUTE_SHELL_OPERATIONS, BM_GETCHECK) == BST_CHECKED) _Configuration._Permissions |= Permission::ExecuteShellOperations;
 
         UIElement * CurrentElement = _UIElementTracker.GetCurrentElement();
 
@@ -138,21 +143,24 @@ public:
         MSG_WM_CTLCOLORSTATIC(OnCtlColorStatic)
 
         COMMAND_HANDLER_EX(IDC_NAME, EN_CHANGE, OnEditChange)
+
         COMMAND_HANDLER_EX(IDC_USER_DATA_FOLDER_PATH, EN_CHANGE, OnEditChange)
+        COMMAND_HANDLER_EX(IDC_USER_DATA_FOLDER_PATH_SELECT, BN_CLICKED, OnButtonClicked)
+
         COMMAND_HANDLER_EX(IDC_FILE_PATH, EN_CHANGE, OnEditChange)
+
+        COMMAND_HANDLER_EX(IDC_WINDOW_SIZE, EN_CHANGE, OnEditChange)
+        COMMAND_HANDLER_EX(IDC_REACTION_ALIGNMENT, EN_CHANGE, OnEditChange)
 
         COMMAND_CODE_HANDLER_EX(CBN_SELCHANGE, OnSelectionChanged) // This also handles LBN_SELCHANGE
 
-        COMMAND_HANDLER_EX(IDC_USER_DATA_FOLDER_PATH_SELECT, BN_CLICKED, OnButtonClicked)
         COMMAND_HANDLER_EX(IDC_CLEAR_BROWSING_DATA, BN_CLICKED, OnButtonClicked)
         COMMAND_HANDLER_EX(IDC_IN_PRIVATE_MODE, BN_CLICKED, OnButtonClicked)
         COMMAND_HANDLER_EX(IDC_SCROLLBAR_STYLE, BN_CLICKED, OnButtonClicked)
 
-        COMMAND_HANDLER_EX(IDC_FILE_PATH_SELECT, BN_CLICKED, OnButtonClicked)
-        COMMAND_HANDLER_EX(IDC_FILE_PATH_EDIT, BN_CLICKED, OnButtonClicked)
-
-        COMMAND_HANDLER_EX(IDC_WINDOW_SIZE, EN_CHANGE, OnEditChange)
-        COMMAND_HANDLER_EX(IDC_REACTION_ALIGNMENT, EN_CHANGE, OnEditChange)
+        COMMAND_HANDLER_EX(IDC_READ_FILES, BN_CLICKED, OnButtonClicked)
+        COMMAND_HANDLER_EX(IDC_READ_DIRECTORIES, BN_CLICKED, OnButtonClicked)
+        COMMAND_HANDLER_EX(IDC_EXECUTE_SHELL_OPERATIONS, BN_CLICKED, OnButtonClicked)
     END_MSG_MAP()
 
 private:
@@ -199,6 +207,10 @@ private:
         SendDlgItemMessageW(IDC_CLEAR_BROWSING_DATA, BM_SETCHECK, (WPARAM) (_Configuration._ClearOnStartup == ClearOnStartup::All ? BST_CHECKED : BST_UNCHECKED));
         SendDlgItemMessageW(IDC_IN_PRIVATE_MODE, BM_SETCHECK, (WPARAM) (_Configuration._InPrivateMode ? BST_CHECKED : BST_UNCHECKED));
         SendDlgItemMessageW(IDC_SCROLLBAR_STYLE, BM_SETCHECK, (WPARAM) ((_Configuration._ScrollbarStyle == ScrollbarStyle::Fluent) ? BST_CHECKED : BST_UNCHECKED));
+
+        SendDlgItemMessageW(IDC_READ_FILES, BM_SETCHECK, (WPARAM) ((_Configuration._Permissions & Permission::ReadFiles) ? BST_CHECKED : BST_UNCHECKED));
+        SendDlgItemMessageW(IDC_READ_DIRECTORIES, BM_SETCHECK, (WPARAM) ((_Configuration._Permissions & Permission::ReadDirectories) ? BST_CHECKED : BST_UNCHECKED));
+        SendDlgItemMessageW(IDC_EXECUTE_SHELL_OPERATIONS, BM_SETCHECK, (WPARAM) ((_Configuration._Permissions & Permission::ExecuteShellOperations) ? BST_CHECKED : BST_UNCHECKED));
     }
 
     /// <summary>
@@ -376,6 +388,15 @@ private:
             return true;
 
         if (SendDlgItemMessageW(IDC_SCROLLBAR_STYLE, BM_GETCHECK) != ((_Configuration._ScrollbarStyle == ScrollbarStyle::Fluent) ? BST_CHECKED : BST_UNCHECKED))
+            return true;
+
+        if (SendDlgItemMessageW(IDC_READ_FILES, BM_GETCHECK) != ((_Configuration._Permissions & Permission::ReadFiles) ? BST_CHECKED : BST_UNCHECKED))
+            return true;
+
+        if (SendDlgItemMessageW(IDC_READ_DIRECTORIES, BM_GETCHECK) != ((_Configuration._Permissions & Permission::ReadDirectories) ? BST_CHECKED : BST_UNCHECKED))
+            return true;
+
+        if (SendDlgItemMessageW(IDC_EXECUTE_SHELL_OPERATIONS, BM_GETCHECK) != ((_Configuration._Permissions & Permission::ExecuteShellOperations) ? BST_CHECKED : BST_UNCHECKED))
             return true;
 
         return false;

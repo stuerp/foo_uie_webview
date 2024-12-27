@@ -1,8 +1,27 @@
 
-/** $VER: foo_uie_webview.js (2024.12.27) P. Stuer **/
+/** $VER: foobar2000.js (2024.12.27) P. Stuer **/
 
-const webView =
+class Foobar2000
 {
+    static
+    {
+    }
+
+    static canReadFiles()
+    {
+        return chrome.webview.hostObjects.sync.foo_uie_webview.canReadFiles;
+    }
+
+    static canReadDirectories()
+    {
+        return chrome.webview.hostObjects.sync.foo_uie_webview.canReadDirectories;
+    }
+
+    static canExecuteShellOperations()
+    {
+        return chrome.webview.hostObjects.sync.foo_uie_webview.canExecuteShellOperations;
+    }
+
     /**
         Executes an operation on the specified file.
         @argument {string} filePath - The path of the file.
@@ -12,15 +31,10 @@ const webView =
         @argument {int} [showMode] - The show mode of the window.
         @description Performs the specified shell operation on a file. Mostly used to run applications. Check the [SHELLEXECUTEINFOW](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shellexecuteinfow) documentation for the possible values of the parameters.
     **/
-    execute: function(filePath, parameters, directoryPath, operation, showMode)
+    static execute(filePath, parameters, directoryPath, operation, showMode)
     {
         chrome.webview.hostObjects.foo_uie_webview.execute(filePath, parameters, directoryPath, operation, showMode);
     }
-/*
-    canExecuteShellOperations: fuction()
-    {
-        return chrome.webview.hostObjects.sync.foo_uie_webview.canExecuteShellOperations;
-    }*/
 };
 
 const SW_HIDE = 0;              // Hides the window and activates another window.
@@ -35,33 +49,37 @@ const SW_SHOWNA = 8;            // Displays the window in its current size and p
 const SW_RESTORE = 9;           // Activates and displays the window. If the window is minimized, maximized, or arranged, the system restores it to its original size and position. An application should specify this flag when restoring a minimized window.
 const SW_SHOWDEFAULT = 10;      // Sets the show state based on the SW_ value specified in the STARTUPINFO structure passed to the CreateProcess function by the program that started the application.
 
-const mediaLibrary =
+class MediaLibrary
 {
+    static
+    {
+    }
+
     /**
         Gets whether the Media Library is enabled.
         @name isEnabled
         @kind function
         @returns {boolean}
     **/
-    isEnabled: function()
+    static isEnabled()
     {
         return chrome.webview.hostObjects.sync.foo_uie_webview.isLibraryEnabled;
-    },
+    }
 
     /**
         Shows the Media Library preferences dialog.
     **/
-    showPreferences: function()
+    static showPreferences()
     {
         chrome.webview.hostObjects.foo_uie_webview.showLibraryPreferences();
-    },
+    }
 
     /**
         Searches the Media Library for matching tracks.
         @param {string} query - The search query.
         @returns {MetaDBHandleList}
     **/
-    search: function(query)
+    static search(query)
     {
         return chrome.webview.hostObjects.foo_uie_webview.searchLibrary(query);
     }

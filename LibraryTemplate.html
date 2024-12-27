@@ -34,7 +34,7 @@ div
 </head>
 <body>
 <p>
-<button id="showLibraryPreferencesButton">Show library preferences</button>
+<button id="showLibraryPreferencesButton">Library preferences</button>
 <button id="searchButton">Search</button>
 <button id="executeButton">Execute</button>
 </p>
@@ -49,20 +49,20 @@ onLibraryItemsRemoved: <span id="onLibraryItemsRemovedResult"></span><br/>
 <div id="Items"/>
 </p>
 </div>
-<script src="foo_uie_webview.js"></script>
+<script src="foobar2000.js"></script>
 <script>
-document.getElementById("isLibraryEnabledResult").textContent = mediaLibrary.isEnabled();
+document.getElementById("isLibraryEnabledResult").textContent = MediaLibrary.isEnabled();
 
-document.getElementById("executeButton").disabled = !chrome.webview.hostObjects.sync.foo_uie_webview.canExecuteShellOperations; //webView.canExecuteShellOperations();
+document.getElementById("executeButton").disabled = !Foobar2000.canExecuteShellOperations();
 
 document.getElementById("showLibraryPreferencesButton").addEventListener("click", async () =>
 {
-    mediaLibrary.showPreferences();
+    MediaLibrary.showPreferences();
 });
 
 document.getElementById("searchButton").addEventListener("click", async () =>
 {
-    const Tracks = new MetaDBHandleList(await mediaLibrary.search(""));
+    const Tracks = new MetaDBHandleList(await MediaLibrary.search(""));
 
     let Text = "";
 
@@ -74,7 +74,7 @@ document.getElementById("searchButton").addEventListener("click", async () =>
 
         Text += Track.path + "<br/>";
     }
-/* NOT IMPLEMENTED YET
+/* Enumeration does not work yet.
     forEach (Tracks, Track =>
     {
         Text += Track.relativePath + "<br/>";
@@ -87,11 +87,11 @@ document.getElementById("searchButton").addEventListener("click", async () =>
 
 document.getElementById("executeButton").addEventListener("click", async () =>
 {
-//  await webView.execute("notepad.exe");
-//  await webView.execute("notepad.exe", "%SystemRoot%\\win.ini");
-//  await webView.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%");
-//  await webView.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%", "runas"); // Run notepad with elevated integrity
-    await webView.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%", "open", SW_SHOWNORMAL);
+//  await Foobar2000.execute("notepad.exe");
+//  await Foobar2000.execute("notepad.exe", "%SystemRoot%\\win.ini");
+//  await Foobar2000.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%");
+//  await Foobar2000.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%", "runas"); // Run notepad with elevated integrity
+    await Foobar2000.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%", "open", SW_SHOWNORMAL);
 });
 
 // Called when items have been added to the library.

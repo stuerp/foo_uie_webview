@@ -99,9 +99,13 @@ To create the component first build the x86 configuration and next the x64 confi
 v0.3.0.0-alpha1, 2024-12-xx
 
 * New:
-  * Included foo_uie_webview.js wraps the API to make JavaScript development easier.
+  * Included foobar2000.js wraps the API to make JavaScript development easier. (alpha1)
+  * Set permissions in the Preferences dialog. (alpha1)
   * Properties
-    * isLibraryEnabled: Gets whether the Media Library is enabled. (alpha1)
+    * isLibraryEnabled: Returns true if the Media Library is enabled. (alpha1)
+    * canReadFiles: Returns true if the component can read local files. (alpha1)
+    * canReadDirectories: Returns true if the component can read local directories. (alpha1)
+    * canExecuteShellOperations: Returns true if the component can execute shell operations. (alpha1)
   * Methods
     * execute(filePath, arguments, directoryPath, operation, showMode): Performs the specified shell operation on a file. Mostly used to run applications. Check the [SHELLEXECUTEINFOW](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shellexecuteinfow) documentation for the possible values of the parameters. (alpha1)
 

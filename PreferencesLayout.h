@@ -1,5 +1,5 @@
 
-/** $VER: PreferencesLayout.h (2024.08.04) **/
+/** $VER: PreferencesLayout.h (2024.12.27) **/
 
 #pragma once
 
@@ -150,6 +150,24 @@
 #define Y_D28   Y_D27 + H_D27 + IY
 #define W_D28   160
 #define H_D28   H_LBL
+
+// Checkbox: Read files
+#define X_D70   0
+#define Y_D70   Y_D28 + H_D28 + IY
+#define W_D70   160
+#define H_D70   H_LBL
+
+// Checkbox: Read directories
+#define X_D71   0
+#define Y_D71   Y_D70 + H_D70 + IY
+#define W_D71   160
+#define H_D71   H_LBL
+
+// Checkbox: Execute shell operations
+#define X_D72   0
+#define Y_D72   Y_D71 + H_D71 + IY
+#define W_D72   160
+#define H_D72   H_LBL
 
 // Warning
 #define X_D99   0
