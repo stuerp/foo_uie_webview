@@ -295,6 +295,7 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
     <None Include="cpp.hint" />
     <None Include="docs\index.md" />
     <None Include="docs\README.md" />
+    <None Include="foo_uie_webview.js" />
     <None Include="FrameTemplate.html" />
     <None Include="LibraryTemplate.html" />
     <None Include="packages.config" />

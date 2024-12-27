@@ -60,6 +60,7 @@
     <None Include="FrameTemplate.html" />
     <None Include="docs\index.md" />
     <None Include="LibraryTemplate.html" />
+    <None Include="foo_uie_webview.js" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="LICENSE.txt" />

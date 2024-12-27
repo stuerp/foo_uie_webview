@@ -19,7 +19,7 @@
 #include <pfc/bit_array_impl.h>
 
 /// <summary>
-/// Gets whether the library is enabled.
+/// Gets whether the Media Library is enabled.
 /// </summary>
 STDMETHODIMP HostObject::get_isLibraryEnabled(VARIANT_BOOL * isEnabled)
 {
@@ -32,7 +32,7 @@ STDMETHODIMP HostObject::get_isLibraryEnabled(VARIANT_BOOL * isEnabled)
 }
 
 /// <summary>
-/// Shows the library preferences dialog.
+/// Shows the Media Library preferences dialog.
 /// </summary>
 STDMETHODIMP HostObject::showLibraryPreferences()
 {
@@ -42,7 +42,7 @@ STDMETHODIMP HostObject::showLibraryPreferences()
 }
 
 /// <summary>
-/// Searches the library for matching tracks.
+/// Searches the Media Library for matching tracks.
 /// </summary>
 STDMETHODIMP HostObject::searchLibrary(BSTR query, __int64 * tracks)
 {
@@ -87,7 +87,7 @@ STDMETHODIMP HostObject::searchLibrary(BSTR query, __int64 * tracks)
 /// </summary>
 STDMETHODIMP HostObject::getMetaDBHandleListCount(__int64 list, __int64 * count)
 {
-    auto List = (metadb_handle_list *) list;
+    auto List = (const metadb_handle_list *) list;
 
     *count = (__int64) List->get_count();
 
@@ -99,7 +99,7 @@ STDMETHODIMP HostObject::getMetaDBHandleListCount(__int64 list, __int64 * count)
 /// </summary>
 STDMETHODIMP HostObject::getMetaDBHandleListItem(__int64 list, size_t index, __int64 * metaDBHandle)
 {
-    auto List = (metadb_handle_list *) list;
+    auto List = (const metadb_handle_list *) list;
 
     *metaDBHandle = (__int64) List->get_item(index).get_ptr();
 
@@ -111,13 +111,16 @@ STDMETHODIMP HostObject::getMetaDBHandleListItem(__int64 list, size_t index, __i
 /// </summary>
 STDMETHODIMP HostObject::releaseMetaDBHandleList(__int64 list)
 {
-    auto List = (metadb_handle_list *) list;
+    auto List = (const metadb_handle_list *) list;
 
     delete List;
 
     return S_OK;
 }
 
+/// <summary>
+/// Gets the path of the specified metadb handle.
+/// </summary>
 STDMETHODIMP HostObject::getMetaDBHandlePath(__int64 metaDBHandle, BSTR * path)
 {
     auto Handle = (metadb_handle *) metaDBHandle;
@@ -125,6 +128,23 @@ STDMETHODIMP HostObject::getMetaDBHandlePath(__int64 metaDBHandle, BSTR * path)
     const playable_location & Location = Handle->get_location();
 
     *path = ::SysAllocString(::UTF8ToWide(Location.get_path()).c_str());
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the path of the specified metadb handle relative to the Media Library folder it is in.
+/// </summary>
+STDMETHODIMP HostObject::getMetaDBHandleRelativePath(__int64 metaDBHandle, BSTR * path)
+{
+    auto Handle = (metadb_handle *) metaDBHandle;
+
+    pfc::string Path;
+
+    if (library_manager::get()->get_relative_path(Handle, Path))
+        *path = ::SysAllocString(::UTF8ToWide(Path.c_str()).c_str());
+    else
+        *path = ::SysAllocString(L"");
 
     return S_OK;
 }

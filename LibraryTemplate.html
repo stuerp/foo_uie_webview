@@ -39,7 +39,7 @@ div
 <button id="executeButton">Execute</button>
 </p>
 <p>
-isLibraryEnabled: <span id="isLibraryEnabledResult"></span><br/>
+isLibraryEnabled: <span id="isLibraryEnabledResult" style="font-weight: bold"></span><br/>
 </p>
 <div>
 <p>
@@ -49,40 +49,47 @@ onLibraryItemsRemoved: <span id="onLibraryItemsRemovedResult"></span><br/>
 <div id="Items"/>
 </p>
 </div>
+<script src="foo_uie_webview.js"></script>
 <script>
-document.getElementById("isLibraryEnabledResult").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.isLibraryEnabled;
+document.getElementById("isLibraryEnabledResult").textContent = mediaLibrary.isEnabled();
 
 document.getElementById("showLibraryPreferencesButton").addEventListener("click", async () =>
 {
-    chrome.webview.hostObjects.foo_uie_webview.showLibraryPreferences();
+    mediaLibrary.showPreferences();
 });
 
 document.getElementById("searchButton").addEventListener("click", async () =>
 {
-    var Tracks = await chrome.webview.hostObjects.foo_uie_webview.searchLibrary("");
+    const Tracks = new MetaDBHandleList(await mediaLibrary.search(""));
 
-    var Count = await chrome.webview.hostObjects.sync.foo_uie_webview.getMetaDBHandleListCount(Tracks);
-    var Text = "";
+    let Text = "";
 
-    for (var i = 0; i < Count; ++i)
+    const Count = Tracks.count;
+
+    for (let i = 0; i < Count; ++i)
     {
-        var Track = chrome.webview.hostObjects.sync.foo_uie_webview.getMetaDBHandleListItem(Tracks, i);
+        const Track = new MetaDBHandle(Tracks[i]);
 
-        Text += chrome.webview.hostObjects.sync.foo_uie_webview.getMetaDBHandlePath(Track) + "<br/>";
+        Text += Track.path + "<br/>";
     }
-
+/* NOT IMPLEMENTED YET
+    forEach (Tracks, Track =>
+    {
+        Text += Track.relativePath + "<br/>";
+    });
+*/
     document.getElementById("Items").innerHTML = Text;
 
-    await chrome.webview.hostObjects.foo_uie_webview.releaseMetaDBHandleList(Tracks);
+    Tracks.release();
 });
 
 document.getElementById("executeButton").addEventListener("click", async () =>
 {
-//  await chrome.webview.hostObjects.foo_uie_webview.execute("notepad.exe");
-//  await chrome.webview.hostObjects.foo_uie_webview.execute("notepad.exe", "%SystemRoot%\\win.ini");
-//  await chrome.webview.hostObjects.foo_uie_webview.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%");
-//  await chrome.webview.hostObjects.foo_uie_webview.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%", "runas"); // Run notepad with elevated integrity
-    await chrome.webview.hostObjects.foo_uie_webview.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%", "open", 1);
+//  await webView.execute("notepad.exe");
+//  await webView.execute("notepad.exe", "%SystemRoot%\\win.ini");
+//  await webView.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%");
+//  await webView.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%", "runas"); // Run notepad with elevated integrity
+    await webView.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%", "open", SW_SHOWNORMAL);
 });
 
 // Called when items have been added to the library.

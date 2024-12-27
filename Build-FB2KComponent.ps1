@@ -51,6 +51,8 @@ if ($Platform -eq 'x64')
         Copy-Item "Template.html"                  -Destination "$PackagePath/x64/Default-Template.html" -Force -Verbose;
         Copy-Item "FrameTemplate.html"             -Destination "$PackagePath/x64/Default-FrameTemplate.html" -Force -Verbose;
         Copy-Item "PlaylistTemplate.html"          -Destination "$PackagePath/x64/Default-PlaylistTemplate.html" -Force -Verbose;
+        Copy-Item "LibraryTemplate.html"           -Destination "$PackagePath/x64/Default-LibraryTemplate.html" -Force -Verbose;
+        Copy-Item "foo_uie_webview.js"             -Destination "$PackagePath/x64/foo_uie_webview.js" -Force -Verbose;
     }
 
     # install the component in the foobar2000 x64 components directory.
@@ -66,10 +68,9 @@ if ($Platform -eq 'x64')
 
         Write-Host "Installing x64 component in foobar2000 64-bit profile...";
 
-        Copy-Item "$PackagePath/x64/*.dll"                          -Destination "$ComponentPath/$TargetName" -Force -Verbose;
-        Copy-Item "$PackagePath/x64/Default-Template.html"          -Destination "$ComponentPath/$TargetName" -Force -Verbose;
-        Copy-Item "$PackagePath/x64/Default-FrameTemplate.html"     -Destination "$ComponentPath/$TargetName" -Force -Verbose;
-        Copy-Item "$PackagePath/x64/Default-PlaylistTemplate.html"  -Destination "$ComponentPath/$TargetName" -Force -Verbose;
+        Copy-Item "$PackagePath/x64/*.dll"  -Destination "$ComponentPath/$TargetName" -Force -Verbose;
+        Copy-Item "$PackagePath/x64/*.html" -Destination "$ComponentPath/$TargetName" -Force -Verbose;
+        Copy-Item "$PackagePath/x64/*.js"   -Destination "$ComponentPath/$TargetName" -Force -Verbose;
     }
     else
     {
@@ -94,7 +95,9 @@ elseif ($Platform -eq 'Win32')
         Copy-Item "Template.html"                  -Destination "$PackagePath/Default-Template.html" -Force -Verbose;
         Copy-Item "FrameTemplate.html"             -Destination "$PackagePath/Default-FrameTemplate.html" -Force -Verbose;
         Copy-Item "PlaylistTemplate.html"          -Destination "$PackagePath/Default-PlaylistTemplate.html" -Force -Verbose;
-    }
+        Copy-Item "LibraryTemplate.html"           -Destination "$PackagePath/Default-LibraryTemplate.html" -Force -Verbose;
+        Copy-Item "foo_uie_webview.js"             -Destination "$PackagePath/foo_uie_webview.js" -Force -Verbose;
+}
 
     # install the x86 component in the foobar2000 x86 components directory.
     $foobar2000Path = '../bin/x86';
@@ -109,10 +112,9 @@ elseif ($Platform -eq 'Win32')
 
         Write-Host "Installing x86 component in foobar2000 32-bit profile...";
 
-        Copy-Item "$PackagePath/*.dll"                         -Destination "$ComponentPath/$TargetName" -Force -Verbose;
-        Copy-Item "$PackagePath/Default-Template.html"         -Destination "$ComponentPath/$TargetName" -Force -Verbose;
-        Copy-Item "$PackagePath/Default-FrameTemplate.html"    -Destination "$ComponentPath/$TargetName" -Force -Verbose;
-        Copy-Item "$PackagePath/Default-PlaylistTemplate.html" -Destination "$ComponentPath/$TargetName" -Force -Verbose;
+        Copy-Item "$PackagePath/*.dll"  -Destination "$ComponentPath/$TargetName" -Force -Verbose;
+        Copy-Item "$PackagePath/*.html" -Destination "$ComponentPath/$TargetName" -Force -Verbose;
+        Copy-Item "$PackagePath/*.js"   -Destination "$ComponentPath/$TargetName" -Force -Verbose;
     }
     else
     {

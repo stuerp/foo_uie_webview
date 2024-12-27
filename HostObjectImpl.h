@@ -157,6 +157,7 @@ public:
     STDMETHODIMP releaseMetaDBHandleList(__int64 list) override;
 
     STDMETHODIMP getMetaDBHandlePath(__int64 metaDBHandle, BSTR * path) override;
+    STDMETHODIMP getMetaDBHandleRelativePath(__int64 metaDBHandle, BSTR * path) override;
 
     #pragma endregion
 
