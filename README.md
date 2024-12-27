@@ -96,18 +96,20 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.3.0.0-alpha1, 2024-12-xx
+v0.3.0.0-alpha1, 2024-12-27
 
 * New:
   * Included foobar2000.js wraps the API to make JavaScript development easier. (alpha1)
   * Set permissions in the Preferences dialog. (alpha1)
+
   * Properties
     * isLibraryEnabled: Returns true if the Media Library is enabled. (alpha1)
     * canReadFiles: Returns true if the component can read local files. (alpha1)
     * canReadDirectories: Returns true if the component can read local directories. (alpha1)
     * canExecuteShellOperations: Returns true if the component can execute shell operations. (alpha1)
+ 
   * Methods
-    * execute(filePath, arguments, directoryPath, operation, showMode): Performs the specified shell operation on a file. Mostly used to run applications. Check the [SHELLEXECUTEINFOW](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shellexecuteinfow) documentation for the possible values of the parameters. (alpha1)
+    * execute(filePath, arguments, directoryPath, operation, showMode): Execites a shell operation on a file. Mostly used to run applications. Check the [SHELLEXECUTEINFOW](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shellexecuteinfow) documentation for the possible values of the parameters. (alpha1)
 
     * showLibraryPreferences(): Shows the Media Library preferences dialog. (alpha1)
     * searchLibrary(query): Searches the Media Library for matching tracks. Returns a metadb handle list. (alpha1)
@@ -118,6 +120,8 @@ v0.3.0.0-alpha1, 2024-12-xx
 
     * getMetaDBHandlePath(handle): Gets the path of the specified metadb handle. (alpha1)
     * getMetaDBHandleRelativePath(handle): Gets the path of the specified metadb handle relative to the Media Library folder it is in. (alpha1)
+    * getMetaDBHandleLength(handle): Gets the length of the specified metadb handle (in ms). (alpha1)
+
   * Callbacks
     * onLibraryItemsAdded(items): Called when items have been added to the Media Library. (alpha1)
     * onLibraryItemsModified(items): Called when Media Library items have been modified. (alpha1)

@@ -123,11 +123,14 @@ library HostObjectLibrary
         HRESULT searchLibrary([in, defaultvalue("")] BSTR query, [out, retval] __int64 * tracks);
 
         HRESULT getMetaDBHandleListCount([in] __int64 list, [out, retval] __int64 * count);
-        HRESULT getMetaDBHandleListItem([in] __int64 list, [in] size_t index, [out, retval] __int64 * metaDBHandle);
+        HRESULT getMetaDBHandleListItem([in] __int64 list, [in] __int64 index, [out, retval] __int64 * metaDBHandle);
         HRESULT releaseMetaDBHandleList([in] __int64 list);
 
         HRESULT getMetaDBHandlePath([in] __int64 handle, [out, retval] BSTR * path);
         HRESULT getMetaDBHandleRelativePath([in] __int64 handle, [out, retval] BSTR * path);
+        HRESULT getMetaDBHandleLength([in] __int64 handle, [out, retval] double * length);
+
+        HRESULT formatTitleMetaDBHandle([in] __int64 handle, [in] BSTR text, [out, retval] BSTR * formattedText);
 
         // Permissions
         [propget] HRESULT canReadFiles([out, retval] VARIANT_BOOL * value);

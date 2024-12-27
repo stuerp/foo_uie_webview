@@ -512,7 +512,7 @@ STDMETHODIMP HostObject::put_playbackOrder(int playlistIndex)
 #pragma region OS
 
 /// <summary>
-/// Executes an operation on the specified file.
+/// Executes a shell operation on the specified file.
 /// </summary>
 STDMETHODIMP HostObject::execute(BSTR filePath, BSTR parameters, BSTR directoryPath, BSTR operation, int showMode)
 {
@@ -549,6 +549,9 @@ STDMETHODIMP HostObject::execute(BSTR filePath, BSTR parameters, BSTR directoryP
 
 #pragma region Permissions
 
+/// <summary>
+/// Returns true if the component has permission to read files.
+/// </summary>
 STDMETHODIMP HostObject::get_canReadFiles(VARIANT_BOOL * result)
 {
     if (result == nullptr)
@@ -559,6 +562,9 @@ STDMETHODIMP HostObject::get_canReadFiles(VARIANT_BOOL * result)
     return S_OK;
 }
 
+/// <summary>
+/// Returns true if the component has permission to read directories.
+/// </summary>
 STDMETHODIMP HostObject::get_canReadDirectories(VARIANT_BOOL * result)
 {
     if (result == nullptr)
@@ -569,6 +575,9 @@ STDMETHODIMP HostObject::get_canReadDirectories(VARIANT_BOOL * result)
     return S_OK;
 }
 
+/// <summary>
+/// Returns true if the component has permission to execute shell operations.
+/// </summary>
 STDMETHODIMP HostObject::get_canExecuteShellOperations(VARIANT_BOOL * result)
 {
     if (result == nullptr)

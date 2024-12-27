@@ -72,7 +72,7 @@ document.getElementById("searchButton").addEventListener("click", async () =>
     {
         const Track = new MetaDBHandle(Tracks[i]);
 
-        Text += Track.path + "<br/>";
+        Text += Track.length + "ms, " + Track.FormatTitle("%filesize%") + " bytes, (" + Track.path + ")<br/>";
     }
 /* Enumeration does not work yet.
     forEach (Tracks, Track =>

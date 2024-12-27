@@ -97,7 +97,6 @@ function MetaDBHandle(arg)
 
     /**
         Gets the path.
-        @name path
         @returns {string}
     **/
     Object.defineProperty(this, 'path',
@@ -113,6 +112,24 @@ function MetaDBHandle(arg)
     {
         get() { return chrome.webview.hostObjects.sync.foo_uie_webview.getMetaDBHandleRelativePath(this.Source); }
     });
+
+    /**
+        Gets the length.
+        @returns {double}
+    **/
+    Object.defineProperty(this, 'length',
+    {
+        get() { return chrome.webview.hostObjects.sync.foo_uie_webview.getMetaDBHandleLength(this.Source); }
+    });
+
+    /**
+        Releases the metadb handle list.
+        @returns {void}
+    **/
+    this.FormatTitle = function(text)
+    {
+        return chrome.webview.hostObjects.sync.foo_uie_webview.formatTitleMetaDBHandle(this.Source, text);
+    };
 }
 
 /**

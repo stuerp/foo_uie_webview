@@ -159,11 +159,14 @@ public:
     STDMETHODIMP searchLibrary(BSTR query, __int64 * tracks) override;
 
     STDMETHODIMP getMetaDBHandleListCount(__int64 list, __int64 * count) override;
-    STDMETHODIMP getMetaDBHandleListItem(__int64 list, size_t index, __int64 * metaDBHandle) override;
+    STDMETHODIMP getMetaDBHandleListItem(__int64 list,  __int64 index, __int64 * metaDBHandle) override;
     STDMETHODIMP releaseMetaDBHandleList(__int64 list) override;
 
     STDMETHODIMP getMetaDBHandlePath(__int64 metaDBHandle, BSTR * path) override;
     STDMETHODIMP getMetaDBHandleRelativePath(__int64 metaDBHandle, BSTR * path) override;
+    STDMETHODIMP getMetaDBHandleLength(__int64 metaDBHandle, double * length) override;
+
+    STDMETHODIMP formatTitleMetaDBHandle(__int64 metaDBHandle, BSTR script, BSTR * path) override;
 
     /* Permissions */
 

@@ -46,6 +46,9 @@ STDMETHODIMP HostObject::showLibraryPreferences()
 /// </summary>
 STDMETHODIMP HostObject::searchLibrary(BSTR query, __int64 * tracks)
 {
+    if (tracks == nullptr)
+        return E_INVALIDARG;
+
     *tracks = 0;
 
     auto List = new metadb_handle_list();
@@ -77,7 +80,7 @@ STDMETHODIMP HostObject::searchLibrary(BSTR query, __int64 * tracks)
         }
     }
 
-    *tracks = (__int64) List;
+    *tracks = (__int64) (size_t) List;
 
     return S_OK;
 }
@@ -87,6 +90,9 @@ STDMETHODIMP HostObject::searchLibrary(BSTR query, __int64 * tracks)
 /// </summary>
 STDMETHODIMP HostObject::getMetaDBHandleListCount(__int64 list, __int64 * count)
 {
+    if (count == nullptr)
+        return E_INVALIDARG;
+
     auto List = (const metadb_handle_list *) list;
 
     *count = (__int64) List->get_count();
@@ -97,11 +103,14 @@ STDMETHODIMP HostObject::getMetaDBHandleListCount(__int64 list, __int64 * count)
 /// <summary>
 /// Gets the list item at the specified index.
 /// </summary>
-STDMETHODIMP HostObject::getMetaDBHandleListItem(__int64 list, size_t index, __int64 * metaDBHandle)
+STDMETHODIMP HostObject::getMetaDBHandleListItem(__int64 list,  __int64 index, __int64 * metaDBHandle)
 {
+    if (metaDBHandle == nullptr)
+        return E_INVALIDARG;
+
     auto List = (const metadb_handle_list *) list;
 
-    *metaDBHandle = (__int64) List->get_item(index).get_ptr();
+    *metaDBHandle = (__int64) (size_t) List->get_item((t_size) index).get_ptr();
 
     return S_OK;
 }
@@ -123,6 +132,9 @@ STDMETHODIMP HostObject::releaseMetaDBHandleList(__int64 list)
 /// </summary>
 STDMETHODIMP HostObject::getMetaDBHandlePath(__int64 metaDBHandle, BSTR * path)
 {
+    if (path == nullptr)
+        return E_INVALIDARG;
+
     auto Handle = (metadb_handle *) metaDBHandle;
 
     const playable_location & Location = Handle->get_location();
@@ -137,6 +149,9 @@ STDMETHODIMP HostObject::getMetaDBHandlePath(__int64 metaDBHandle, BSTR * path)
 /// </summary>
 STDMETHODIMP HostObject::getMetaDBHandleRelativePath(__int64 metaDBHandle, BSTR * path)
 {
+    if (path == nullptr)
+        return E_INVALIDARG;
+
     auto Handle = (metadb_handle *) metaDBHandle;
 
     pfc::string Path;
@@ -145,6 +160,52 @@ STDMETHODIMP HostObject::getMetaDBHandleRelativePath(__int64 metaDBHandle, BSTR 
         *path = ::SysAllocString(::UTF8ToWide(Path.c_str()).c_str());
     else
         *path = ::SysAllocString(L"");
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the length of the specified metadb handle.
+/// </summary>
+STDMETHODIMP HostObject::getMetaDBHandleLength(__int64 metaDBHandle, double * length)
+{
+    if (length == nullptr)
+        return E_INVALIDARG;
+
+    auto Handle = (metadb_handle *) metaDBHandle;
+
+    *length = Handle->get_length();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Formats the title of a Media Library item.
+/// </summary>
+STDMETHODIMP HostObject::formatTitleMetaDBHandle(__int64 metaDBHandle, BSTR text, BSTR * formattedText)
+{
+    if ((text == nullptr) || (formattedText == nullptr))
+        return E_INVALIDARG;
+
+    auto Handle = (metadb_handle *) metaDBHandle;
+
+    titleformat_object::ptr FormatObject;
+    pfc::string8 Text = pfc::utf8FromWide(text);
+
+    bool Success = titleformat_compiler::get()->compile(FormatObject, Text);
+
+    if (!Success)
+    {
+        *formattedText = ::SysAllocString(L"");
+
+        return E_INVALIDARG;
+    }
+
+    pfc::string8 FormattedText;
+
+    Success = Handle->format_title(nullptr, FormattedText, FormatObject, nullptr);
+
+    *formattedText = ::SysAllocString(pfc::wideFromUTF8(FormattedText).c_str());
 
     return S_OK;
 }
