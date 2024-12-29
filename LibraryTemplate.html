@@ -51,9 +51,9 @@ onLibraryItemsRemoved: <span id="onLibraryItemsRemovedResult"></span><br/>
 </div>
 <script src="foobar2000.js"></script>
 <script>
-document.getElementById("isLibraryEnabledResult").textContent = MediaLibrary.isEnabled();
+document.getElementById("isLibraryEnabledResult").textContent = MediaLibrary.isEnabled;
 
-document.getElementById("executeButton").disabled = !Foobar2000.canExecuteShellOperations();
+document.getElementById("executeButton").disabled = !Foobar2000.canExecuteShellOperations;
 
 document.getElementById("showLibraryPreferencesButton").addEventListener("click", async () =>
 {
@@ -74,12 +74,19 @@ document.getElementById("searchButton").addEventListener("click", async () =>
 
         Text += Track.length + "ms, " + Track.FormatTitle("%filesize%") + " bytes, (" + Track.path + ")<br/>";
     }
-/* Enumeration does not work yet.
-    forEach (Tracks, Track =>
-    {
-        Text += Track.relativePath + "<br/>";
-    });
-*/
+
+/* Enumeration does not work yet.*/
+
+//for (let Track of Tracks)
+//{
+//    Text += Track.relativePath + "<br/>";
+//}
+
+//Tracks.forEach(Track =>
+//{
+//    Text += Track.relativePath + "<br/>";
+//});
+
     document.getElementById("Items").innerHTML = Text;
 
     Tracks.release();

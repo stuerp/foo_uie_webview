@@ -1,5 +1,7 @@
 
-/** $VER: foobar2000.js (2024.12.27) P. Stuer **/
+/** $VER: foobar2000.js (2024.12.29) P. Stuer **/
+
+"use strict";
 
 class Foobar2000
 {
@@ -7,17 +9,17 @@ class Foobar2000
     {
     }
 
-    static canReadFiles()
+    static get canReadFiles()
     {
         return chrome.webview.hostObjects.sync.foo_uie_webview.canReadFiles;
     }
 
-    static canReadDirectories()
+    static get canReadDirectories()
     {
         return chrome.webview.hostObjects.sync.foo_uie_webview.canReadDirectories;
     }
 
-    static canExecuteShellOperations()
+    static get canExecuteShellOperations()
     {
         return chrome.webview.hostObjects.sync.foo_uie_webview.canExecuteShellOperations;
     }
@@ -61,7 +63,7 @@ class MediaLibrary
         @kind function
         @returns {boolean}
     **/
-    static isEnabled()
+    static get isEnabled()
     {
         return chrome.webview.hostObjects.sync.foo_uie_webview.isLibraryEnabled;
     }
@@ -174,24 +176,41 @@ function MetaDBHandleList(arg)
     };
 
     // Iterator
-    Object.defineProperty(this, Symbol.iterator,
+    [Symbol.iterator]()
     {
-        value: function ()
+        const n = this.count;
+
+        let index = 0;
+
+        return
         {
-            let index = 0;
+            next: () =>
+            (
+                {
+                    done: index >= n,
+                    value: this[index++]
+                }
+            )
+        };
+    };
+//    Object.defineProperty(this, Symbol.iterator,
+//    {
+//        value: function ()
+//        {
+//            const n = this.count;
 
-            const n = this.count;
+//            let index = 0;
 
-            return
-            {
-                next: () =>
-                (
-                    {
-                        done: index >= n,
-                        value: new MetaDBHandle(this[index++])
-                    }
-                )
-            };
-        }
-    });
+//            return
+//            {
+//                next: () =>
+//                (
+//                    {
+//                        done: index >= n,
+//                        value: this[index++]
+//                    }
+//                )
+//            };
+//        }
+//    });
 }
