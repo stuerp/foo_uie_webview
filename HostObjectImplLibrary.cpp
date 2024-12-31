@@ -139,7 +139,7 @@ STDMETHODIMP HostObject::cloneMetaDBHandleList(__int64 list, __int64 * clone)
 
     auto List = (const metadb_handle_list *) list;
 
-    *clone = (__int64) new metadb_handle_list(*List);
+    *clone = (__int64) (size_t) new metadb_handle_list(*List);
 
     return S_OK;
 }

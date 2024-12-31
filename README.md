@@ -96,7 +96,7 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.3.0.0-alpha2, 2024-12-xx
+v0.3.0.0-alpha2, 2024-12-31
 
 * New:
   * Methods
