@@ -1,5 +1,5 @@
 
-/** $VER: HostObject.idl (2024.12.27) P. Stuer **/
+/** $VER: HostObject.idl (2024.12.31) P. Stuer **/
 
 import "oaidl.idl";
 import "ocidl.idl";
@@ -121,6 +121,7 @@ library HostObjectLibrary
         HRESULT showLibraryPreferences();
 
         HRESULT searchLibrary([in, defaultvalue("")] BSTR query, [out, retval] __int64 * tracks);
+        HRESULT showSearchUI([in, defaultvalue("")] BSTR query);
 
         HRESULT getMetaDBHandleListCount([in] __int64 list, [out, retval] __int64 * count);
         HRESULT getMetaDBHandleListItem([in] __int64 list, [in] __int64 index, [out, retval] __int64 * metaDBHandle);

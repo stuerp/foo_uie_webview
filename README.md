@@ -99,37 +99,41 @@ To create the component first build the x86 configuration and next the x64 confi
 v0.3.0.0-alpha2, 2024-12-xx
 
 * Changed: canReadFiles, canReadDirectories, canExecuteShellOperations and isEnabled are properties now.
+* New:
+  * Methods
+    * showSearchUI(filter): Shows the library search UI initialized with the specified filter.
+    * formatTitleMetaDBHandle(handle, BSTR text): Formats the title of the specified metadb handle with the specified title formatting text.
 
 v0.3.0.0-alpha1, 2024-12-27
 
 * New:
-  * Included foobar2000.js wraps the API to make JavaScript development easier. (alpha1)
-  * Set permissions in the Preferences dialog. (alpha1)
+  * Included foobar2000.js wraps the API to make JavaScript development easier.
+  * Set permissions in the Preferences dialog.
 
   * Properties
-    * isLibraryEnabled: Returns true if the Media Library is enabled. (alpha1)
-    * canReadFiles: Returns true if the component can read local files. (alpha1)
-    * canReadDirectories: Returns true if the component can read local directories. (alpha1)
-    * canExecuteShellOperations: Returns true if the component can execute shell operations. (alpha1)
+    * isLibraryEnabled: Returns true if the Media Library is enabled.
+    * canReadFiles: Returns true if the component can read local files.
+    * canReadDirectories: Returns true if the component can read local directories.
+    * canExecuteShellOperations: Returns true if the component can execute shell operations.
  
   * Methods
-    * execute(filePath, arguments, directoryPath, operation, showMode): Executes a shell operation on a file. Mostly used to run applications. Check the [SHELLEXECUTEINFOW](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shellexecuteinfow) documentation for the possible values of the parameters. (alpha1)
+    * execute(filePath, arguments, directoryPath, operation, showMode): Executes a shell operation on a file. Mostly used to run applications. Check the [SHELLEXECUTEINFOW](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shellexecuteinfow) documentation for the possible values of the parameters.
 
-    * showLibraryPreferences(): Shows the Media Library preferences dialog. (alpha1)
-    * searchLibrary(query): Searches the Media Library for matching tracks. Returns a metadb handle list. (alpha1)
+    * showLibraryPreferences(): Shows the Media Library preferences dialog.
+    * searchLibrary(query): Searches the Media Library for matching tracks. Returns a metadb handle list.
 
-    * getMetaDBHandleListCount(list): Returns the number of items in a list of metadb handles. (alpha1)
-    * getMetaDBHandleListItem(list, index): Returns the item at the specified index in a list of metadb handles. (alpha1)
-    * releaseMetaDBHandleList(list): Releases a list of metadb handles. (alpha1)
+    * getMetaDBHandleListCount(list): Returns the number of items in a list of metadb handles.
+    * getMetaDBHandleListItem(list, index): Returns the item at the specified index in a list of metadb handles.
+    * releaseMetaDBHandleList(list): Releases a list of metadb handles.
 
-    * getMetaDBHandlePath(handle): Gets the path of the specified metadb handle. (alpha1)
-    * getMetaDBHandleRelativePath(handle): Gets the path of the specified metadb handle relative to the Media Library folder it is in. (alpha1)
-    * getMetaDBHandleLength(handle): Gets the length of the specified metadb handle (in ms). (alpha1)
+    * getMetaDBHandlePath(handle): Gets the path of the specified metadb handle.
+    * getMetaDBHandleRelativePath(handle): Gets the path of the specified metadb handle relative to the Media Library folder it is in.
+    * getMetaDBHandleLength(handle): Gets the length of the specified metadb handle (in ms).
 
   * Callbacks
-    * onLibraryItemsAdded(items): Called when items have been added to the Media Library. (alpha1)
-    * onLibraryItemsModified(items): Called when Media Library items have been modified. (alpha1)
-    * onLibraryItemsRemoved(items): Called when Media Library items have been removed. (alpha1)
+    * onLibraryItemsAdded(items): Called when items have been added to the Media Library.
+    * onLibraryItemsModified(items): Called when Media Library items have been modified.
+    * onLibraryItemsRemoved(items): Called when Media Library items have been removed.
 
 v0.2.1.0, 2024-12-15
 

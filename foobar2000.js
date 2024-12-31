@@ -126,6 +126,17 @@ class MediaLibrary
     {
         return chrome.webview.hostObjects.foo_uie_webview.searchLibrary(query);
     }
+
+    /**
+        @description Shows the Media Library search UI.
+        @param {string=} filter - The search filter.
+        @returns {void}
+        @kind function
+    **/
+    static showSearchUI(filter)
+    {
+        chrome.webview.hostObjects.foo_uie_webview.showSearchUI(filter);
+    }
 };
 
 /**

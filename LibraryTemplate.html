@@ -35,6 +35,7 @@ div
 <body>
 <p>
 <button id="showLibraryPreferencesButton">Library preferences</button>
+<button id="showSearchUIButton">Library search UI</button>
 <button id="searchButton">Search</button>
 <button id="executeButton">Execute</button>
 </p>
@@ -58,6 +59,11 @@ document.getElementById("executeButton").disabled = !Foobar2000.canExecuteShellO
 document.getElementById("showLibraryPreferencesButton").addEventListener("click", async () =>
 {
     MediaLibrary.showPreferences();
+});
+
+document.getElementById("showSearchUIButton").addEventListener("click", async () =>
+{
+    MediaLibrary.showSearchUI("a");
 });
 
 document.getElementById("searchButton").addEventListener("click", async () =>

@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.h (2024.12.27) P. Stuer **/
+/** $VER: HostObjectImpl.h (2024.12.31) P. Stuer **/
 
 #pragma once
 
@@ -157,6 +157,7 @@ public:
     STDMETHODIMP showLibraryPreferences() override;
 
     STDMETHODIMP searchLibrary(BSTR query, __int64 * tracks) override;
+    STDMETHODIMP showSearchUI(BSTR query) override;
 
     STDMETHODIMP getMetaDBHandleListCount(__int64 list, __int64 * count) override;
     STDMETHODIMP getMetaDBHandleListItem(__int64 list,  __int64 index, __int64 * metaDBHandle) override;

@@ -85,6 +85,21 @@ STDMETHODIMP HostObject::searchLibrary(BSTR query, __int64 * tracks)
 }
 
 /// <summary>
+/// Shows the Media Library search UI.
+/// </summary>
+STDMETHODIMP HostObject::showSearchUI(BSTR query)
+{
+    pfc::string Query;
+
+    if (query != nullptr)
+        Query = pfc::utf8FromWide(query).c_str();
+
+    library_search_ui::get()->show(Query);
+
+    return S_OK;
+}
+
+/// <summary>
 /// Gets the number of items in the specified metadb handle list.
 /// </summary>
 STDMETHODIMP HostObject::getMetaDBHandleListCount(__int64 list, __int64 * count)
