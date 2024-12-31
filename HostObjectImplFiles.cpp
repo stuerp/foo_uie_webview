@@ -29,10 +29,10 @@
 /// </summary>
 STDMETHODIMP HostObject::getArtwork(BSTR type, BSTR * image)
 {
-    *image = ::SysAllocString(L""); // Return an empty string by default and in case of an error.
+    if ((type == nullptr) || (image == nullptr))
+        return SetLastError(E_INVALIDARG);
 
-    if (type == nullptr)
-        return E_INVALIDARG;
+    *image = ::SysAllocString(L""); // Return an empty string by default and in case of an error.
 
     // Verify the requested artwork type.
     GUID AlbumArtId;
@@ -62,12 +62,12 @@ STDMETHODIMP HostObject::getArtwork(BSTR type, BSTR * image)
         AlbumArtId = album_art_ids::artist;
     }
     else
-        return S_OK;
+        return SetLastError(S_OK);
 
     metadb_handle_ptr Handle;
 
     if (!_PlaybackControl->get_now_playing(Handle))
-        return S_OK;
+        return SetLastError(S_OK);
 
     static_api_ptr_t<album_art_manager_v3> Manager;
 
@@ -78,7 +78,7 @@ STDMETHODIMP HostObject::getArtwork(BSTR type, BSTR * image)
         album_art_extractor_instance_v2::ptr Extractor = Manager->open_v3(pfc::list_single_ref_t<metadb_handle_ptr>(Handle), pfc::list_single_ref_t<GUID>(AlbumArtId), nullptr, fb2k::noAbort);
 
         if (Extractor.is_empty())
-            return S_OK;
+            return SetLastError(S_OK);
 
         // Query the external search patterns first.
         try
@@ -97,7 +97,7 @@ STDMETHODIMP HostObject::getArtwork(BSTR type, BSTR * image)
 
                         *image = ::SysAllocString(::UTF8ToWide(Paths->get_path(i)).c_str());
                 
-                        return S_OK;
+                        return SetLastError(S_OK);
                     }
                 }
             }
@@ -115,7 +115,7 @@ STDMETHODIMP HostObject::getArtwork(BSTR type, BSTR * image)
                 Extractor = Manager->open_stub(fb2k::noAbort);
 
                 if (!Extractor->query(AlbumArtId, aad, fb2k::noAbort))
-                    return S_OK;
+                    return SetLastError(S_OK);
             }
             catch (std::exception & e)
             {
@@ -131,7 +131,7 @@ STDMETHODIMP HostObject::getArtwork(BSTR type, BSTR * image)
             album_art_extractor_instance_v2::ptr Extractor = Manager->open_stub(fb2k::noAbort);
 
             if (!Extractor->query(AlbumArtId, aad, fb2k::noAbort))
-                return S_OK;
+                return SetLastError(S_OK);
         }
         catch (std::exception & e)
         {
@@ -142,7 +142,7 @@ STDMETHODIMP HostObject::getArtwork(BSTR type, BSTR * image)
     if (!aad.is_empty())
         ToBase64((const BYTE *) aad->data(), (DWORD) aad->size(), image);
 
-    return S_OK;
+    return SetLastError(S_OK);
 }
 
 #pragma region Files
@@ -152,11 +152,13 @@ STDMETHODIMP HostObject::getArtwork(BSTR type, BSTR * image)
 /// </summary>
 STDMETHODIMP HostObject::readAllText(BSTR filePath, __int32 codePage, BSTR * text)
 {
+    if ((filePath == nullptr) || (text == nullptr))
+        return SetLastError(E_INVALIDARG);
+
     if ((_Configuration->_Permissions & Permission::ReadFiles) == 0)
         return SetLastError(E_ACCESSDENIED);
 ;
-    if ((filePath == nullptr) || (text == nullptr))
-        return E_INVALIDARG;
+    *text = ::SysAllocString(L""); // Return an empty string by default and in case of an error.
 
     if (codePage == 0)
         codePage = 65001;
@@ -164,7 +166,7 @@ STDMETHODIMP HostObject::readAllText(BSTR filePath, __int32 codePage, BSTR * tex
     HANDLE hFile = ::CreateFileW(filePath, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 
     if (hFile == INVALID_HANDLE_VALUE)
-        return HRESULT_FROM_WIN32(::GetLastError());
+        return SetLastError(HRESULT_FROM_WIN32(::GetLastError()));
 
     LARGE_INTEGER FileSize;
 
@@ -181,7 +183,11 @@ STDMETHODIMP HostObject::readAllText(BSTR filePath, __int32 codePage, BSTR * tex
             DWORD BytesRead;
 
             if (::ReadFile(hFile, (void *) Text.c_str(), FileSize.LowPart, &BytesRead, nullptr) && (BytesRead == FileSize.LowPart))
+            {
+                ::SysFreeString(*text);
+
                 *text = ::SysAllocString(::CodePageToWide((uint32_t) codePage, Text).c_str());
+            }
             else
                 hr = HRESULT_FROM_WIN32(::GetLastError());
         }
@@ -193,7 +199,7 @@ STDMETHODIMP HostObject::readAllText(BSTR filePath, __int32 codePage, BSTR * tex
 
     ::CloseHandle(hFile);
 
-    return hr;
+    return SetLastError(hr);
 }
 
 /// <summary>
@@ -201,25 +207,27 @@ STDMETHODIMP HostObject::readAllText(BSTR filePath, __int32 codePage, BSTR * tex
 /// </summary>
 STDMETHODIMP HostObject::readDirectory(BSTR directoryPath, BSTR searchPattern, BSTR * json)
 {
-    if ((_Configuration->_Permissions & Permission::ReadDirectories) == 0)
-        return SetLastError(E_ACCESSDENIED);
-
     if ((directoryPath == nullptr) || (searchPattern == nullptr) || (json == nullptr))
-        return E_INVALIDARG;
+        return SetLastError(E_INVALIDARG);
 
     *json = ::SysAllocString(L""); // Return an empty string by default and in case of an error.
+
+    if ((_Configuration->_Permissions & Permission::ReadDirectories) == 0)
+        return SetLastError(E_ACCESSDENIED);
 
     WCHAR PathName[MAX_PATH];
 
     if (!SUCCEEDED(::PathCchCombineEx(PathName, _countof(PathName), directoryPath, searchPattern, PATHCCH_ALLOW_LONG_PATHS)))
-        return HRESULT_FROM_WIN32(::GetLastError());
+        return SetLastError(HRESULT_FROM_WIN32(::GetLastError()));
 
     WIN32_FIND_DATA fd = {};
 
     HANDLE hFind = ::FindFirstFileW(PathName, &fd);
 
     if (hFind == INVALID_HANDLE_VALUE)
-        return HRESULT_FROM_WIN32(::GetLastError());
+        return SetLastError(HRESULT_FROM_WIN32(::GetLastError()));
+
+    ::SysFreeString(*json);
 
     BOOL Success = TRUE;
 
@@ -254,7 +262,7 @@ STDMETHODIMP HostObject::readDirectory(BSTR directoryPath, BSTR searchPattern, B
 
     *json = ::SysAllocString(Result.c_str());
 
-    return S_OK;
+    return SetLastError(S_OK);
 }
 
 /// <summary>
@@ -262,18 +270,18 @@ STDMETHODIMP HostObject::readDirectory(BSTR directoryPath, BSTR searchPattern, B
 /// </summary>
 STDMETHODIMP HostObject::readImage(BSTR filePath, BSTR * image)
 {
+    if ((filePath == nullptr) || (image == nullptr))
+        return SetLastError(E_INVALIDARG);
+
     if ((_Configuration->_Permissions & Permission::ReadFiles) == 0)
         return SetLastError(E_ACCESSDENIED);
 
     *image = ::SysAllocString(L""); // Return an empty string by default and in case of an error.
 
-    if ((filePath == nullptr) || (image == nullptr))
-        return E_INVALIDARG;
-
     HANDLE hFile = ::CreateFileW(filePath, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 
     if (hFile == INVALID_HANDLE_VALUE)
-        return HRESULT_FROM_WIN32(::GetLastError());
+        return SetLastError(HRESULT_FROM_WIN32(::GetLastError()));
 
     LARGE_INTEGER FileSize;
 
@@ -290,7 +298,11 @@ STDMETHODIMP HostObject::readImage(BSTR filePath, BSTR * image)
                 DWORD BytesRead;
 
                 if (::ReadFile(hFile, Data, FileSize.LowPart, &BytesRead, nullptr) && (BytesRead == FileSize.LowPart))
+                {
+                    ::SysFreeString(*image);
+
                     ToBase64(Data, FileSize.LowPart, image);
+                }
                 else
                     hr = HRESULT_FROM_WIN32(::GetLastError());
 
@@ -305,5 +317,5 @@ STDMETHODIMP HostObject::readImage(BSTR filePath, BSTR * image)
 
     ::CloseHandle(hFile);
 
-    return S_OK;
+    return SetLastError(S_OK);
 }

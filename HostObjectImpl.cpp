@@ -565,10 +565,10 @@ STDMETHODIMP HostObject::execute(BSTR filePath, BSTR parameters, BSTR directoryP
     {
         DWORD LastError = ::GetLastError();
 
-        return HRESULT_FROM_WIN32(LastError);
+        return SetLastError(HRESULT_FROM_WIN32(LastError));
     }
 
-    return S_OK;
+    return SetLastError(S_OK);
 }
 
 #pragma endregion

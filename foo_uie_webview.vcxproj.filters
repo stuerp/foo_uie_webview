@@ -61,6 +61,7 @@
     <None Include="docs\index.md" />
     <None Include="LibraryTemplate.html" />
     <None Include="foobar2000.js" />
+    <None Include="OSTemplate.html" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="LICENSE.txt" />

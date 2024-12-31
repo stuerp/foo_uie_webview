@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Example template for the OS API</title>
+<meta charset="UTF-8">
+<style>
+:root
+{
+    color-scheme: light dark; /* Opt the entire page into the user's color scheme preferences */
+}
+
+html
+{
+    margin: 0;
+    padding: 0;
+}
+body
+{
+    margin: 0.5em; 
+    padding: 0;
+    align-items: start;
+    justify-content: left;
+    height: 100vh;
+    font: 10.5pt "Calibri Light", Sans-serif;
+    line-height: 1.2;
+    color: #555753;
+}
+div
+{ 
+    margin: 0; 
+    padding: 0;
+}
+</style>
+</head>
+<body>
+<p>
+<button id="readFileButton">Read File</button>
+<button id="readDirectoryButton">Read Directory</button>
+<button id="executeButton">Execute</button>
+</p>
+<div id="Items"/>
+<script src="foobar2000.js"></script>
+<script>
+document.getElementById("readFileButton").addEventListener("click", async () =>
+{
+    try
+    {
+        const Text = Foobar2000.readAllText("C:/Windows/win.ini");
+
+        document.getElementById("Items").innerText = Text;
+    }
+    catch (e)
+    {
+        alert(e.message);
+    }
+});
+
+document.getElementById("readDirectoryButton").addEventListener("click", async () =>
+{
+    try
+    {
+        const Text = Foobar2000.readDirectory("C:/Windows", "*.exe");
+
+        const Items = JSON.parse(Text);
+
+        document.getElementById("Items").innerHTML = ArrayToTable(Items);
+    }
+    catch (e)
+    {
+        alert(e.message);
+    }
+});
+
+document.getElementById("executeButton").addEventListener("click", async () =>
+{
+    try
+    {
+//      await Foobar2000.execute("notepad.exe");
+//      await Foobar2000.execute("notepad.exe", "%SystemRoot%\\win.ini");
+//      await Foobar2000.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%");
+//      await Foobar2000.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%", "runas"); // Run notepad with elevated integrity
+        Foobar2000.execute("notepad.exe", "%SystemRoot%\\win.ini", "%ProgramFiles%", "open", SW_SHOWNORMAL);
+    }
+    catch (e)
+    {
+        alert(e.message);
+    }
+});
+
+function ArrayToTable(Items)
+{
+    const Headers = Object.keys(Items[0]);
+
+    let Table = '<table><thead><tr>';
+    Headers.forEach(Header => Table += `<th>${Header}</th>`);
+    Table += '</tr></thead><tbody>';
+
+    Items.forEach(Row =>
+    {
+        Table += '<tr>';
+        Headers.forEach(Header => Table += `<td>${Row[Header]}</td>`);
+        Table += '</tr>';
+    });
+
+    Table += '</tbody></table>';
+
+    return Table;
+}
+
+function Now()
+{
+    return new Date().toISOString().slice(-24).replace(/\D/g,'').slice(0, 14);
+}
+</script>
+</body>
+</html>

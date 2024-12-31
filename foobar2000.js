@@ -18,7 +18,7 @@ class Foobar2000Error extends Error
         this.name = "Foobar2000Error";
         this.number = number;
     }
-}
+};
 
 /**
     @typedef {object} Foobar2000
@@ -36,6 +36,28 @@ class Foobar2000
     }
 
     /**
+        @description Returns the number of the last error.
+        @name lastErrorNumber
+        @returns {number}
+        @function
+     **/
+    static get lastErrorNumber()
+    {
+        return chrome.webview.hostObjects.sync.foo_uie_webview.lastErrorNumber;
+    }
+
+    /**
+        @description Returns the message of the last error.
+        @name lastErrorMessage
+        @returns {string}
+        @function
+     **/
+    static get lastErrorMessage()
+    {
+        return chrome.webview.hostObjects.sync.foo_uie_webview.lastErrorMessage;
+    }
+
+    /**
         @description Returns true if the component can read local files. Needs to be enabled by the user in the component preferences.
         @name canReadFiles
         @returns {boolean}
@@ -43,7 +65,14 @@ class Foobar2000
      **/
     static get canReadFiles()
     {
-        return chrome.webview.hostObjects.sync.foo_uie_webview.canReadFiles;
+        try
+        {
+            return chrome.webview.hostObjects.sync.foo_uie_webview.canReadFiles;
+        }
+        catch (e)
+        {
+            throw new Foobar2000Error(this.lastErrorNumber, this.lastErrorMessage);
+        }
     }
 
     /**
@@ -54,37 +83,72 @@ class Foobar2000
      **/
     static get canReadDirectories()
     {
-        return chrome.webview.hostObjects.sync.foo_uie_webview.canReadDirectories;
+        try
+        {
+            return chrome.webview.hostObjects.sync.foo_uie_webview.canReadDirectories;
+        }
+        catch (e)
+        {
+            throw new Foobar2000Error(this.lastErrorNumber, this.lastErrorMessage);
+        }
     }
 
     /**
         @description Returns true if the component can execute Shell operations on local files. Needs to be enabled by the user in the component preferences.
         @name canExecuteShellOperations
         @returns {boolean}
+        @throws {Foobar2000Error}
         @function
      **/
     static get canExecuteShellOperations()
     {
-        return chrome.webview.hostObjects.sync.foo_uie_webview.canExecuteShellOperations;
+        try
+        {
+            return chrome.webview.hostObjects.sync.foo_uie_webview.canExecuteShellOperations;
+        }
+        catch (e)
+        {
+            throw new Foobar2000Error(this.lastErrorNumber, this.lastErrorMessage);
+        }
+    }
+
+    /**
+        @description Reads the specified directory.
+        @param {string} filePath - The path of file to read.
+        @param {number=65001} codePage - The code page of the text.
+        @returns {string}
+        @throws {Foobar2000Error}
+        @function
+    **/
+    static readAllText(filePath, codePage = 65001)
+    {
+        try
+        {
+            return chrome.webview.hostObjects.sync.foo_uie_webview.readAllText(filePath, codePage);
+        }
+        catch (e)
+        {
+            throw new Foobar2000Error(this.lastErrorNumber, this.lastErrorMessage);
+        }
     }
 
     /**
         @description Reads the specified directory.
         @param {directoryPath} filePath - The path of the directory.
-        @param {string=} [searchPattern] - The search pattern to filter the return items with.
+        @param {string="*.*"} searchPattern - The search pattern to filter the return items with.
         @returns {object}
         @throws {Foobar2000Error}
         @function
     **/
-    static readDirectory(directoryPath, searchPattern)
+    static readDirectory(directoryPath, searchPattern = "*.*")
     {
         try
         {
-            chrome.webview.hostObjects.foo_uie_webview.readDirectory(directoryPath, searchPattern);
+            return chrome.webview.hostObjects.sync.foo_uie_webview.readDirectory(directoryPath, searchPattern);
         }
         catch (e)
         {
-            throw new Foobar2000Error(chrome.webview.hostObjects.sync.foo_uie_webview.lastErrorNumber, chrome.webview.hostObjects.sync.foo_uie_webview.lastErrorMessage);
+            throw new Foobar2000Error(this.lastErrorNumber, this.lastErrorMessage);
         }
     }
 
@@ -100,7 +164,14 @@ class Foobar2000
     **/
     static execute(filePath, parameters, directoryPath, operation, showMode)
     {
-        chrome.webview.hostObjects.foo_uie_webview.execute(filePath, parameters, directoryPath, operation, showMode);
+        try
+        {
+            chrome.webview.hostObjects.sync.foo_uie_webview.execute(filePath, parameters, directoryPath, operation, showMode);
+        }
+        catch (e)
+        {
+            throw new Foobar2000Error(this.lastErrorNumber, this.lastErrorMessage);
+        }
     }
 };
 

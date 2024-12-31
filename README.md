@@ -110,6 +110,9 @@ v0.3.0.0-alpha2, 2024-12-xx
     * cloneMetaDBHandleList(): Clones a list of metadb handles.
     * clearMetaDBHandleList(): Clears a list of metadb handles.
     * addMetaDBHandleList(): Adds the items of a metadb handle list to another.
+  * Properties
+    * lastErrorNumber: Gets the number of the last error.
+    * lastErrorMessage: Gets the message of the last error.
 * Changed: canReadFiles, canReadDirectories, canExecuteShellOperations and isEnabled are properties now.
 * Improved: Expanded JSDoc comments in foobar2000.js.
 * Improved: Expanded error checking and handling in foobar2000.js.

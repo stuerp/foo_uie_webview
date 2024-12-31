@@ -52,6 +52,7 @@ if ($Platform -eq 'x64')
         Copy-Item "FrameTemplate.html"             -Destination "$PackagePath/x64/Default-FrameTemplate.html" -Force -Verbose;
         Copy-Item "PlaylistTemplate.html"          -Destination "$PackagePath/x64/Default-PlaylistTemplate.html" -Force -Verbose;
         Copy-Item "LibraryTemplate.html"           -Destination "$PackagePath/x64/Default-LibraryTemplate.html" -Force -Verbose;
+        Copy-Item "OSTemplate.html"                -Destination "$PackagePath/x64/Default-OSTemplate.html" -Force -Verbose;
         Copy-Item "foobar2000.js"                  -Destination "$PackagePath/x64/foobar2000.js" -Force -Verbose;
     }
 
@@ -96,6 +97,7 @@ elseif ($Platform -eq 'Win32')
         Copy-Item "FrameTemplate.html"             -Destination "$PackagePath/Default-FrameTemplate.html" -Force -Verbose;
         Copy-Item "PlaylistTemplate.html"          -Destination "$PackagePath/Default-PlaylistTemplate.html" -Force -Verbose;
         Copy-Item "LibraryTemplate.html"           -Destination "$PackagePath/Default-LibraryTemplate.html" -Force -Verbose;
+        Copy-Item "OSTemplate.html"                -Destination "$PackagePath/Default-OSTemplate.html" -Force -Verbose;
         Copy-Item "foobar2000.js"                  -Destination "$PackagePath/foobar2000.js" -Force -Verbose;
 }
 
