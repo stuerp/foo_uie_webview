@@ -201,7 +201,7 @@ function MetaDBHandle(handle)
 
     /**
         @description Returns the length of the track represented by the handle.
-        @returns {number}
+        @returns {number} - Length (in seconds)
         @kind function
     **/
     Object.defineProperty(this, 'length',
@@ -226,7 +226,7 @@ function MetaDBHandle(handle)
         if (this.Source === 0)
             throw new Error('Object is not bound to a handle');
 
-        return chrome.webview.hostObjects.sync.foo_uie_webview.formatTitleMetaDBHandle(this.Source, text);
+        return chrome.webview.hostObjects.sync.foo_uie_webview.formatMetaDBHandleTitle(this.Source, text);
     };
 }
 
@@ -235,7 +235,15 @@ function MetaDBHandle(handle)
     @description Provides access to a list of MetaDB handles.
     @property {number} Source - The native handle value of the metadb handle list
     @property {number} count - Gets the number of items.
+    @function clone - Clones this metadb handle list.
+    @function clear - Clears this metadb handle list.
+    @function concat - Concatinates a metadb handle list.
     @function release - Releases the metadb handle list.
+    @function sortByFormat - Sorts the metadb handle list by the specified title format.
+    @function sortByPath - Sorts the metadb handle list by the path.
+    @function sortByRelativePath - Sorts the metadb handle list by the relative path.
+    @function removeDuplicates - Removes duplicate items from a metadb handle list.
+    @function calculateDuration - Calculates the total duration of a metadb handle list.
     @kind class
  **/
 /**
@@ -271,6 +279,42 @@ function MetaDBHandleList(handle)
             return chrome.webview.hostObjects.sync.foo_uie_webview.getMetaDBHandleListCount(this.Source);
         }
     });
+
+    /**
+        @description Clones this metadb handle list.
+        @returns {number} - Handle to a metadb handle list.
+    **/
+    this.clone = function ()
+    {
+        if (this.Source === 0)
+            throw new Error('Object is not bound to a handle list');
+
+        return chrome.webview.hostObjects.sync.foo_uie_webview.cloneMetaDBHandleList(this.Source);
+    };
+
+    /**
+        @description Clears this metadb handle list.
+        @returns {void}
+    **/
+    this.clear = function ()
+    {
+        if (this.Source === 0)
+            throw new Error('Object is not bound to a handle list');
+
+        chrome.webview.hostObjects.sync.foo_uie_webview.clearMetaDBHandleList(this.Source);
+    };
+
+    /**
+        @description Concatinates a metadb handle list.
+        @returns {void}
+    **/
+    this.concat = function (list)
+    {
+        if (this.Source === 0)
+            throw new Error('Object is not bound to a handle list');
+
+        chrome.webview.hostObjects.sync.foo_uie_webview.addMetaDBHandleList(this.Source, list);
+    };
 
     /**
         @description Releases the metadb handle list.
@@ -323,4 +367,64 @@ function MetaDBHandleList(handle)
             };
         }
     });
+
+    /**
+        @description Sorts the metadb handle list by the specified title format.
+        @returns {void}
+    **/
+    this.sortByFormat = function (format)
+    {
+        if (this.Source === 0)
+            throw new Error('Object is not bound to a handle list');
+
+        chrome.webview.hostObjects.sync.foo_uie_webview.sortMetaDBHandleListByFormat(this.Source, format);
+    };
+
+    /**
+        @description Sorts the metadb handle list by the path.
+        @returns {void}
+    **/
+    this.sortByPath = function ()
+    {
+        if (this.Source === 0)
+            throw new Error('Object is not bound to a handle list');
+
+        chrome.webview.hostObjects.sync.foo_uie_webview.sortMetaDBHandleListByPath(this.Source);
+    };
+
+    /**
+        @description Sorts the metadb handle list by the relative path.
+        @returns {void}
+    **/
+    this.sortByRelativePath = function ()
+    {
+        if (this.Source === 0)
+            throw new Error('Object is not bound to a handle list');
+
+        chrome.webview.hostObjects.sync.foo_uie_webview.sortMetaDBHandleListByRelativePath(this.Source);
+    };
+
+    /**
+        @description Removes duplicate items from a metadb handle list.
+        @returns {void}
+    **/
+    this.removeDuplicates = function ()
+    {
+        if (this.Source === 0)
+            throw new Error('Object is not bound to a handle list');
+
+        chrome.webview.hostObjects.sync.foo_uie_webview.removeMetaDBHandleListDuplicates(this.Source);
+    };
+
+    /**
+        @description Calculates the total duration of a metadb handle list.
+        @returns {number} - Duration (in seconds)
+    **/
+    this.calculateDuration = function ()
+    {
+        if (this.Source === 0)
+            throw new Error('Object is not bound to a handle list');
+
+        return chrome.webview.hostObjects.sync.foo_uie_webview.calculateMetaDBHandleListDuration(this.Source);
+    };
 }

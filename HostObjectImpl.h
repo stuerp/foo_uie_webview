@@ -156,18 +156,28 @@ public:
     STDMETHODIMP get_isLibraryEnabled(VARIANT_BOOL * value) override;
     STDMETHODIMP showLibraryPreferences() override;
 
-    STDMETHODIMP searchLibrary(BSTR query, __int64 * tracks) override;
+    STDMETHODIMP searchLibrary(BSTR query, __int64 * list) override;
     STDMETHODIMP showSearchUI(BSTR query) override;
 
     STDMETHODIMP getMetaDBHandleListCount(__int64 list, __int64 * count) override;
     STDMETHODIMP getMetaDBHandleListItem(__int64 list,  __int64 index, __int64 * metaDBHandle) override;
+
+    STDMETHODIMP cloneMetaDBHandleList(__int64 list, __int64 * clone) override;
+    STDMETHODIMP clearMetaDBHandleList(__int64 list) override;
+    STDMETHODIMP addMetaDBHandleList(__int64 from, __int64 to) override;
     STDMETHODIMP releaseMetaDBHandleList(__int64 list) override;
+
+    STDMETHODIMP sortMetaDBHandleListByFormat(__int64 list, BSTR text) override;
+    STDMETHODIMP sortMetaDBHandleListByPath(__int64 list) override;
+    STDMETHODIMP sortMetaDBHandleListByRelativePath(__int64 list) override;
+    STDMETHODIMP removeMetaDBHandleListDuplicates(__int64 list) override;
+    STDMETHODIMP calculateMetaDBHandleListDuration(__int64 list, double * duration) override;
 
     STDMETHODIMP getMetaDBHandlePath(__int64 metaDBHandle, BSTR * path) override;
     STDMETHODIMP getMetaDBHandleRelativePath(__int64 metaDBHandle, BSTR * path) override;
     STDMETHODIMP getMetaDBHandleLength(__int64 metaDBHandle, double * length) override;
 
-    STDMETHODIMP formatTitleMetaDBHandle(__int64 metaDBHandle, BSTR script, BSTR * path) override;
+    STDMETHODIMP formatMetaDBHandleTitle(__int64 metaDBHandle, BSTR script, BSTR * path) override;
 
     /* Permissions */
 

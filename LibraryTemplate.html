@@ -40,13 +40,16 @@ div
 <button id="executeButton">Execute</button>
 </p>
 <p>
-isLibraryEnabled: <span id="isLibraryEnabledResult" style="font-weight: bold"></span><br/>
+Is media library enabled: <span id="isLibraryEnabledResult" style="font-weight: bold"></span><br/>
 </p>
 <div>
 <p>
 onLibraryItemsAdded: <span id="onLibraryItemsAddedResult"></span><br/>
 onLibraryItemsModified: <span id="onLibraryItemsModifiedResult"></span><br/>
 onLibraryItemsRemoved: <span id="onLibraryItemsRemovedResult"></span><br/>
+<p>
+Total duraction: <span id="totalDuration" style="font-weight: bold"></span>s<br/>
+</p>
 <div id="Items"/>
 </p>
 </div>
@@ -70,6 +73,13 @@ document.getElementById("searchButton").addEventListener("click", async () =>
 {
     const Tracks = new MetaDBHandleList(await MediaLibrary.search("")); // Returns the complete library.
 
+    Tracks.sortByFormat("%length%");
+    Tracks.sortByPath();
+    Tracks.sortByRelativePath();
+    Tracks.removeDuplicates();
+
+    document.getElementById("totalDuration").innerHTML = Tracks.calculateDuration().toFixed(3);
+
     let Text = "";
 
     const Count = Tracks.count;
@@ -78,7 +88,7 @@ document.getElementById("searchButton").addEventListener("click", async () =>
     {
         const Track = new MetaDBHandle(Tracks[i]);
 
-        Text += Track.length.toFixed(2) + "ms, " + Track.formatTitle("%filesize%") + " bytes, (" + Track.path + ")<br/>";
+        Text += Track.length.toFixed(3) + "s, " + Track.formatTitle("%filesize%") + " bytes, (" + Track.path + ")<br/>";
     }
 
 /* Enumeration does not work yet.*/
@@ -94,6 +104,20 @@ document.getElementById("searchButton").addEventListener("click", async () =>
 //});
 
     document.getElementById("Items").innerHTML = Text;
+
+    {
+        let Clone = new MetaDBHandleList(Tracks.clone());
+
+        console.log(Clone.count);
+
+        Clone.concat(Clone);
+
+        console.log(Clone.count);
+
+        Clone.clear();
+
+        Clone.release();
+    }
 
     Tracks.release();
 });

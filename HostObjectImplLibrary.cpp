@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImplMetaDB.cpp (2024.12.31) P. Stuer **/
+/** $VER: HostObjectImplLibrary.cpp (2024.12.31) P. Stuer **/
 
 #include "pch.h"
 
@@ -44,12 +44,12 @@ STDMETHODIMP HostObject::showLibraryPreferences()
 /// <summary>
 /// Searches the Media Library for matching tracks.
 /// </summary>
-STDMETHODIMP HostObject::searchLibrary(BSTR query, __int64 * tracks)
+STDMETHODIMP HostObject::searchLibrary(BSTR query, __int64 * list)
 {
-    if (tracks == nullptr)
+    if (list == nullptr)
         return E_INVALIDARG;
 
-    *tracks = 0;
+    *list = 0;
 
     auto List = new metadb_handle_list();
 /*
@@ -79,7 +79,7 @@ STDMETHODIMP HostObject::searchLibrary(BSTR query, __int64 * tracks)
         }
     }
 
-    *tracks = (__int64) (size_t) List;
+    *list = (__int64) (size_t) List;
 
     return S_OK;
 }
@@ -130,6 +130,52 @@ STDMETHODIMP HostObject::getMetaDBHandleListItem(__int64 list,  __int64 index, _
 }
 
 /// <summary>
+/// Clones the specified metadb handle list.
+/// </summary>
+STDMETHODIMP HostObject::cloneMetaDBHandleList(__int64 list, __int64 * clone)
+{
+    if ((list == 0) || (clone == nullptr))
+        return E_INVALIDARG;
+
+    auto List = (const metadb_handle_list *) list;
+
+    *clone = (__int64) new metadb_handle_list(*List);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Clears the specified metadb handle list.
+/// </summary>
+STDMETHODIMP HostObject::clearMetaDBHandleList(__int64 list)
+{
+    if (list == 0)
+        return E_INVALIDARG;
+
+    auto List = (metadb_handle_list *) list;
+
+    List->remove_all();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Adds the items of a metadb handle list to another.
+/// </summary>
+STDMETHODIMP HostObject::addMetaDBHandleList(__int64 from, __int64 to)
+{
+    if ((from == 0) || (to == 0))
+        return E_INVALIDARG;
+
+    auto From = (metadb_handle_list *) from;
+    auto To = (metadb_handle_list *) to;
+
+    To->add_items(*From);
+
+    return S_OK;
+}
+
+/// <summary>
 /// Releases the specified metadb handle list.
 /// </summary>
 STDMETHODIMP HostObject::releaseMetaDBHandleList(__int64 list)
@@ -140,6 +186,81 @@ STDMETHODIMP HostObject::releaseMetaDBHandleList(__int64 list)
     auto List = (const metadb_handle_list *) list;
 
     delete List;
+
+    return S_OK;
+}
+
+/// <summary>
+/// Sorts the metadb handle list by the specified title format.
+/// </summary>
+STDMETHODIMP HostObject::sortMetaDBHandleListByFormat(__int64 list, BSTR format)
+{
+    if ((list == 0) || (format == nullptr))
+        return E_INVALIDARG;
+
+    auto List = (metadb_handle_list *) list;
+
+    List->sort_by_format(pfc::utf8FromWide(format).c_str(), nullptr);
+
+    return S_OK;
+}
+
+/// <summary>
+/// Sorts the metadb handle list by the path.
+/// </summary>
+STDMETHODIMP HostObject::sortMetaDBHandleListByPath(__int64 list)
+{
+    if (list == 0)
+        return E_INVALIDARG;
+
+    auto List = (metadb_handle_list *) list;
+
+    List->sort_by_path();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Sorts the metadb handle list by the relative path.
+/// </summary>
+STDMETHODIMP HostObject::sortMetaDBHandleListByRelativePath(__int64 list)
+{
+    if (list == 0)
+        return E_INVALIDARG;
+
+    auto List = (metadb_handle_list *) list;
+
+    List->sort_by_relative_path();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Removes duplicate items from a metadb handle list.
+/// </summary>
+STDMETHODIMP HostObject::removeMetaDBHandleListDuplicates(__int64 list)
+{
+    if (list == 0)
+        return E_INVALIDARG;
+
+    auto List = (metadb_handle_list *) list;
+
+    List->remove_duplicates();
+
+    return S_OK;
+}
+
+/// <summary>
+/// Calculates the total duration of a metadb handle list.
+/// </summary>
+STDMETHODIMP HostObject::calculateMetaDBHandleListDuration(__int64 list, double * duration)
+{
+    if ((list == 0) || (duration == nullptr))
+        return E_INVALIDARG;
+
+    auto List = (metadb_handle_list *) list;
+
+    *duration = metadb_handle_list_helper::calc_total_duration_v2(*List, std::thread::hardware_concurrency(), fb2k::noAbort);
 
     return S_OK;
 }
@@ -199,7 +320,7 @@ STDMETHODIMP HostObject::getMetaDBHandleLength(__int64 metaDBHandle, double * le
 /// <summary>
 /// Formats the title of a Media Library item.
 /// </summary>
-STDMETHODIMP HostObject::formatTitleMetaDBHandle(__int64 metaDBHandle, BSTR text, BSTR * formattedText)
+STDMETHODIMP HostObject::formatMetaDBHandleTitle(__int64 metaDBHandle, BSTR text, BSTR * formattedText)
 {
     if ((metaDBHandle == 0) || (text == nullptr) || (formattedText == nullptr))
         return E_INVALIDARG;
@@ -226,5 +347,4 @@ STDMETHODIMP HostObject::formatTitleMetaDBHandle(__int64 metaDBHandle, BSTR text
 
     return S_OK;
 }
-
 #pragma endregion

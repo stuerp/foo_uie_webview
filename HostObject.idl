@@ -120,18 +120,28 @@ library HostObjectLibrary
         [propget] HRESULT isLibraryEnabled([out, retval] VARIANT_BOOL * value);
         HRESULT showLibraryPreferences();
 
-        HRESULT searchLibrary([in, defaultvalue("")] BSTR query, [out, retval] __int64 * tracks);
+        HRESULT searchLibrary([in, defaultvalue("")] BSTR query, [out, retval] __int64 * list);
         HRESULT showSearchUI([in, defaultvalue("")] BSTR query);
 
         HRESULT getMetaDBHandleListCount([in] __int64 list, [out, retval] __int64 * count);
         HRESULT getMetaDBHandleListItem([in] __int64 list, [in] __int64 index, [out, retval] __int64 * metaDBHandle);
+
+        HRESULT cloneMetaDBHandleList([in] __int64 list, [out, retval] __int64 * clone);
+        HRESULT clearMetaDBHandleList([in] __int64 list);
+        HRESULT addMetaDBHandleList([in] __int64 from, [in] __int64 to);
         HRESULT releaseMetaDBHandleList([in] __int64 list);
+
+        HRESULT sortMetaDBHandleListByFormat([in] __int64 list, [in] BSTR text);
+        HRESULT sortMetaDBHandleListByPath([in] __int64 list);
+        HRESULT sortMetaDBHandleListByRelativePath([in] __int64 list);
+        HRESULT removeMetaDBHandleListDuplicates([in] __int64 list);
+        HRESULT calculateMetaDBHandleListDuration([in] __int64 list, [out, retval] double * duration);
 
         HRESULT getMetaDBHandlePath([in] __int64 handle, [out, retval] BSTR * path);
         HRESULT getMetaDBHandleRelativePath([in] __int64 handle, [out, retval] BSTR * path);
         HRESULT getMetaDBHandleLength([in] __int64 handle, [out, retval] double * length);
 
-        HRESULT formatTitleMetaDBHandle([in] __int64 handle, [in] BSTR text, [out, retval] BSTR * formattedText);
+        HRESULT formatMetaDBHandleTitle([in] __int64 handle, [in] BSTR text, [out, retval] BSTR * formattedText);
 
         // Permissions
         [propget] HRESULT canReadFiles([out, retval] VARIANT_BOOL * value);

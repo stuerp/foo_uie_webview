@@ -98,11 +98,21 @@ To create the component first build the x86 configuration and next the x64 confi
 
 v0.3.0.0-alpha2, 2024-12-xx
 
-* Changed: canReadFiles, canReadDirectories, canExecuteShellOperations and isEnabled are properties now.
 * New:
   * Methods
     * showSearchUI(filter): Shows the library search UI initialized with the specified filter.
-    * formatTitleMetaDBHandle(handle, BSTR text): Formats the title of the specified metadb handle with the specified title formatting text.
+    * formatMetaDBHandleTitle(handle, BSTR text): Formats the title of the specified metadb handle with the specified title formatting text.
+    * sortMetaDBHandleListByFormat(format): Sorts a list of metadb handles by the specified title format.
+    * sortMetaDBHandleListByPath(): Sorts a list of metadb handles by the path.
+    * sortMetaDBHandleListByRelativePath(): Sorts a list of metadb handles by the relative path.
+    * removeMetaDBHandleListDuplicates(): Removes duplicate items from a metadb handle list.
+    * calculateMetaDBHandleListDuration(): Calculates the total duration of a list of metadb handles.
+    * cloneMetaDBHandleList(): Clones a list of metadb handles.
+    * clearMetaDBHandleList(): Clears a list of metadb handles.
+    * addMetaDBHandleList(): Adds the items of a metadb handle list to another.
+* Changed: canReadFiles, canReadDirectories, canExecuteShellOperations and isEnabled are properties now.
+* Improved: Expanded JSDoc comments in foobar2000.js.
+* Improved: Expanded error checking and handling in foobar2000.js.
 
 v0.3.0.0-alpha1, 2024-12-27
 
