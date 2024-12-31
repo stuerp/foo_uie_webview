@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImplMetaDB.cpp (2024.12.27) P. Stuer **/
+/** $VER: HostObjectImplMetaDB.cpp (2024.12.31) P. Stuer **/
 
 #include "pch.h"
 
@@ -52,7 +52,6 @@ STDMETHODIMP HostObject::searchLibrary(BSTR query, __int64 * tracks)
     *tracks = 0;
 
     auto List = new metadb_handle_list();
-
 /*
     ui_selection_manager::get()->get_selection(Selection);
 
@@ -90,7 +89,7 @@ STDMETHODIMP HostObject::searchLibrary(BSTR query, __int64 * tracks)
 /// </summary>
 STDMETHODIMP HostObject::getMetaDBHandleListCount(__int64 list, __int64 * count)
 {
-    if (count == nullptr)
+    if ((list == 0) || (count == nullptr))
         return E_INVALIDARG;
 
     auto List = (const metadb_handle_list *) list;
@@ -105,7 +104,7 @@ STDMETHODIMP HostObject::getMetaDBHandleListCount(__int64 list, __int64 * count)
 /// </summary>
 STDMETHODIMP HostObject::getMetaDBHandleListItem(__int64 list,  __int64 index, __int64 * metaDBHandle)
 {
-    if (metaDBHandle == nullptr)
+    if ((list == 0) || (metaDBHandle == nullptr))
         return E_INVALIDARG;
 
     auto List = (const metadb_handle_list *) list;
@@ -120,6 +119,9 @@ STDMETHODIMP HostObject::getMetaDBHandleListItem(__int64 list,  __int64 index, _
 /// </summary>
 STDMETHODIMP HostObject::releaseMetaDBHandleList(__int64 list)
 {
+    if (list == 0)
+        return E_INVALIDARG;
+
     auto List = (const metadb_handle_list *) list;
 
     delete List;
@@ -132,7 +134,7 @@ STDMETHODIMP HostObject::releaseMetaDBHandleList(__int64 list)
 /// </summary>
 STDMETHODIMP HostObject::getMetaDBHandlePath(__int64 metaDBHandle, BSTR * path)
 {
-    if (path == nullptr)
+    if ((metaDBHandle == 0) || (path == nullptr))
         return E_INVALIDARG;
 
     auto Handle = (metadb_handle *) metaDBHandle;
@@ -149,7 +151,7 @@ STDMETHODIMP HostObject::getMetaDBHandlePath(__int64 metaDBHandle, BSTR * path)
 /// </summary>
 STDMETHODIMP HostObject::getMetaDBHandleRelativePath(__int64 metaDBHandle, BSTR * path)
 {
-    if (path == nullptr)
+    if ((metaDBHandle == 0) || (path == nullptr))
         return E_INVALIDARG;
 
     auto Handle = (metadb_handle *) metaDBHandle;
@@ -169,7 +171,7 @@ STDMETHODIMP HostObject::getMetaDBHandleRelativePath(__int64 metaDBHandle, BSTR 
 /// </summary>
 STDMETHODIMP HostObject::getMetaDBHandleLength(__int64 metaDBHandle, double * length)
 {
-    if (length == nullptr)
+    if ((metaDBHandle == 0) || (length == nullptr))
         return E_INVALIDARG;
 
     auto Handle = (metadb_handle *) metaDBHandle;
@@ -184,7 +186,7 @@ STDMETHODIMP HostObject::getMetaDBHandleLength(__int64 metaDBHandle, double * le
 /// </summary>
 STDMETHODIMP HostObject::formatTitleMetaDBHandle(__int64 metaDBHandle, BSTR text, BSTR * formattedText)
 {
-    if ((text == nullptr) || (formattedText == nullptr))
+    if ((metaDBHandle == 0) || (text == nullptr) || (formattedText == nullptr))
         return E_INVALIDARG;
 
     auto Handle = (metadb_handle *) metaDBHandle;

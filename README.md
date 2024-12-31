@@ -98,7 +98,7 @@ To create the component first build the x86 configuration and next the x64 confi
 
 v0.3.0.0-alpha2, 2024-12-xx
 
-*
+* Changed: canReadFiles, canReadDirectories, canExecuteShellOperations and isEnabled are properties now.
 
 v0.3.0.0-alpha1, 2024-12-27
 

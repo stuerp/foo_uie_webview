@@ -1,5 +1,5 @@
 
-/** $VER: foobar2000.js (2024.12.29) P. Stuer **/
+/** $VER: foobar2000.js (2024.12.31) P. Stuer **/
 
 "use strict";
 
@@ -95,6 +95,9 @@ class MediaLibrary
  **/
 function MetaDBHandle(arg)
 {
+    if (arg === 0)
+        throw new Error('Invalid argument');
+
     this.Source = arg;
 
     /**
@@ -117,7 +120,7 @@ function MetaDBHandle(arg)
 
     /**
         Gets the length.
-        @returns {double}
+        @returns {number}
     **/
     Object.defineProperty(this, 'length',
     {
@@ -142,6 +145,9 @@ function MetaDBHandle(arg)
  **/
 function MetaDBHandleList(arg)
 {
+    if (arg === 0)
+        throw new Error('Invalid argument');
+
     this.Source = arg;
 
     /**
@@ -160,6 +166,7 @@ function MetaDBHandleList(arg)
     this.release = function ()
     {
         chrome.webview.hostObjects.sync.foo_uie_webview.releaseMetaDBHandleList(this.Source);
+        this.Source = 0;
     };
 
     // Indexer
