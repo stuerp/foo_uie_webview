@@ -62,7 +62,7 @@ document.getElementById("showLibraryPreferencesButton").addEventListener("click"
 
 document.getElementById("searchButton").addEventListener("click", async () =>
 {
-    const Tracks = new MetaDBHandleList(await MediaLibrary.search(""));
+    const Tracks = new MetaDBHandleList(await MediaLibrary.search("")); // Returns the complete library.
 
     let Text = "";
 
@@ -72,7 +72,7 @@ document.getElementById("searchButton").addEventListener("click", async () =>
     {
         const Track = new MetaDBHandle(Tracks[i]);
 
-        Text += Track.length + "ms, " + Track.FormatTitle("%filesize%") + " bytes, (" + Track.path + ")<br/>";
+        Text += Track.length.toFixed(2) + "ms, " + Track.formatTitle("%filesize%") + " bytes, (" + Track.path + ")<br/>";
     }
 
 /* Enumeration does not work yet.*/
@@ -84,7 +84,7 @@ document.getElementById("searchButton").addEventListener("click", async () =>
 
 //Tracks.forEach(Track =>
 //{
-//    Text += Track.relativePath + "<br/>";
+//  Text += Track.relativePath + "<br/>";
 //});
 
     document.getElementById("Items").innerHTML = Text;

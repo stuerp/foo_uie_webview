@@ -3,35 +3,65 @@
 
 "use strict";
 
+// @ts-check
+
+/**
+    @typedef {object} Foobar2000
+    @description Provides access to the foobar2000 application.
+    @property {boolean} canReadFiles - Gets whether the application can read files.
+    @property {boolean} canReadDirectories - Gets whether the application can read directories.
+    @property {boolean} canExecuteShellOperations - Gets whether the application can execute shell operations.
+    @function execute - Performs the specified shell operation on a file. Mostly used to run applications. Check the [SHELLEXECUTEINFOW](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shellexecuteinfow) documentation for the possible values of the parameters.
+    @kind class
+ **/
 class Foobar2000
 {
     static
     {
     }
 
+    /**
+        @description Returns true if the component can read local files. Needs to be enabled by the user in the component preferences.
+        @name canReadFiles
+        @returns {boolean}
+        @function
+     **/
     static get canReadFiles()
     {
         return chrome.webview.hostObjects.sync.foo_uie_webview.canReadFiles;
     }
 
+    /**
+        @description Returns true if the component can read directories. Needs to be enabled by the user in the component preferences.
+        @name canReadDirectories
+        @returns {boolean}
+        @function
+     **/
     static get canReadDirectories()
     {
         return chrome.webview.hostObjects.sync.foo_uie_webview.canReadDirectories;
     }
 
+    /**
+        @description Returns true if the component can execute Shell operations on local files. Needs to be enabled by the user in the component preferences.
+        @name canExecuteShellOperations
+        @returns {boolean}
+        @function
+     **/
     static get canExecuteShellOperations()
     {
         return chrome.webview.hostObjects.sync.foo_uie_webview.canExecuteShellOperations;
     }
 
     /**
-        Executes an operation on the specified file.
-        @argument {string} filePath - The path of the file.
-        @argument {string} [parameters] - The parameters to pass to the operation.
-        @argument {string} [directoryPath] - The directory path.
-        @argument {string} [operation] - The shell operation to execute on the file.
-        @argument {int} [showMode] - The show mode of the window.
         @description Performs the specified shell operation on a file. Mostly used to run applications. Check the [SHELLEXECUTEINFOW](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shellexecuteinfow) documentation for the possible values of the parameters.
+        @param {string} filePath - The path of the file.
+        @param {string=} [parameters] - The parameters to pass to the operation.
+        @param {string=} [directoryPath] - The directory path.
+        @param {string=} [operation] - The shell operation to execute on the file.
+        @param {number=} [showMode] - The show mode of the window.
+        @returns {void}
+        @function
     **/
     static execute(filePath, parameters, directoryPath, operation, showMode)
     {
@@ -51,6 +81,14 @@ const SW_SHOWNA = 8;            // Displays the window in its current size and p
 const SW_RESTORE = 9;           // Activates and displays the window. If the window is minimized, maximized, or arranged, the system restores it to its original size and position. An application should specify this flag when restoring a minimized window.
 const SW_SHOWDEFAULT = 10;      // Sets the show state based on the SW_ value specified in the STARTUPINFO structure passed to the CreateProcess function by the program that started the application.
 
+/**
+    @typedef {object} MediaLibrary
+    @description Provides access to the foobar2000 Media Library.
+    @property {boolean} isEnabled
+    @function showPreferences
+    @function search
+    @kind class
+ **/
 class MediaLibrary
 {
     static
@@ -58,10 +96,10 @@ class MediaLibrary
     }
 
     /**
-        Gets whether the Media Library is enabled.
+        @description Gets whether the Media Library is enabled.
         @name isEnabled
-        @kind function
         @returns {boolean}
+        @kind function
     **/
     static get isEnabled()
     {
@@ -69,7 +107,9 @@ class MediaLibrary
     }
 
     /**
-        Shows the Media Library preferences dialog.
+        @description Shows the Media Library preferences dialog.
+        @returns {void}
+        @kind function
     **/
     static showPreferences()
     {
@@ -77,9 +117,10 @@ class MediaLibrary
     }
 
     /**
-        Searches the Media Library for matching tracks.
+        @description Searches the Media Library for matching tracks.
         @param {string} query - The search query.
-        @returns {MetaDBHandleList}
+        @returns {number} - Handle to a metadb handle list.
+        @kind function
     **/
     static search(query)
     {
@@ -88,21 +129,37 @@ class MediaLibrary
 };
 
 /**
-     @constructor
-     @name MetaDBHandle
-     @param {object} [arg] - MetaDB handle
-     @returns {void}
+    @typedef {Object} MetaDBHandle
+    @property {number} Source - Returns the native handle value of the metadb handle
+    @property {string} path - Returns the file path represented by the handle.
+    @property {string} relativePath - Returns the file path relative to the Media Library folder it is in represented by the handle.
+    @property {number} length - Returns the length of the track represented by the handle.
+    @property {function} FormatTitle - Formats the title of the track represented by the handle.
+    @kind class
  **/
-function MetaDBHandle(arg)
+/**
+    @constructor
+    @name MetaDBHandle
+    @param {number} handle - The native handle value of the metadb handle
+    @returns {void}
+    @kind function
+ **/
+function MetaDBHandle(handle)
 {
-    if (arg === 0)
+    if (handle === 0)
         throw new Error('Invalid argument');
 
-    this.Source = arg;
+    /**
+        @description The native handle value of the metadb handle
+        @type {number}
+        @public
+    **/
+    this.Source = handle;
 
     /**
-        Gets the path.
+        @description Returns the file path represented by the handle.
         @returns {string}
+        @kind function
     **/
     Object.defineProperty(this, 'path',
     {
@@ -116,8 +173,9 @@ function MetaDBHandle(arg)
     });
 
     /**
-        Gets the path relative to the Media Library folder it is in.
+        @description Returns the file path relative to the Media Library folder it is in represented by the handle.
         @returns {string}
+        @kind function
     **/
     Object.defineProperty(this, 'relativePath',
     {
@@ -131,8 +189,9 @@ function MetaDBHandle(arg)
     });
 
     /**
-        Gets the length.
+        @description Returns the length of the track represented by the handle.
         @returns {number}
+        @kind function
     **/
     Object.defineProperty(this, 'length',
     {
@@ -146,10 +205,12 @@ function MetaDBHandle(arg)
     });
 
     /**
-        Releases the metadb handle list.
-        @returns {void}
+        @description Formats the title of the track represented by the handle.
+        @param {string} text - The foobar2000 title formating to use. (https://wiki.hydrogenaud.io/index.php?title=Foobar2000:Title_Formatting_Reference)
+        @returns {string}
+        @kind function
     **/
-    this.FormatTitle = function(text)
+    this.formatTitle = function(text)
     {
         if (this.Source === 0)
             throw new Error('Object is not bound to a handle');
@@ -159,21 +220,35 @@ function MetaDBHandle(arg)
 }
 
 /**
+    @typedef {Object} MetaDBHandleList
+    @description Provides access to a list of MetaDB handles.
+    @property {number} Source - The native handle value of the metadb handle list
+    @property {number} count - Gets the number of items.
+    @function release - Releases the metadb handle list.
+    @kind class
+ **/
+/**
      @constructor
      @name MetaDBHandleList
-     @param {object} [arg] - MetaDB handle list
+     @param {object} handle - The native handle value of the metadb handle list
      @returns {void}
+     @kind function
  **/
-function MetaDBHandleList(arg)
+function MetaDBHandleList(handle)
 {
-    if (arg === 0)
+    if (handle === 0)
         throw new Error('Invalid argument');
 
-    this.Source = arg;
+    /**
+        @description The native handle value of the metadb handle list
+        @type {number}
+        @public
+    **/
+    this.Source = handle;
 
     /**
-        Gets the number of items.
-        @returns {int}
+        @description Gets the number of items.
+        @returns {number}
     **/
     Object.defineProperty(this, 'count',
     {
@@ -187,7 +262,7 @@ function MetaDBHandleList(arg)
     });
 
     /**
-        Releases the metadb handle list.
+        @description Releases the metadb handle list.
         @returns {void}
     **/
     this.release = function ()
@@ -216,46 +291,25 @@ function MetaDBHandleList(arg)
     };
 
     // Iterator
-    [Symbol.iterator]()
+    Object.defineProperty(this, Symbol.iterator,
     {
-        if (this.Source === 0)
-            throw new Error('Object is not bound to a handle list');
 
-        const n = this.count;
-
-        let index = 0;
-
-        return
+        value: function ()
         {
-            next: () =>
-            (
-                {
-                    done: index >= n,
-                    value: this[index++]
-                }
-            )
-        };
-    };
+            const n = this.count;
 
-//    Object.defineProperty(this, Symbol.iterator,
-//    {
+            let index = 0;
 
-//        value: function ()
-//        {
-//            const n = this.count;
-
-//            let index = 0;
-
-//            return
-//            {
-//                next: () =>
-//                (
-//                    {
-//                        done: index >= n,
-//                        value: this[index++]
-//                    }
-//                )
-//            };
-//        }
-//    });
+            return
+            {
+                next: () =>
+                (
+                    {
+                        done: index >= n,
+                        value: this[index++]
+                    }
+                )
+            };
+        }
+    });
 }
