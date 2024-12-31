@@ -21,6 +21,9 @@ library HostObjectLibrary
         [propget] HRESULT componentVersion([out, retval] __int32 * version);
         [propget] HRESULT componentVersionText([out, retval] BSTR * versionText);
 
+        [propget] HRESULT lastErrorNumber([out, retval] __int32 * errorNumber);
+        [propget] HRESULT lastErrorMessage([out, retval] BSTR * errorMessage);
+
         HRESULT print([in] BSTR text);
 
         HRESULT stop();

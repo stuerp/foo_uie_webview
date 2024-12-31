@@ -38,7 +38,7 @@ STDMETHODIMP HostObject::showLibraryPreferences()
 {
     library_manager::get()->show_preferences();
 
-    return S_OK;
+    return SetLastError(S_OK);
 }
 
 /// <summary>

@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.cpp (2024.12.27) P. Stuer **/
+/** $VER: HostObjectImpl.cpp (2024.12.31) P. Stuer **/
 
 #include "pch.h"
 
@@ -54,6 +54,32 @@ STDMETHODIMP HostObject::get_componentVersionText(BSTR * versionText)
         return E_INVALIDARG;
 
     *versionText = ::SysAllocString(TEXT(STR_COMPONENT_VERSION));
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the number of the last error.
+/// </summary>
+STDMETHODIMP HostObject::get_lastErrorNumber(__int32 * errorNumber)
+{
+    if (errorNumber == nullptr)
+        return E_INVALIDARG;
+
+    *errorNumber = _LastError;
+
+    return S_OK;
+}
+
+/// <summary>
+/// Gets the message of the last error.
+/// </summary>
+STDMETHODIMP HostObject::get_lastErrorMessage(BSTR * errorMessage)
+{
+    if (errorMessage == nullptr)
+        return E_INVALIDARG;
+
+    *errorMessage = ::SysAllocString(GetErrorMessage((DWORD) _LastError).c_str());
 
     return S_OK;
 }
@@ -517,7 +543,7 @@ STDMETHODIMP HostObject::put_playbackOrder(int playlistIndex)
 STDMETHODIMP HostObject::execute(BSTR filePath, BSTR parameters, BSTR directoryPath, BSTR operation, int showMode)
 {
     if ((_Configuration->_Permissions & Permission::ExecuteShellOperations) == 0)
-        return E_ACCESSDENIED;
+        return SetLastError(E_ACCESSDENIED);
 
     std::wstring FilePath      = ::ExpandEnvironmentStrings(filePath);
     std::wstring Parameters    = ::ExpandEnvironmentStrings(parameters);

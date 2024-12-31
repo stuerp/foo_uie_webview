@@ -49,6 +49,9 @@ public:
     STDMETHODIMP get_componentVersion(__int32 * version) override;
     STDMETHODIMP get_componentVersionText(BSTR * versionText) override;
 
+    STDMETHODIMP get_lastErrorNumber(__int32 * errorNumber) override;
+    STDMETHODIMP get_lastErrorMessage(BSTR * errorMessage) override;
+
     STDMETHODIMP print(BSTR text) override;
 
     /* Playback control **/
@@ -212,8 +215,14 @@ private:
             itemIndex = (int) Manager->playlist_get_item_count((size_t) playlistIndex) - 1;
     }
 
+    HRESULT SetLastError(HRESULT hResult)
+    {
+        return (_LastError = hResult);
+    }
+
 private:
     const configuration_t * _Configuration;
+    HRESULT _LastError;
 
     wil::com_ptr<ITypeLib> _TypeLibrary;
 

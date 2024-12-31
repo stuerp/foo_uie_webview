@@ -6,6 +6,21 @@
 // @ts-check
 
 /**
+    @typedef {object} Foobar2000Error
+    @kind class
+ **/
+class Foobar2000Error extends Error
+{
+    constructor(number, message)
+    {
+        super(message);
+
+        this.name = "Foobar2000Error";
+        this.number = number;
+    }
+}
+
+/**
     @typedef {object} Foobar2000
     @description Provides access to the foobar2000 application.
     @property {boolean} canReadFiles - Gets whether the application can read files.
@@ -51,6 +66,26 @@ class Foobar2000
     static get canExecuteShellOperations()
     {
         return chrome.webview.hostObjects.sync.foo_uie_webview.canExecuteShellOperations;
+    }
+
+    /**
+        @description Reads the specified directory.
+        @param {directoryPath} filePath - The path of the directory.
+        @param {string=} [searchPattern] - The search pattern to filter the return items with.
+        @returns {object}
+        @throws {Foobar2000Error}
+        @function
+    **/
+    static readDirectory(directoryPath, searchPattern)
+    {
+        try
+        {
+            chrome.webview.hostObjects.foo_uie_webview.readDirectory(directoryPath, searchPattern);
+        }
+        catch (e)
+        {
+            throw new Foobar2000Error(chrome.webview.hostObjects.sync.foo_uie_webview.lastErrorNumber, chrome.webview.hostObjects.sync.foo_uie_webview.lastErrorMessage);
+        }
     }
 
     /**
@@ -292,7 +327,7 @@ function MetaDBHandleList(handle)
         return chrome.webview.hostObjects.sync.foo_uie_webview.cloneMetaDBHandleList(this.Source);
     };
 
-    /**
+        /**
         @description Clears this metadb handle list.
         @returns {void}
     **/
@@ -301,7 +336,14 @@ function MetaDBHandleList(handle)
         if (this.Source === 0)
             throw new Error('Object is not bound to a handle list');
 
-        chrome.webview.hostObjects.sync.foo_uie_webview.clearMetaDBHandleList(this.Source);
+        try
+        {
+            chrome.webview.hostObjects.sync.foo_uie_webview.clearMetaDBHandleList(this.Source);
+        }
+        catch (e)
+        {
+            throw new Foobar2000Error(chrome.webview.hostObjects.sync.foo_uie_webview.lastErrorNumber, chrome.webview.hostObjects.sync.foo_uie_webview.lastErrorMessage);
+        }
     };
 
     /**

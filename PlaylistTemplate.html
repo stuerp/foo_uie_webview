@@ -277,11 +277,20 @@ document.getElementById("readImageButton").addEventListener("click", async () =>
 
 document.getElementById("readDirectoryButton").addEventListener("click", async () =>
 {
-    const Text = await chrome.webview.hostObjects.foo_uie_webview.readDirectory("C:/Windows" /*, "*.exe" */);
+//  const Text = await chrome.webview.hostObjects.foo_uie_webview.readDirectory("C:/Windows" /*, "*.exe" */);
 
-    const Items = JSON.parse(Text);
+    try
+    {
+        const Text = await foobar2000.readDirectory("C:/Windows" /*, "*.exe" */);
 
-    document.getElementById("readDirectoryResult").innerHTML = ArrayToTable(Items);
+        const Items = JSON.parse(Text);
+
+        document.getElementById("readDirectoryResult").innerHTML = ArrayToTable(Items);
+    }
+    catch (e)
+    {
+        alert(e.message);
+    }
 });
 
 // Called when items have been added to the specified playlist.
