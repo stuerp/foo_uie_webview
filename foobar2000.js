@@ -106,7 +106,13 @@ function MetaDBHandle(arg)
     **/
     Object.defineProperty(this, 'path',
     {
-        get() { return chrome.webview.hostObjects.sync.foo_uie_webview.getMetaDBHandlePath(this.Source); }
+        get()
+        {
+            if (this.Source === 0)
+                throw new Error('Object is not bound to a handle');
+
+            return chrome.webview.hostObjects.sync.foo_uie_webview.getMetaDBHandlePath(this.Source);
+        }
     });
 
     /**
@@ -115,7 +121,13 @@ function MetaDBHandle(arg)
     **/
     Object.defineProperty(this, 'relativePath',
     {
-        get() { return chrome.webview.hostObjects.sync.foo_uie_webview.getMetaDBHandleRelativePath(this.Source); }
+        get()
+        {
+            if (this.Source === 0)
+                throw new Error('Object is not bound to a handle');
+
+            return chrome.webview.hostObjects.sync.foo_uie_webview.getMetaDBHandleRelativePath(this.Source);
+        }
     });
 
     /**
@@ -124,7 +136,13 @@ function MetaDBHandle(arg)
     **/
     Object.defineProperty(this, 'length',
     {
-        get() { return chrome.webview.hostObjects.sync.foo_uie_webview.getMetaDBHandleLength(this.Source); }
+        get()
+        {
+            if (this.Source === 0)
+                throw new Error('Object is not bound to a handle');
+
+            return chrome.webview.hostObjects.sync.foo_uie_webview.getMetaDBHandleLength(this.Source);
+        }
     });
 
     /**
@@ -133,6 +151,9 @@ function MetaDBHandle(arg)
     **/
     this.FormatTitle = function(text)
     {
+        if (this.Source === 0)
+            throw new Error('Object is not bound to a handle');
+
         return chrome.webview.hostObjects.sync.foo_uie_webview.formatTitleMetaDBHandle(this.Source, text);
     };
 }
@@ -156,7 +177,13 @@ function MetaDBHandleList(arg)
     **/
     Object.defineProperty(this, 'count',
     {
-        get() { return chrome.webview.hostObjects.sync.foo_uie_webview.getMetaDBHandleListCount(this.Source); }
+        get()
+        {
+            if (this.Source === 0)
+                throw new Error('Object is not bound to a handle list');
+
+            return chrome.webview.hostObjects.sync.foo_uie_webview.getMetaDBHandleListCount(this.Source);
+        }
     });
 
     /**
@@ -165,12 +192,18 @@ function MetaDBHandleList(arg)
     **/
     this.release = function ()
     {
+        if (this.Source === 0)
+            throw new Error('Object is not bound to a handle list');
+
         chrome.webview.hostObjects.sync.foo_uie_webview.releaseMetaDBHandleList(this.Source);
         this.Source = 0;
     };
 
     // Indexer
     {
+        if (this.Source === 0)
+            throw new Error('Object is not bound to a handle list');
+
         const n = this.count;
 
         for (let i = 0; i < n; ++i)
@@ -185,6 +218,9 @@ function MetaDBHandleList(arg)
     // Iterator
     [Symbol.iterator]()
     {
+        if (this.Source === 0)
+            throw new Error('Object is not bound to a handle list');
+
         const n = this.count;
 
         let index = 0;
@@ -200,8 +236,10 @@ function MetaDBHandleList(arg)
             )
         };
     };
+
 //    Object.defineProperty(this, Symbol.iterator,
 //    {
+
 //        value: function ()
 //        {
 //            const n = this.count;
