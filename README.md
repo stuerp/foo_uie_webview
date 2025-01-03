@@ -101,7 +101,7 @@ v0.3.0.0-alpha2, 2024-12-31
 * New:
   * Methods
     * showSearchUI(filter): Shows the library search UI initialized with the specified filter.
-    * formatMetaDBHandleTitle(handle, BSTR text): Formats the title of the specified metadb handle with the specified title formatting text.
+    * formatMetaDBHandleTitle(handle, text): Formats the title of the specified metadb handle with the specified title formatting text.
     * sortMetaDBHandleListByFormat(format): Sorts a list of metadb handles by the specified title format.
     * sortMetaDBHandleListByPath(): Sorts a list of metadb handles by the path.
     * sortMetaDBHandleListByRelativePath(): Sorts a list of metadb handles by the relative path.
