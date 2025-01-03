@@ -100,7 +100,9 @@ v0.3.0.0-alpha3, 2024-01-xx
 
 * New:
   * Methods
-    * 
+    * createMetaDBHandlePtr(path, subsongIndex): Creates a metadb handle pointer from a path and an optional subsong index.
+    * deleteMetaDBHandlePtr(metaDBHandlePtr): Deletes the supplied metadb handle pointer.
+    * getHandleFromMetaDBHandlePtr(metaDBHandlePtr): Gets the metadb handle from the supplied metadb handle pointer.
 
 * v0.3.0.0-alpha2, 2024-12-31
 
