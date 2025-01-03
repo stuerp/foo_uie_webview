@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Example template for the Library API</title>
+<meta charset="UTF-8">
+<style>
+:root
+{
+    color-scheme: light dark; /* Opt the entire page into the user's color scheme preferences */
+}
+
+html
+{
+    margin: 0;
+    padding: 0;
+}
+body
+{
+    margin: 0.5em; 
+    padding: 0;
+    align-items: start;
+    justify-content: left;
+    height: 100vh;
+    font: 10.5pt "Calibri Light", Sans-serif;
+    line-height: 1.2;
+    color: #555753;
+}
+div
+{ 
+    margin: 0; 
+    padding: 0;
+}
+</style>
+</head>
+<body>
+<p>
+<button id="showLibraryPreferencesButton">Library preferences</button>
+<button id="showSearchUIButton">Library search UI</button>
+<button id="searchButton">Search</button>
+<button id="createButton">Create handle</button>
+<button id="deleteButton">Delete handle</button>
+</p>
+<p>
+Is media library enabled: <span id="isLibraryEnabledResult" style="font-weight: bold"></span><br/>
+</p>
+<div>
+<p>
+onLibraryItemsAdded: <span id="onLibraryItemsAddedResult"></span><br/>
+onLibraryItemsModified: <span id="onLibraryItemsModifiedResult"></span><br/>
+onLibraryItemsRemoved: <span id="onLibraryItemsRemovedResult"></span><br/>
+<p>
+Total duraction: <span id="totalDuration" style="font-weight: bold"></span><br/>
+</p>
+<div id="Items"/>
+</p>
+</div>
+<script src="foobar2000.js"></script>
+<script>
+document.getElementById("deleteButton").disabled = true;
+
+document.getElementById("isLibraryEnabledResult").textContent = MediaLibrary.isEnabled;
+
+document.getElementById("showLibraryPreferencesButton").addEventListener("click", async () =>
+{
+    MediaLibrary.showPreferences();
+});
+
+document.getElementById("showSearchUIButton").addEventListener("click", async () =>
+{
+    MediaLibrary.showSearchUI("a");
+});
+
+document.getElementById("searchButton").addEventListener("click", async () =>
+{
+    const Tracks = new MetaDBHandleList(await MediaLibrary.search("")); // Returns the complete library.
+
+    Tracks.sortByFormat("%length%");
+    Tracks.sortByPath();
+    Tracks.sortByRelativePath();
+
+    Tracks.removeDuplicates();
+
+    document.getElementById("totalDuration").innerText = Tracks.calculateDuration().toFixed(3) + "s";
+
+    let Text = "";
+
+    const Count = Tracks.count;
+
+    for (let i = 0; i < Count; ++i)
+    {
+        const Track = new MetaDBHandle(Tracks[i]);
+
+        Text += Track.length.toFixed(3) + "s, " + Track.formatTitle("%filesize%") + " bytes, (" + Track.path + ")<br/>";
+    }
+
+/* Enumeration does not work yet.*/
+
+//for (let Track of Tracks)
+//{
+//    Text += Track.relativePath + "<br/>";
+//}
+
+//Tracks.forEach(Track =>
+//{
+//  Text += Track.relativePath + "<br/>";
+//});
+
+    document.getElementById("Items").innerHTML = Text;
+
+    {
+        let Clone = new MetaDBHandleList(Tracks.clone());
+
+        console.log(Clone.count);
+
+        Clone.concat(Clone);
+
+        console.log(Clone.count);
+
+        Clone.clear();
+
+        Clone.release();
+    }
+    
+
+    Tracks.release();
+});
+
+let metaDBHandlePtr = 0;
+
+document.getElementById("createButton").addEventListener("click", async () =>
+{
+    metaDBHandlePtr = MediaLibrary.createMetaDBHandlePtr("%UserProfile%\\Music\\remix.mp3");
+
+    document.getElementById("createButton").disabled = true;
+    document.getElementById("deleteButton").disabled = false;
+});
+
+document.getElementById("deleteButton").addEventListener("click", async () =>
+{
+    let x = new MetaDBHandlePtr(metaDBHandlePtr);
+
+    let handle = x.handle;
+
+    const Path = handle.path; alert(Path);
+
+    MediaLibrary.deleteMetaDBHandlePtr(metaDBHandlePtr);
+    metaDBHandlePtr = 0;
+
+    document.getElementById("createButton").disabled = false;
+    document.getElementById("deleteButton").disabled = true;
+});
+
+// Called when items have been added to the library.
+function onLibraryItemsAdded(items)
+{
+    document.getElementById("onLibraryItemsAddedResult").textContent = "Items have been added to the library (" + Now() + ")";
+
+    const Items = JSON.parse(items);
+
+    document.getElementById("Items").innerHTML = ArrayToTable(Items);
+}
+
+// Called when library items have been modified.
+function onLibraryItemsModified(items)
+{
+    document.getElementById("onLibraryItemsModifiedResult").textContent = "Library items have been modified (" + Now() + ")";
+
+    const Items = JSON.parse(items);
+
+    document.getElementById("Items").innerHTML = ArrayToTable(Items);
+}
+
+// Called when library items have been removed.
+function onLibraryItemsRemoved(items)
+{
+    document.getElementById("onLibraryItemsRemovedResult").textContent = "Library items have been removed (" + Now() + ")";
+
+    const Items = JSON.parse(items);
+
+    document.getElementById("Items").innerHTML = ArrayToTable(Items);
+}
+
+function ArrayToTable(Items)
+{
+    const Headers = Object.keys(Items[0]);
+
+    let Table = '<table><thead><tr>';
+    Headers.forEach(Header => Table += `<th>${Header}</th>`);
+    Table += '</tr></thead><tbody>';
+
+    Items.forEach(Row =>
+    {
+        Table += '<tr>';
+        Headers.forEach(Header => Table += `<td>${Row[Header]}</td>`);
+        Table += '</tr>';
+    });
+
+    Table += '</tbody></table>';
+
+    return Table;
+}
+
+function Now()
+{
+    return new Date().toISOString().slice(-24).replace(/\D/g,'').slice(0, 14);
+}
+</script>
+</body>
+</html>

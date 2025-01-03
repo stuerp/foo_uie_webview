@@ -46,14 +46,14 @@ if ($Platform -eq 'x64')
     {
         Write-Host "Copying $TargetFileName to `"$PackagePath/x64`"...";
 
-        Copy-Item "$OutputPath/$TargetFileName"    -Destination "$PackagePath/x64" -Force -Verbose;
-        Copy-Item "$OutputPath/WebView2Loader.dll" -Destination "$PackagePath/x64" -Force -Verbose;
-        Copy-Item "Template.html"                  -Destination "$PackagePath/x64/Default-Template.html" -Force -Verbose;
-        Copy-Item "FrameTemplate.html"             -Destination "$PackagePath/x64/Default-FrameTemplate.html" -Force -Verbose;
-        Copy-Item "PlaylistTemplate.html"          -Destination "$PackagePath/x64/Default-PlaylistTemplate.html" -Force -Verbose;
-        Copy-Item "LibraryTemplate.html"           -Destination "$PackagePath/x64/Default-LibraryTemplate.html" -Force -Verbose;
-        Copy-Item "OSTemplate.html"                -Destination "$PackagePath/x64/Default-OSTemplate.html" -Force -Verbose;
-        Copy-Item "foobar2000.js"                  -Destination "$PackagePath/x64/foobar2000.js" -Force -Verbose;
+        Copy-Item "$OutputPath/$TargetFileName"     -Destination "$PackagePath/x64" -Force -Verbose;
+        Copy-Item "$OutputPath/WebView2Loader.dll"  -Destination "$PackagePath/x64" -Force -Verbose;
+        Copy-Item "Templates/Template.html"         -Destination "$PackagePath/x64/Default-Template.html" -Force -Verbose;
+        Copy-Item "Templates/FrameTemplate.html"    -Destination "$PackagePath/x64/Default-FrameTemplate.html" -Force -Verbose;
+        Copy-Item "Templates/PlaylistTemplate.html" -Destination "$PackagePath/x64/Default-PlaylistTemplate.html" -Force -Verbose;
+        Copy-Item "Templates/LibraryTemplate.html"  -Destination "$PackagePath/x64/Default-LibraryTemplate.html" -Force -Verbose;
+        Copy-Item "Templates/OSTemplate.html"       -Destination "$PackagePath/x64/Default-OSTemplate.html" -Force -Verbose;
+        Copy-Item "Templates/foobar2000.js"         -Destination "$PackagePath/x64/foobar2000.js" -Force -Verbose;
     }
 
     # install the component in the foobar2000 x64 components directory.
@@ -91,14 +91,14 @@ elseif ($Platform -eq 'Win32')
     {
         Write-Host "Copying $TargetFileName to `"$PackagePath`"...";
 
-        Copy-Item "$OutputPath/$TargetFileName"    -Destination "$PackagePath" -Force -Verbose;
-        Copy-Item "$OutputPath/WebView2Loader.dll" -Destination "$PackagePath" -Force -Verbose;
-        Copy-Item "Template.html"                  -Destination "$PackagePath/Default-Template.html" -Force -Verbose;
-        Copy-Item "FrameTemplate.html"             -Destination "$PackagePath/Default-FrameTemplate.html" -Force -Verbose;
-        Copy-Item "PlaylistTemplate.html"          -Destination "$PackagePath/Default-PlaylistTemplate.html" -Force -Verbose;
-        Copy-Item "LibraryTemplate.html"           -Destination "$PackagePath/Default-LibraryTemplate.html" -Force -Verbose;
-        Copy-Item "OSTemplate.html"                -Destination "$PackagePath/Default-OSTemplate.html" -Force -Verbose;
-        Copy-Item "foobar2000.js"                  -Destination "$PackagePath/foobar2000.js" -Force -Verbose;
+        Copy-Item "$OutputPath/$TargetFileName"     -Destination "$PackagePath" -Force -Verbose;
+        Copy-Item "$OutputPath/WebView2Loader.dll"  -Destination "$PackagePath" -Force -Verbose;
+        Copy-Item "Templates/Template.html"         -Destination "$PackagePath/Default-Template.html" -Force -Verbose;
+        Copy-Item "Templates/FrameTemplate.html"    -Destination "$PackagePath/Default-FrameTemplate.html" -Force -Verbose;
+        Copy-Item "Templates/PlaylistTemplate.html" -Destination "$PackagePath/Default-PlaylistTemplate.html" -Force -Verbose;
+        Copy-Item "Templates/LibraryTemplate.html"  -Destination "$PackagePath/Default-LibraryTemplate.html" -Force -Verbose;
+        Copy-Item "Templates/OSTemplate.html"       -Destination "$PackagePath/Default-OSTemplate.html" -Force -Verbose;
+        Copy-Item "Templates/foobar2000.js"         -Destination "$PackagePath/foobar2000.js" -Force -Verbose;
 }
 
     # install the x86 component in the foobar2000 x86 components directory.

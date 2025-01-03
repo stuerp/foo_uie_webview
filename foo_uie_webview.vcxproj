@@ -295,14 +295,14 @@ pwsh.exe -NoLogo -NonInteractive -NoProfile -File Build-FB2KComponent.ps1 $(Targ
     <None Include="cpp.hint" />
     <None Include="docs\index.md" />
     <None Include="docs\README.md" />
-    <None Include="foobar2000.js" />
-    <None Include="FrameTemplate.html" />
-    <None Include="LibraryTemplate.html" />
-    <None Include="OSTemplate.html" />
+    <None Include="Templates\foobar2000.js" />
+    <None Include="Templates\FrameTemplate.html" />
+    <None Include="Templates\LibraryTemplate.html" />
+    <None Include="Templates\OSTemplate.html" />
     <None Include="packages.config" />
-    <None Include="PlaylistTemplate.html" />
+    <None Include="Templates\PlaylistTemplate.html" />
     <None Include="README.md" />
-    <None Include="Template.html">
+    <None Include="Templates\Template.html">
       <DeploymentContent>true</DeploymentContent>
     </None>
   </ItemGroup>

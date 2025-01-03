@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImplLibrary.cpp (2024.12.31) P. Stuer **/
+/** $VER: HostObjectImplLibrary.cpp (2025.01.03) P. Stuer **/
 
 #include "pch.h"
 
@@ -52,12 +52,7 @@ STDMETHODIMP HostObject::searchLibrary(BSTR query, __int64 * list)
     *list = 0;
 
     auto List = new metadb_handle_list();
-/*
-    ui_selection_manager::get()->get_selection(Selection);
 
-    if (Selection.get_count() == 0)
-        return E_FAIL;
-*/
     library_manager::get()->get_all_items(*List);
 
     if ((query != nullptr) && (query[0] != '\0'))
@@ -74,7 +69,7 @@ STDMETHODIMP HostObject::searchLibrary(BSTR query, __int64 * list)
 
             List->filter_mask(Mask.get_ptr());
         }
-        catch (const pfc::exception & e)
+        catch (const pfc::exception &)
         {
         }
     }
@@ -266,12 +261,61 @@ STDMETHODIMP HostObject::calculateMetaDBHandleListDuration(__int64 list, double 
 }
 
 /// <summary>
+/// Creates a metadb handle pointer from the specified path.
+/// </summary>
+STDMETHODIMP HostObject::createMetaDBHandlePtr(BSTR path, unsigned __int32 subSongIndex, __int64 * metaDBHandlePtr)
+{
+    if ((path == nullptr) || (metaDBHandlePtr == nullptr))
+        return SetLastError(E_INVALIDARG);
+
+    auto mhp = new metadb_handle_ptr(metadb::get()->handle_create(pfc::stringcvt::string_utf8_from_wide(path), subSongIndex));
+
+    _Pointers.insert({ mhp->get_ptr(), mhp });
+
+    *metaDBHandlePtr = (__int64)(size_t) mhp;
+
+    return SetLastError(S_OK);
+}
+
+/// <summary>
+/// Deletes a metadb handle pointer.
+/// </summary>
+STDMETHODIMP HostObject::deleteMetaDBHandlePtr(__int64 metaDBHandlePtr)
+{
+    if (metaDBHandlePtr == 0)
+        return SetLastError(E_INVALIDARG);
+
+    auto mhp = (metadb_handle_ptr *) metaDBHandlePtr;
+
+    _Pointers.erase(mhp->get_ptr());
+
+    delete mhp;
+
+    return SetLastError(S_OK);
+}
+
+/// <summary>
+/// Gets a metadb handle from a pointer.
+/// </summary>
+STDMETHODIMP HostObject::getHandleFromMetaDBHandlePtr(__int64 metaDBHandlePtr, __int64 * metaDBHandle)
+{
+    if (metaDBHandlePtr == 0)
+        return SetLastError(E_INVALIDARG);
+
+    auto mhp = (metadb_handle_ptr *) metaDBHandlePtr;
+
+    *metaDBHandle = (__int64)(size_t) mhp->get_ptr();
+
+    return SetLastError(S_OK);
+}
+
+/// <summary>
 /// Gets the path of the specified metadb handle.
 /// </summary>
 STDMETHODIMP HostObject::getMetaDBHandlePath(__int64 metaDBHandle, BSTR * path)
 {
     if ((metaDBHandle == 0) || (path == nullptr))
-        return E_INVALIDARG;
+        return SetLastError(E_INVALIDARG);
 
     auto Handle = (metadb_handle *) metaDBHandle;
 
@@ -279,7 +323,7 @@ STDMETHODIMP HostObject::getMetaDBHandlePath(__int64 metaDBHandle, BSTR * path)
 
     *path = ::SysAllocString(::UTF8ToWide(Location.get_path()).c_str());
 
-    return S_OK;
+    return SetLastError(S_OK);
 }
 
 /// <summary>
@@ -348,3 +392,10 @@ STDMETHODIMP HostObject::formatMetaDBHandleTitle(__int64 metaDBHandle, BSTR text
     return S_OK;
 }
 #pragma endregion
+
+/*
+    ui_selection_manager::get()->get_selection(Selection);
+
+    if (Selection.get_count() == 0)
+        return E_FAIL;
+*/

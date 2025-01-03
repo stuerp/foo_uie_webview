@@ -1,5 +1,5 @@
 
-/** $VER: HostObject.idl (2024.12.31) P. Stuer **/
+/** $VER: HostObject.idl (2025.01.03) P. Stuer **/
 
 import "oaidl.idl";
 import "ocidl.idl";
@@ -140,6 +140,12 @@ library HostObjectLibrary
         HRESULT removeMetaDBHandleListDuplicates([in] __int64 list);
         HRESULT calculateMetaDBHandleListDuration([in] __int64 list, [out, retval] double * duration);
 
+        // MetaDB Handle Auto Pointer
+        HRESULT createMetaDBHandlePtr([in] BSTR path, [in, defaultvalue(0)] unsigned __int32 subsongIndex, [out, retval] __int64 * metaDBHandlePtr);
+        HRESULT deleteMetaDBHandlePtr([in] __int64 metaDBHandlePtr);
+        HRESULT getHandleFromMetaDBHandlePtr([in] __int64 metaDBHandlePtr, [out, retval] __int64 * metaDBHandle);
+
+        // MetaDB Handle
         HRESULT getMetaDBHandlePath([in] __int64 handle, [out, retval] BSTR * path);
         HRESULT getMetaDBHandleRelativePath([in] __int64 handle, [out, retval] BSTR * path);
         HRESULT getMetaDBHandleLength([in] __int64 handle, [out, retval] double * length);

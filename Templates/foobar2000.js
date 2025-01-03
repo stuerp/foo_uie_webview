@@ -175,6 +175,9 @@ class Foobar2000
     }
 };
 
+/**
+    See {@link https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow|ShowWindow}.
+ **/
 const SW_HIDE = 0;              // Hides the window and activates another window.
 const SW_SHOWNORMAL = 1;        // Activates and displays a window. If the window is minimized, maximized, or arranged, the system restores it to its original size and position. An application should specify this flag when displaying the window for the first time.
 const SW_SHOWMINIMIZED = 2;     // Activates the window and displays it as a minimized window.
@@ -242,6 +245,29 @@ class MediaLibrary
     static showSearchUI(filter)
     {
         chrome.webview.hostObjects.foo_uie_webview.showSearchUI(filter);
+    }
+
+    /**
+        @description Creates a metadb handle pointer.
+        @param {string} filePath - The path of the media file.
+        @param {number=} subSongIndex - The index of the subsong in the media file.
+        @returns {number}
+        @kind function
+    **/
+    static createMetaDBHandlePtr(filePath, subSongIndex = 0)
+    {
+        return chrome.webview.hostObjects.sync.foo_uie_webview.createMetaDBHandlePtr(filePath, subSongIndex);
+    }
+
+    /**
+        @description Deletes a metadb handle pointer.
+        @param {number} pointer - The metadb handle pointer to delete.
+        @returns {void}
+        @kind function
+    **/
+    static deleteMetaDBHandlePtr(metaDBHandlePtr)
+    {
+        return chrome.webview.hostObjects.foo_uie_webview.deleteMetaDBHandlePtr(metaDBHandlePtr);
     }
 };
 
@@ -334,6 +360,51 @@ function MetaDBHandle(handle)
 
         return chrome.webview.hostObjects.sync.foo_uie_webview.formatMetaDBHandleTitle(this.Source, text);
     };
+}
+
+/**
+    @typedef {Object} MetaDBHandle
+    @property {number} Source - Returns the native handle value of the metadb handle
+    @property {string} path - Returns the file path represented by the handle.
+    @property {string} relativePath - Returns the file path relative to the Media Library folder it is in represented by the handle.
+    @property {number} length - Returns the length of the track represented by the handle.
+    @property {function} FormatTitle - Formats the title of the track represented by the handle.
+    @kind class
+ **/
+/**
+    @constructor
+    @name MetaDBHandlePtr
+    @param {number} pointer - The native pointer value of the metadb handle
+    @returns {void}
+    @kind function
+ **/
+function MetaDBHandlePtr(pointer)
+{
+    if (pointer === 0)
+        throw new Error('Invalid argument');
+
+    /**
+        @description The native pointer value of the metadb handle
+        @type {number}
+        @public
+    **/
+    this.Source = pointer;
+
+    /**
+        @description Returns the handle pointed to by the native pointer.
+        @returns {MetaDBHandle}
+        @kind function
+    **/
+    Object.defineProperty(this, 'handle',
+    {
+        get()
+        {
+            if (this.Source === 0)
+                throw new Error('Object is not bound to a pointer');
+
+            return new MetaDBHandle(chrome.webview.hostObjects.sync.foo_uie_webview.getHandleFromMetaDBHandlePtr(this.Source));
+        }
+    });
 }
 
 /**

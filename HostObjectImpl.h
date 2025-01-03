@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.h (2024.12.31) P. Stuer **/
+/** $VER: HostObjectImpl.h (2025.01.03) P. Stuer **/
 
 #pragma once
 
@@ -176,6 +176,11 @@ public:
     STDMETHODIMP removeMetaDBHandleListDuplicates(__int64 list) override;
     STDMETHODIMP calculateMetaDBHandleListDuration(__int64 list, double * duration) override;
 
+    /* MetaDBHandle */
+    STDMETHODIMP createMetaDBHandlePtr(BSTR filePath, unsigned __int32 subSongIndex, __int64 * metaDBHandlePtr) override;
+    STDMETHODIMP deleteMetaDBHandlePtr(__int64 metaDBHandlePtr) override;
+    STDMETHODIMP getHandleFromMetaDBHandlePtr(__int64 metaDBHandlePtr, __int64 * metaDBHandle) override;
+
     STDMETHODIMP getMetaDBHandlePath(__int64 metaDBHandle, BSTR * path) override;
     STDMETHODIMP getMetaDBHandleRelativePath(__int64 metaDBHandle, BSTR * path) override;
     STDMETHODIMP getMetaDBHandleLength(__int64 metaDBHandle, double * length) override;
@@ -263,6 +268,8 @@ private:
     };
 
     service_ptr_t<album_art_manager_config_t> _AlbumArtManagerConfig = new service_impl_t<album_art_manager_config_t>;
+
+    std::map<const metadb_handle *, const metadb_handle_ptr *> _Pointers;
 };
 
 extern void ToBase64(const BYTE * data, DWORD size, BSTR * base64);
