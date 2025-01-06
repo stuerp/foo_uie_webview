@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImplLibrary.cpp (2025.01.03) P. Stuer **/
+/** $VER: HostObjectImplLibrary.cpp (2025.01.06) P. Stuer **/
 
 #include "pch.h"
 
@@ -40,6 +40,8 @@ STDMETHODIMP HostObject::showLibraryPreferences()
 
     return SetLastError(S_OK);
 }
+
+#pragma region metadb_handle_list
 
 /// <summary>
 /// Searches the Media Library for matching tracks.
@@ -260,6 +262,10 @@ STDMETHODIMP HostObject::calculateMetaDBHandleListDuration(__int64 list, double 
     return S_OK;
 }
 
+#pragma endregion
+
+#pragma region metadb_handle_ptr
+
 /// <summary>
 /// Creates a metadb handle pointer from the specified path.
 /// </summary>
@@ -268,11 +274,7 @@ STDMETHODIMP HostObject::createMetaDBHandlePtr(BSTR path, unsigned __int32 subSo
     if ((path == nullptr) || (metaDBHandlePtr == nullptr))
         return SetLastError(E_INVALIDARG);
 
-    auto mhp = new metadb_handle_ptr(metadb::get()->handle_create(pfc::stringcvt::string_utf8_from_wide(path), subSongIndex));
-
-    _Pointers.insert({ mhp->get_ptr(), mhp });
-
-    *metaDBHandlePtr = (__int64)(size_t) mhp;
+    *metaDBHandlePtr = (__int64)(size_t) new metadb_handle_ptr(metadb::get()->handle_create(pfc::stringcvt::string_utf8_from_wide(path), subSongIndex));
 
     return SetLastError(S_OK);
 }
@@ -285,11 +287,7 @@ STDMETHODIMP HostObject::deleteMetaDBHandlePtr(__int64 metaDBHandlePtr)
     if (metaDBHandlePtr == 0)
         return SetLastError(E_INVALIDARG);
 
-    auto mhp = (metadb_handle_ptr *) metaDBHandlePtr;
-
-    _Pointers.erase(mhp->get_ptr());
-
-    delete mhp;
+    delete (metadb_handle_ptr *) metaDBHandlePtr;
 
     return SetLastError(S_OK);
 }
@@ -308,6 +306,10 @@ STDMETHODIMP HostObject::getHandleFromMetaDBHandlePtr(__int64 metaDBHandlePtr, _
 
     return SetLastError(S_OK);
 }
+
+#pragma endregion
+
+#pragma region metadb_handle
 
 /// <summary>
 /// Gets the path of the specified metadb handle.
@@ -391,6 +393,7 @@ STDMETHODIMP HostObject::formatMetaDBHandleTitle(__int64 metaDBHandle, BSTR text
 
     return S_OK;
 }
+
 #pragma endregion
 
 /*

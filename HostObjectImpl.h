@@ -1,5 +1,5 @@
 
-/** $VER: HostObjectImpl.h (2025.01.03) P. Stuer **/
+/** $VER: HostObjectImpl.h (2025.01.06) P. Stuer **/
 
 #pragma once
 
@@ -268,8 +268,6 @@ private:
     };
 
     service_ptr_t<album_art_manager_config_t> _AlbumArtManagerConfig = new service_impl_t<album_art_manager_config_t>;
-
-    std::map<const metadb_handle *, const metadb_handle_ptr *> _Pointers;
 };
 
 extern void ToBase64(const BYTE * data, DWORD size, BSTR * base64);
