@@ -309,7 +309,11 @@ function OnSharedBufferReceived(e)
     }
 
     if (!e.additionalData)
+    {
+        chrome.webview.hostObjects.sync.foo_uie_webview.print("foo_uie_webview JavaScript received shared buffer without additional data.");
+
         return;
+    }
 
     SharedBuffer = e.getBuffer(); // as an ArrayBuffer
     Samples = new Float64Array(SharedBuffer);

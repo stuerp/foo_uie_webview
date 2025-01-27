@@ -240,6 +240,8 @@ HRESULT UIElement::CreateWebView()
                         (
                             [this](ICoreWebView2 * webView, ICoreWebView2NavigationStartingEventArgs * eventArgs) -> HRESULT
                             {
+                                _SharedBuffer.Release();
+
                                 VARIANT RemoteObject = {};
 
                                 _HostObject.query_to<IDispatch>(&RemoteObject.pdispVal);
