@@ -52,7 +52,8 @@ void UIElement::OnTimer() noexcept
     audio_chunk_impl Chunk;
 
     const double WindowSize = _Configuration._WindowSize / ((_Configuration._WindowSizeUnit == WindowSizeUnit::Milliseconds) ? 1000. : (double) _SampleRate); // in seconds
-    const double WindoOffset = PlaybackTime - (WindowSize * (0.5 + _Configuration._ReactionAlignment)); // in seconds
+    double WindoOffset = PlaybackTime - (WindowSize * (0.5 + _Configuration._ReactionAlignment)); // in seconds
+    WindoOffset = (int64_t(WindoOffset * _SampleRate) + 0.25) / _SampleRate;
 
     if (!_VisualisationStream->get_chunk_absolute(Chunk, WindoOffset, WindowSize))
         return;
@@ -68,7 +69,7 @@ void UIElement::OnTimer() noexcept
     if (!SUCCEEDED(hr))
         return;
 
-    hr = _WebView->ExecuteScript(::FormatText(L"onTimer(%d, %d, %d, %d)", SampleCount, _SampleRate, ChannelCount, ChannelConfig).c_str(), nullptr); // Silently continue
+    hr = _WebView->ExecuteScript(::FormatText(L"onTimer(%d, %d, %d, %d, %.17f)", SampleCount, _SampleRate, ChannelCount, ChannelConfig, WindoOffset).c_str(), nullptr); // Silently continue
 
     if (!SUCCEEDED(hr))
     {
