@@ -1,4 +1,4 @@
-
+﻿
 # foo_uie_webview
 
 [foo_uie_webview](https://github.com/stuerp/foo_uie_webview/releases) is a [foobar2000](https://www.foobar2000.org/) component that exposes the [Microsoft WebView2](https://learn.microsoft.com/en-us/microsoft-edge/webview2/) control as UI panel. The component started as foo_vis_text.
@@ -57,9 +57,9 @@ The `Edit` button launches the editor that has been associated with the file typ
 To build the code you need:
 
 * [Microsoft Visual Studio 2022 Community Edition](https://visualstudio.microsoft.com/downloads/) or later
-* [foobar2000 SDK](https://www.foobar2000.org/SDK) 2023-09-23
+* [foobar2000 SDK](https://www.foobar2000.org/SDK) 2025-03-07
 * [Windows Template Library (WTL)](https://github.com/Win32-WTL/WTL) 10.0.10320
-* [Columns UI SDK](https://yuo.be/columns-ui-sdk) 7.0.0
+* [Columns UI SDK](https://yuo.be/columns-ui-sdk) 8.0.0
 
 To create the deployment package you need:
 
@@ -78,7 +78,7 @@ Create the following directory structure:
     out
     sdk
 
-* `3rdParty/columns_ui-sdk` contains the Columns UI SDK 7.0.0.
+* `3rdParty/columns_ui-sdk` contains the Columns UI SDK.
 * `3rdParty/WTL10_10320` contains WTL 10.0.10320.
 * `bin` contains a portable version of foobar2000 64-bit for debugging purposes.
 * `bin/x86` contains a portable version of foobar2000 32-bit for debugging purposes.
@@ -96,7 +96,7 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.3.0.0-alpha3, 2024-01-xx
+v0.3.0.0-alpha3, 2025-01-xx
 
 * New:
   * Methods
