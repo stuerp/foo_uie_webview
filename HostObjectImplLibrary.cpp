@@ -57,7 +57,7 @@ STDMETHODIMP HostObject::searchLibrary(BSTR query, __int64 * list)
 
     library_manager::get()->get_all_items(*List);
 
-    if ((query != nullptr) && (query[0] != '\0'))
+    if ((query != nullptr))// && (query[0] != '\0'))
     {
         try
         {

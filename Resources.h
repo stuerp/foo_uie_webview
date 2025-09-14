@@ -1,5 +1,5 @@
 
-/** $VER: Resources.h (2025.01.03) P. Stuer **/
+/** $VER: Resources.h (2025.09.14) P. Stuer **/
 
 #pragma once
 
@@ -25,7 +25,7 @@
 #define STR_COMPONENT_BASENAME      "foo_uie_webview"
 #define STR_COMPONENT_FILENAME      STR_COMPONENT_BASENAME ".dll"
 #define STR_COMPONENT_COMPANY_NAME  ""
-#define STR_COMPONENT_COPYRIGHT     "Copyright (c) 2024 P. Stuer. All rights reserved."
+#define STR_COMPONENT_COPYRIGHT     "Copyright (c) 2024-2025 P. Stuer. All rights reserved."
 #define STR_COMPONENT_COMMENTS      ""
 #define STR_COMPONENT_DESCRIPTION   "A WebView2 wrapper for foobar2000"
 #define STR_COMPONENT_COMMENT       ""
@@ -72,6 +72,8 @@
 #define IDC_FILE_PATH                       1006
 #define IDC_FILE_PATH_SELECT                1008
 #define IDC_FILE_PATH_EDIT                  1010
+
+#define IDC_BROWSER_FLAGS                   1012
 
 #define IDC_WINDOW_SIZE                     1020
 #define IDC_WINDOW_SIZE_UNIT                1022

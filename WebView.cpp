@@ -1,5 +1,5 @@
 
-/** $VER: WebView.cpp (2024.11.20) P. Stuer - Creates the WebView. **/
+/** $VER: WebView.cpp (2025.09.14) P. Stuer - Creates the WebView. **/
 
 #include "pch.h"
 
@@ -60,9 +60,14 @@ HRESULT UIElement::CreateWebView()
         return E_UNEXPECTED;
     }
 
+    std::wstring BrowserArguments = _Configuration._BrowserFlags;
+
     if (_DarkMode)
+        BrowserArguments += L" --enable-features=WebContentsForceDark:inversion_method/cielab_based/image_behavior/none";
+
+    if (!BrowserArguments.empty())
     {
-        hr = EnvironmentOptions->put_AdditionalBrowserArguments(L"--enable-features=WebContentsForceDark:inversion_method/cielab_based/image_behavior/none");
+        hr = EnvironmentOptions->put_AdditionalBrowserArguments(BrowserArguments.c_str());
 
         if (!SUCCEEDED(hr))
             console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to set additional browser arguments").c_str());
@@ -240,6 +245,8 @@ HRESULT UIElement::CreateWebView()
                         (
                             [this](ICoreWebView2 * webView, ICoreWebView2NavigationStartingEventArgs * eventArgs) -> HRESULT
                             {
+                                console::print(STR_COMPONENT_BASENAME " received NavigationStarted event.");
+
                                 _SharedBuffer.Release();
 
                                 VARIANT RemoteObject = {};

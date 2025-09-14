@@ -28,10 +28,9 @@ body
 }
 div
 { 
-    display: none;
+    display: inline;
     margin-top: 0; 
     text-align: center;
-    display: inline;
 }
 .track
 {
@@ -155,7 +154,7 @@ window.onload = function()
 
         document.getElementById("ToggleStopAfterCurrent").checked = chrome.webview.hostObjects.sync.foo_uie_webview.stopAfterCurrent;
 
-        OnSharedBufferReceived(e);
+        onSharedBufferReceived(e);
     });
 
     window.chrome.webview.addEventListener("playlistItemFocusChanged", e =>
@@ -265,8 +264,7 @@ function Refresh()
     document.getElementById("TrackLanguage").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("[ %language%]");
 
     document.getElementById("TrackTime").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("[%playback_time%[/%length%]]");
-
-    document.getElementById("TrackCodec").textContent = chrome.webview.hostObjects.sync.getFormattedText("%codec_long%[, $info(codec_profile)], $caps($info(encoding))");
+    document.getElementById("TrackCodec").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("%codec_long%[, $info(codec_profile)], $caps($info(encoding))");
     document.getElementById("TrackInfo").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("%samplerate%Hz, %bitrate% kbps[, $info(bitspersample) bit], $caps(%channels%)[, $caps($info(channel_mode))]");
 
     document.getElementById("TrackComposer").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("['Composer: '%composer%]");
@@ -280,6 +278,7 @@ function Refresh()
 
     document.getElementById("Medium").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("['Medium: '%medium%]");
     document.getElementById("Comment").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("['Comments: '%comment%]");
+
     document.getElementById("MIDI").textContent = chrome.webview.hostObjects.sync.foo_uie_webview.getFormattedText("['MIDI: '$info(midi_player)][, $info(midi_active_voices) voices '(peak ' $info(midi_peak_voices)')'][, extra percussion channel $info(midi_extra_percussion_channel)]");
 
     RefreshProperties();
@@ -299,7 +298,7 @@ function RefreshProperties()
 }
 
 // Called when the shared buffer does not exist yet or when the channel configuration changes.
-function OnSharedBufferReceived(e)
+function onSharedBufferReceived(e)
 {
     if (SharedBuffer)
     {
@@ -322,11 +321,11 @@ function OnSharedBufferReceived(e)
     document.getElementById("SampleCount").textContent = e.additionalData.SampleCount;
     document.getElementById("SampleRate").textContent = e.additionalData.SampleRate;
     document.getElementById("ChannelCount").textContent = e.additionalData.ChannelCount;
-    document.getElementById("ChannelConfig").textContent = GetChannelConfigurationText(e.additionalData.ChannelConfig);
+    document.getElementById("ChannelConfig").textContent = getChannelConfigurationText(e.additionalData.ChannelConfig);
 }
 
 // Called when the visualisation timer ticks.
-function OnTimer(sampleCount, sampleRate, channelCount, channelConfig)
+function onTimer(sampleCount, sampleRate, channelCount, channelConfig)
 {
     document.getElementById("Position").textContent = (Math.round(chrome.webview.hostObjects.sync.foo_uie_webview.position * 100) / 100).toFixed(2) + 's';
 
@@ -365,7 +364,7 @@ function OnTimer(sampleCount, sampleRate, channelCount, channelConfig)
 }
 
 // Converts the channel configuration mask to text.
-function GetChannelConfigurationText(channelConfig)
+function getChannelConfigurationText(channelConfig)
 {
     var ChannelNames =
     [

@@ -1,5 +1,5 @@
 
-/** $VER: Preferences.cpp (2024.12.27) P. Stuer **/
+/** $VER: Preferences.cpp (2025.09.14) P. Stuer **/
 
 #include "pch.h"
 
@@ -89,6 +89,12 @@ public:
         }
 
         {
+            GetDlgItemTextW(IDC_BROWSER_FLAGS, Text, _countof(Text));
+
+            _Configuration._BrowserFlags= Text;
+        }
+
+        {
             GetDlgItemTextW(IDC_WINDOW_SIZE, Text, _countof(Text));
 
             _Configuration._WindowSize = (uint32_t) ::_wtoi(Text);
@@ -140,6 +146,8 @@ public:
     BEGIN_MSG_MAP_EX(Preferences)
         MSG_WM_INITDIALOG(OnInitDialog)
 
+        MSG_WM_CTLCOLORDLG(OnCtlColorDlg)
+
         MSG_WM_CTLCOLORSTATIC(OnCtlColorStatic)
 
         COMMAND_HANDLER_EX(IDC_NAME, EN_CHANGE, OnEditChange)
@@ -149,6 +157,8 @@ public:
 
         COMMAND_HANDLER_EX(IDC_FILE_PATH, EN_CHANGE, OnEditChange)
         COMMAND_HANDLER_EX(IDC_FILE_PATH_SELECT, BN_CLICKED, OnButtonClicked)
+
+        COMMAND_HANDLER_EX(IDC_BROWSER_FLAGS, EN_CHANGE, OnEditChange)
 
         COMMAND_HANDLER_EX(IDC_WINDOW_SIZE, EN_CHANGE, OnEditChange)
         COMMAND_HANDLER_EX(IDC_REACTION_ALIGNMENT, EN_CHANGE, OnEditChange)
@@ -185,6 +195,7 @@ private:
         SetDlgItemTextW(IDC_NAME,                  _Configuration._Name.c_str());
         SetDlgItemTextW(IDC_USER_DATA_FOLDER_PATH, _Configuration._UserDataFolderPath.c_str());
         SetDlgItemTextW(IDC_FILE_PATH,             _Configuration._TemplateFilePath.c_str());
+        SetDlgItemTextW(IDC_BROWSER_FLAGS,         _Configuration._BrowserFlags.c_str());
 
         SetDlgItemTextW(IDC_WINDOW_SIZE, pfc::wideFromUTF8(pfc::format_int(_Configuration._WindowSize)));
 
@@ -212,6 +223,18 @@ private:
         SendDlgItemMessageW(IDC_READ_FILES, BM_SETCHECK, (WPARAM) ((_Configuration._Permissions & Permission::ReadFiles) ? BST_CHECKED : BST_UNCHECKED));
         SendDlgItemMessageW(IDC_READ_DIRECTORIES, BM_SETCHECK, (WPARAM) ((_Configuration._Permissions & Permission::ReadDirectories) ? BST_CHECKED : BST_UNCHECKED));
         SendDlgItemMessageW(IDC_EXECUTE_SHELL_OPERATIONS, BM_SETCHECK, (WPARAM) ((_Configuration._Permissions & Permission::ExecuteShellOperations) ? BST_CHECKED : BST_UNCHECKED));
+    }
+
+    /// <summary>
+    /// Sets the background color brush.
+    /// </summary>
+    HBRUSH OnCtlColorDlg(CDCHandle dc, CWindow wnd) const noexcept
+    {
+    #ifdef _DEBUG
+        return ::CreateSolidBrush(RGB(250, 250, 250));
+    #else
+        return FALSE;
+    #endif
     }
 
     /// <summary>
@@ -365,6 +388,11 @@ private:
         GetDlgItemTextW(IDC_FILE_PATH, Text, _countof(Text));
 
         if (_Configuration._TemplateFilePath != Text)
+            return true;
+
+        GetDlgItemTextW(IDC_BROWSER_FLAGS, Text, _countof(Text));
+
+        if (_Configuration._BrowserFlags != Text)
             return true;
 
         GetDlgItemTextW(IDC_WINDOW_SIZE, Text, _countof(Text));

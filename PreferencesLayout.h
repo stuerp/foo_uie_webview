@@ -1,5 +1,5 @@
 
-/** $VER: PreferencesLayout.h (2024.12.27) **/
+/** $VER: PreferencesLayout.h (2025.09.14) **/
 
 #pragma once
 
@@ -23,7 +23,7 @@
 #define IX        4 // Spacing between two related controls
 #define IY        3
 
-#pragma region Name
+//** Name
 
 // Label
 #define X_D11   0
@@ -39,7 +39,7 @@
 
 #pragma endregion
 
-#pragma region User Data Folder Path
+//** User Data Folder Path
 
 // Label
 #define X_D13   0
@@ -61,7 +61,7 @@
 
 #pragma endregion
 
-#pragma region Template File Path
+//** Template File Path
 
 // Label
 #define X_D16   0
@@ -69,7 +69,7 @@
 #define W_D16   76
 #define H_D16   H_LBL
 
-// EditBox
+//** EditBox
 #define X_D17   X_D16
 #define Y_D17   Y_D16 + H_D16 + IY
 #define W_D17   240
@@ -89,11 +89,25 @@
 
 #pragma endregion
 
-#pragma region Window Size
+//** Browser Flags
+
+// Label
+#define X_D30   0
+#define Y_D30   Y_D19 + H_D19 + IY
+#define W_D30   76
+#define H_D30   H_LBL
+
+// EditBox
+#define X_D31   X_D17
+#define Y_D31   Y_D30 + H_D30 + IY
+#define W_D31   328
+#define H_D31   H_EBX
+
+//** Window Size
 
 // Label
 #define X_D20   0
-#define Y_D20   Y_D17 + H_D17 + IY
+#define Y_D20   Y_D31 + H_D31 + IY
 #define W_D20   76
 #define H_D20   H_LBL
 
@@ -111,7 +125,7 @@
 
 #pragma endregion
 
-#pragma region Reaction Alignment
+//** Reaction Alignment
 
 // Label
 #define X_D23   0

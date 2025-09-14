@@ -1,5 +1,5 @@
-﻿
-/** $VER: Resources.rc (2024.12.27) P. Stuer **/
+
+/** $VER: Resources.rc (2025.09.14) P. Stuer **/
 
 #include "Resources.h"
 
@@ -62,6 +62,9 @@ font 8, "Segoe UI", 400, 0, 1
     pushbutton  "...",                              IDC_FILE_PATH_SELECT,               X_D18, Y_D18,     W_D18, H_D18
     pushbutton  "&Edit",                            IDC_FILE_PATH_EDIT,                 X_D19, Y_D19,     W_D19, H_D19
 
+    ltext       "Browser Flags",                    IDC_STATIC,                         X_D30, Y_D30 + 2, W_D30, H_D30
+    edittext                                        IDC_BROWSER_FLAGS,                  X_D31, Y_D31,     W_D31, H_D31, ES_AUTOHSCROLL
+
     rtext       "Window size:",                     IDC_STATIC,                         X_D20, Y_D20 + 2, W_D20, H_D20
     edittext                                        IDC_WINDOW_SIZE,                    X_D21, Y_D21,     W_D21, H_D21, ES_RIGHT | ES_AUTOHSCROLL | WS_TABSTOP
     combobox                                        IDC_WINDOW_SIZE_UNIT,               X_D22, Y_D22,     W_D22, H_D22, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -70,9 +73,9 @@ font 8, "Segoe UI", 400, 0, 1
     edittext                                        IDC_REACTION_ALIGNMENT              X_D24, Y_D24,     W_D24, H_D24, ES_RIGHT | ES_AUTOHSCROLL | WS_TABSTOP
     ltext       "",                                 IDC_WINDOW_OFFSET,                  X_D25, Y_D25 + 2, W_D25, H_D25
 
-    control     "Clear browsing data on startup",   IDC_CLEAR_BROWSING_DATA, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, X_D26, Y_D26, W_D26, H_D26
-    control     "In Private mode",                  IDC_IN_PRIVATE_MODE,     "Button", BS_AUTOCHECKBOX | WS_TABSTOP, X_D27, Y_D27, W_D27, H_D27
-    control     "Fluent scrollbar style",           IDC_SCROLLBAR_STYLE,     "Button", BS_AUTOCHECKBOX | WS_TABSTOP, X_D28, Y_D28, W_D28, H_D28
+    control     "Clear browsing data on startup",   IDC_CLEAR_BROWSING_DATA,        "Button", BS_AUTOCHECKBOX | WS_TABSTOP, X_D26, Y_D26, W_D26, H_D26
+    control     "In Private mode",                  IDC_IN_PRIVATE_MODE,            "Button", BS_AUTOCHECKBOX | WS_TABSTOP, X_D27, Y_D27, W_D27, H_D27
+    control     "Fluent scrollbar style",           IDC_SCROLLBAR_STYLE,            "Button", BS_AUTOCHECKBOX | WS_TABSTOP, X_D28, Y_D28, W_D28, H_D28
 
     control     "Read files",                       IDC_READ_FILES,                 "Button", BS_AUTOCHECKBOX | WS_TABSTOP, X_D70, Y_D70, W_D70, H_D70
     control     "Read directories",                 IDC_READ_DIRECTORIES,           "Button", BS_AUTOCHECKBOX | WS_TABSTOP, X_D71, Y_D71, W_D71, H_D71

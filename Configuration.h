@@ -1,5 +1,5 @@
-﻿
-/** $VER: Configuration.h (2024.12.27) P. Stuer **/
+
+/** $VER: Configuration.h (2025.09.14) P. Stuer **/
 
 #pragma once
 
@@ -72,6 +72,7 @@ public:
     std::wstring _Name;
     std::wstring _TemplateFilePath;
     std::wstring _UserDataFolderPath;
+    std::wstring _BrowserFlags;                                     // Browser Flags, https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags?tabs=win32cpp
 
     uint32_t _WindowSize;                                           // Milliseconds or samples
     WindowSizeUnit _WindowSizeUnit;
@@ -88,5 +89,5 @@ public:
     Permission _Permissions;
 
 private:
-    const int32_t _CurrentVersion = 8;
+    const int32_t _CurrentVersion = 9;
 };

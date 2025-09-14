@@ -1,5 +1,5 @@
 
-/** $VER: configuration_t.cpp (2024.12.27) P. Stuer **/
+/** $VER: configuration_t.cpp (2025.09.14) P. Stuer **/
 
 #include "pch.h"
 
@@ -70,6 +70,8 @@ void configuration_t::Reset() noexcept
         _UserDataFolderPath = ::UTF8ToWide(Path.c_str());
     }
 
+    _BrowserFlags.clear();
+
     _WindowSize = 100; // ms
     _WindowSizeUnit = WindowSizeUnit::Milliseconds;
     _ReactionAlignment = 0.25;
@@ -90,6 +92,8 @@ configuration_t & configuration_t::operator=(const configuration_t & other)
     _Name = other._Name;
     _TemplateFilePath = other._TemplateFilePath;
     _UserDataFolderPath = other._UserDataFolderPath;
+
+    _BrowserFlags = other._BrowserFlags;
 
     _WindowSize = other._WindowSize;
     _WindowSizeUnit = other._WindowSizeUnit;
@@ -169,6 +173,12 @@ void configuration_t::Read(stream_reader * reader, size_t size, abort_callback &
         {
             uint64_t Value; reader->read_object_t(Value, abortHandler); _Permissions = (Permission) Value;
         }
+
+        // Version 9, v0.3.0.0-alpha3
+        if (Version >= 9)
+        {
+            reader->read_string(UTF8String, abortHandler); _BrowserFlags = pfc::wideFromUTF8(UTF8String);
+        }
     }
     catch (exception & ex)
     {
@@ -213,6 +223,9 @@ void configuration_t::Write(stream_writer * writer, abort_callback & abortHandle
 
         // Version 8, v0.3.0.0
         uint64_t Value64 = (uint64_t) _Permissions; writer->write_object_t(Value64, abortHandler);
+
+        // Version 9, v0.3.0.0-alpha3
+        UTF8String = pfc::utf8FromWide(_BrowserFlags.c_str()); writer->write_string(UTF8String, abortHandler);
     }
     catch (exception & ex)
     {

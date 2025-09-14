@@ -96,10 +96,13 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.3.0.0-alpha3, 2024-01-xx
+v0.3.0.0-alpha3, 2025-09-14
 
+* New: Updated WebView2 component to 1.0.3485.44.
+* New: Browser flags can be set in the Preferences. See [WebView2 browser flags](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags?tabs=dotnetcsharp) for possible values.
+  * The browser flags are only read during instantiation of the component.
 * New:
-  * Methods
+  * Methods (**Experimental**)
     * createMetaDBHandlePtr(path, subsongIndex): Creates a metadb handle pointer from a path and an optional subsong index.
     * deleteMetaDBHandlePtr(metaDBHandlePtr): Deletes the supplied metadb handle pointer.
     * getHandleFromMetaDBHandlePtr(metaDBHandlePtr): Gets the metadb handle from the supplied metadb handle pointer.
