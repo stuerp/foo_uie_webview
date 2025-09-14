@@ -96,7 +96,7 @@ To create the component first build the x86 configuration and next the x64 confi
 
 ## Change Log
 
-v0.3.0.0-alpha3, 2025-01-xx
+v0.3.0.0-alpha3, 2025-09-14
 
 * New: Updated WebView2 component to 1.0.3485.44.
 * New: Browser flags can be set in the Preferences. See [WebView2 browser flags](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags?tabs=dotnetcsharp) for possible values.
