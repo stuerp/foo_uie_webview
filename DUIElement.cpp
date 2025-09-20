@@ -135,6 +135,73 @@ void DUIElement::GetColors() noexcept
     _BackgroundColor = (COLORREF) m_callback->query_std_color(ui_color_background);
 }
 
+/// <summary>
+/// Retrieves a window's parent or owner.
+/// </summary>
+static HWND GetRealParent(HWND hWnd) noexcept
+{
+    HWND hWndOwner;
+
+    // To obtain a window's owner window, instead of using `GetParent()`,
+    // use `GetWindow()` with the `GW_OWNER` flag.
+    if ((hWndOwner = ::GetWindow(hWnd, GW_OWNER)) != NULL)
+        return hWndOwner;
+
+    // Obtain the parent window and not the owner.
+    return ::GetAncestor(hWnd, GA_PARENT);
+}
+
+/// <summary>
+/// Toggles borderless fullscreen mode.
+/// </summary>
+void DUIElement::ToggleFullScreen() noexcept
+{
+    if (!_IsFullscreen)
+    {
+        RECT r{};
+        _hParent = GetRealParent(m_hWnd);
+        const HMONITOR hMonitor = ::MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
+        if (hMonitor)
+        {
+            MONITORINFOEX mix = {{sizeof(mix)}};
+            if (::GetMonitorInfo(hMonitor, &mix))
+            {
+                r = mix.rcMonitor;
+            }
+        }
+        const int w = max(0, r.right - r.left);
+        const int h = max(0, r.bottom - r.top);
+        const HWND z = HWND_TOP;
+
+        const HWND window = m_hWnd;
+        _PreviousWP = {sizeof(_PreviousWP)};
+        ::GetWindowPlacement(window, &_PreviousWP);
+        _hOwner = ::GetWindow(window, GW_OWNER);
+        _PreviousStyle = ::GetWindowLongPtr(window, GWL_STYLE);
+        _PreviousExStyle = ::GetWindowLongPtr(window, GWL_EXSTYLE);
+        UINT flags = SWP_NOZORDER | (_hOwner ? SWP_NOOWNERZORDER : 0u) | SWP_FRAMECHANGED;
+
+        ::SetWindowLongPtr(window, GWL_STYLE, (_PreviousStyle & ~(WS_CHILD | WS_OVERLAPPEDWINDOW)) | WS_POPUP);
+        ::SetWindowLongPtr(window, GWL_EXSTYLE, _PreviousExStyle & ~WS_EX_TOPMOST);
+        ::SetParent(window, NULL);
+        ::SetWindowPos(window, z, r.left, r.top, w, h, flags);
+
+        _IsFullscreen = true;
+    }
+    else
+    {
+        const HWND window = m_hWnd;
+        ::SetWindowLongPtr(window, GWL_STYLE, _PreviousStyle);
+        ::SetWindowLongPtr(window, GWL_EXSTYLE, _PreviousExStyle);
+        ::SetParent(window, _hParent);
+        ::SetWindowPlacement(window, &_PreviousWP);
+        ::SetWindowPos(window, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | (_hOwner ? SWP_NOOWNERZORDER : 0u) | SWP_FRAMECHANGED);
+        ::SetFocus(core_api::get_main_window());
+
+        _IsFullscreen = false;
+    }
+}
+
 static service_factory_single_t<ui_element_impl_withpopup<DUIElement>> _Factory;
 
 #pragma endregion

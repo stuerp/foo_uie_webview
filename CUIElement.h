@@ -113,7 +113,8 @@ public:
 
 private:
     window_host_ptr _Host;
-    HWND _hParent;
+
+    void ToggleFullScreen() noexcept override;
 };
 
 static std::vector<CUIElement *> _Elements; // Very ugly but necessary because of the weird CUI notification mechanism.

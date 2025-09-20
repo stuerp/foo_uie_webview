@@ -82,6 +82,55 @@ void CUIElement::GetColors() noexcept
     _BackgroundColor = Helper.get_colour(cui::colours::colour_background);
 }
 
+/// <summary>
+/// Toggles borderless fullscreen mode.
+/// </summary>
+void CUIElement::ToggleFullScreen() noexcept
+{
+    if (!_IsFullscreen)
+    {
+        RECT r{};
+        const HMONITOR hMonitor = ::MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
+        if (hMonitor)
+        {
+            MONITORINFOEX mix = {{sizeof(mix)}};
+            if (::GetMonitorInfo(hMonitor, &mix))
+            {
+                r = mix.rcMonitor;
+            }
+        }
+        const int w = max(0, r.right - r.left);
+        const int h = max(0, r.bottom - r.top);
+        const HWND z = HWND_TOP;
+
+        const HWND window = m_hWnd;
+        _PreviousWP = {sizeof(_PreviousWP)};
+        ::GetWindowPlacement(window, &_PreviousWP);
+        _PreviousStyle = ::GetWindowLongPtr(window, GWL_STYLE);
+        _PreviousExStyle = ::GetWindowLongPtr(window, GWL_EXSTYLE);
+        UINT flags = SWP_NOZORDER | SWP_FRAMECHANGED;
+
+        ::SetWindowLongPtr(window, GWL_STYLE, (_PreviousStyle & ~(WS_CHILD | WS_OVERLAPPEDWINDOW)) | WS_POPUP);
+        ::SetWindowLongPtr(window, GWL_EXSTYLE, _PreviousExStyle & ~WS_EX_TOPMOST);
+        ::SetParent(window, NULL);
+        ::SetWindowPos(window, z, r.left, r.top, w, h, flags);
+
+        _IsFullscreen = true;
+    }
+    else
+    {
+        const HWND window = m_hWnd;
+        ::SetWindowLongPtr(window, GWL_STYLE, _PreviousStyle);
+        ::SetWindowLongPtr(window, GWL_EXSTYLE, _PreviousExStyle);
+        ::SetParent(window, _hParent);
+        ::SetWindowPlacement(window, &_PreviousWP);
+        ::SetWindowPos(window, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
+        ::SetFocus(core_api::get_main_window());
+
+        _IsFullscreen = false;
+    }
+}
+
 static uie::window_factory<CUIElement> _WindowFactory;
 
 #pragma endregion

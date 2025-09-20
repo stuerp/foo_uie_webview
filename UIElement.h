@@ -182,6 +182,7 @@ private:
     void OnSize(UINT nType, CSize size) noexcept;
     BOOL OnEraseBackground(CDCHandle dc) noexcept;
     void OnPaint(CDCHandle dc) noexcept;
+    void OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) noexcept;
     LRESULT OnTemplateChanged(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
     LRESULT OnWebViewReady(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
     LRESULT OnAsync(UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
@@ -192,6 +193,7 @@ private:
         MSG_WM_SIZE(OnSize)
         MSG_WM_ERASEBKGND(OnEraseBackground)
         MSG_WM_PAINT(OnPaint)
+        MSG_WM_SYSKEYDOWN(OnSysKeyDown)
 
         MESSAGE_HANDLER_EX(UM_TEMPLATE_CHANGED, OnTemplateChanged)
         MESSAGE_HANDLER_EX(UM_WEB_VIEW_READY, OnWebViewReady)
@@ -240,6 +242,13 @@ protected:
     COLORREF _ForegroundColor;
     COLORREF _BackgroundColor;
 
+    bool _IsFullscreen = false;
+    WINDOWPLACEMENT _PreviousWP;
+    LONG_PTR _PreviousStyle;
+    LONG_PTR _PreviousExStyle;
+    HWND _hParent;
+    HWND _hOwner;
+
 private:
     fb2k::CCoreDarkModeHooks _DarkMode;
     playback_control::ptr _PlaybackControl;
@@ -272,4 +281,6 @@ private:
     uint32_t _SampleRate;
 
     SharedBuffer _SharedBuffer;
+
+    virtual void ToggleFullScreen() noexcept = 0;
 };
