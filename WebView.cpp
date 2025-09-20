@@ -658,16 +658,16 @@ HRESULT UIElement::CreateContextMenu(const wchar_t * itemLabel, const wchar_t * 
         if (!SUCCEEDED(hr))
             return hr;
 
-        wil::com_ptr<ICoreWebView2ContextMenuItem> ContextMenuItem;
+        wil::com_ptr<ICoreWebView2ContextMenuItem> PreferencesMenuItem;
 
         // Creates a menu item.
         {
-            hr = Environment9->CreateContextMenuItem(L"Preferences", nullptr, COREWEBVIEW2_CONTEXT_MENU_ITEM_KIND_COMMAND, &ContextMenuItem);
+            hr = Environment9->CreateContextMenuItem(L"Preferences", nullptr, COREWEBVIEW2_CONTEXT_MENU_ITEM_KIND_COMMAND, &PreferencesMenuItem);
 
             if (!SUCCEEDED(hr))
                 return hr;
 
-            hr = ContextMenuItem->add_CustomItemSelected(Callback<ICoreWebView2CustomItemSelectedEventHandler>
+            hr = PreferencesMenuItem->add_CustomItemSelected(Callback<ICoreWebView2CustomItemSelectedEventHandler>
             (
                 [this](ICoreWebView2ContextMenuItem * sender, IUnknown * args)
                 {
@@ -681,7 +681,33 @@ HRESULT UIElement::CreateContextMenu(const wchar_t * itemLabel, const wchar_t * 
                 return hr;
         }
 
-        hr = Children->InsertValueAtIndex(0, ContextMenuItem.get());
+        wil::com_ptr<ICoreWebView2ContextMenuItem> FullscreenMenuItem;
+        {
+            hr = Environment9->CreateContextMenuItem(L"Fullscreen", nullptr, COREWEBVIEW2_CONTEXT_MENU_ITEM_KIND_COMMAND, &FullscreenMenuItem);
+
+            if (!SUCCEEDED(hr))
+                return hr;
+
+            hr = FullscreenMenuItem->add_CustomItemSelected(Callback<ICoreWebView2CustomItemSelectedEventHandler>
+                (
+                    [this](ICoreWebView2ContextMenuItem* sender, IUnknown* args)
+                    {
+                        RunAsync([this] { ToggleFullScreen(); });
+
+                        return S_OK;
+                    }
+                ).Get(), nullptr);
+
+            if (!SUCCEEDED(hr))
+                return hr;
+        }
+
+        hr = Children->InsertValueAtIndex(0, PreferencesMenuItem.get());
+
+        if (!SUCCEEDED(hr))
+            return hr;
+
+        hr = Children->InsertValueAtIndex(1, FullscreenMenuItem.get());
     }
 
     return hr;

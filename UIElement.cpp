@@ -180,6 +180,25 @@ void UIElement::OnPaint(CDCHandle dc) noexcept
 }
 
 /// <summary>
+/// Implements "Alt + Enter" key combination to toggle fullscreen mode.
+/// </summary>
+void UIElement::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) noexcept
+{
+    UNREFERENCED_PARAMETER(nRepCnt);
+
+    // Bit 29: The context code. The value is 1 if the Alt key is down while the
+    //         key is pressed; it is 0 if the `WM_SYSKEYDOWN` message is posted to
+    //         the active window because no window has the keyboard focus.
+    // Bit 30: The previous key state. The value is 1 if the key is down before
+    //         the message is sent, or it is 0 if the key is up.
+    if (nChar == VK_RETURN && (nFlags & 0x6000) == 0x2000)
+    {
+        ToggleFullScreen();
+        return;
+    }
+}
+
+/// <summary>
 /// Handles a change to the template. Either the path name or the content changed.
 /// </summary>
 LRESULT UIElement::OnTemplateChanged(UINT msg, WPARAM wParam, LPARAM lParam) noexcept

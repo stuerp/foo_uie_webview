@@ -48,4 +48,7 @@ public:
 
 protected:
     ui_element_instance_callback::ptr m_callback; // Don't rename this. BumpableElement uses it.
+
+private:
+    void ToggleFullScreen() noexcept override;
 };
