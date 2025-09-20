@@ -46,9 +46,9 @@ filesubtype     VFT2_UNKNOWN
 
 #include "PreferencesLayout.h"
 
-IDD_PREFERENCES dialogex 0, 0, 0, 0
-style DS_SETFONT | WS_CHILD
-font 8, "Segoe UI", 400, 0, 1
+IDD_PREFERENCES dialogex 0, 0, 332, 288
+STYLE DS_SHELLFONT | WS_CHILD
+font 8, "MS Shell Dlg", 400, 0, 1
 {
     rtext       "Name:",                            IDC_STATIC,                         X_D11, Y_D11 + 2, W_D11, H_D11
     edittext                                        IDC_NAME,                           X_D12, Y_D12,     W_D12, H_D12, ES_AUTOHSCROLL
@@ -64,6 +64,12 @@ font 8, "Segoe UI", 400, 0, 1
 
     ltext       "Browser Flags",                    IDC_STATIC,                         X_D30, Y_D30 + 2, W_D30, H_D30
     edittext                                        IDC_BROWSER_FLAGS,                  X_D31, Y_D31,     W_D31, H_D31, ES_AUTOHSCROLL
+
+    ltext       "COM Module",                       IDC_STATIC,                         X_D32, Y_D32 + 2, W_D32, H_D32
+    edittext                                        IDC_COM_MODULE,                     X_D33, Y_D33,     W_D33, H_D33, ES_AUTOHSCROLL
+
+    ltext       "COM Export",                       IDC_STATIC,                         X_D34, Y_D34 + 2, W_D34, H_D34
+    edittext                                        IDC_COM_EXPORT,                     X_D35, Y_D35,     W_D35, H_D35, ES_AUTOHSCROLL
 
     rtext       "Window size:",                     IDC_STATIC,                         X_D20, Y_D20 + 2, W_D20, H_D20
     edittext                                        IDC_WINDOW_SIZE,                    X_D21, Y_D21,     W_D21, H_D21, ES_RIGHT | ES_AUTOHSCROLL | WS_TABSTOP

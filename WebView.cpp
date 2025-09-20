@@ -9,13 +9,17 @@
 
 #include <WebView2EnvironmentOptions.h>
 
+#include <sdk/componentversion.h>
 #include <pfc/string-conv-lite.h>
 #include <pfc/pathUtils.h>
 
 using namespace Microsoft::WRL;
 
+typedef HRESULT (STDAPICALLTYPE *PFN_GetInterface)(IDispatch **);
 static HRESULT CreateIconStream(const wchar_t * resourceName, wil::com_ptr<IStream> & stream);
 static std::string GetWebViewErrorMessage(COREWEBVIEW2_WEB_ERROR_STATUS status, const std::string & errorMessage) noexcept;
+static HRESULT AddHostObject(ICoreWebView2 * webview, const std::wstring & module, IDispatch * obj);
+static bool LoadedComponent(std::string module, std::string longname = "");
 
 /// <summary>
 /// Returns true if a supported WebView version is available on this system.
@@ -115,7 +119,6 @@ HRESULT UIElement::CreateWebView()
 
             // Create the controller options.
             wil::com_ptr<ICoreWebView2ControllerOptions> ControllerOptions;
-
             {
                 hr = Environment10->CreateCoreWebView2ControllerOptions(&ControllerOptions);
 
@@ -270,6 +273,33 @@ HRESULT UIElement::CreateWebView()
                                     console::print(::GetErrorMessage(hr, STR_COMPONENT_BASENAME " failed to add host object to script").c_str());
 
                                 RemoteObject.pdispVal->Release();
+
+                                // Load a user-specified COM interface as host object.
+                                std::wstring dllmodule = _Configuration._HostObjectModule;
+                                std::string dllexport = pfc::utf8FromWide(_Configuration._HostObjectExport.c_str()).c_str();
+                                if (dllmodule.empty() || dllexport.empty() || !LoadedComponent(pfc::utf8FromWide(dllmodule.c_str()).c_str()))
+                                    return hr;
+
+                                pfc::string8 webview_path = filesystem::g_get_native_path(core_api::get_my_full_path());
+                                pfc::string8 com_path = pfc::io::path::getParent(pfc::io::path::getParent(webview_path));
+                                std::wstring com_file = dllmodule + L"\\" + dllmodule + L".dll";
+                                com_path = pfc::io::path::combine(com_path, pfc::utf8FromWide(com_file.c_str()));
+                                size_t path_length = com_path.get_length();
+                                std::wstring com(path_length + 1, L'\0');
+                                path_length = pfc::stringcvt::convert_utf8_to_wide(com.data(), com.size(), com_path.get_ptr(), path_length);
+
+                                HMODULE mod = LoadLibrary(com.substr(0, path_length).c_str());
+                                if (!mod)
+                                    return HRESULT_FROM_WIN32(GetLastError());
+
+                                auto pfn = reinterpret_cast<PFN_GetInterface>(reinterpret_cast<void*>(GetProcAddress(mod, dllexport.c_str())));
+                                if (!pfn)
+                                    return HRESULT_FROM_WIN32(GetLastError());
+
+                                IDispatch* obj = nullptr;
+                                hr = pfn(&obj);
+                                RETURN_IF_FAILED(AddHostObject(_WebView.get(), dllmodule, obj));
+                                obj->Release();
 
                                 return hr;
                             }
@@ -845,4 +875,48 @@ std::string GetWebViewErrorMessage(COREWEBVIEW2_WEB_ERROR_STATUS status, const s
     };
 
     return ::FormatText("%s: %s (%d)", errorMessage.c_str(), (((size_t) status  < _countof(Messages)) ? Messages[(size_t) status] : "Invalid web error status"), (int) status);
+}
+
+/// <summary>
+/// Adds a host object to the WebView script environment.
+/// </summary>
+HRESULT AddHostObject(ICoreWebView2 * webview, const std::wstring & module, IDispatch * obj)
+{
+    if (!webview)
+        return E_UNEXPECTED;
+
+    VARIANT v{};
+    VariantInit(&v);
+    v.vt = VT_DISPATCH;
+    v.pdispVal = obj;
+    return webview->AddHostObjectToScript(module.c_str(), &v);
+}
+
+/// <summary>
+/// Verifies that the foobar2000 module/dll/component is loaded.
+/// </summary>
+bool LoadedComponent(std::string module, std::string longname)
+{
+    service_enum_t<componentversion> e;
+    componentversion::ptr cv;
+    while (e.next(cv))
+    {
+        pfc::string8 file;
+        cv->get_file_name(file);
+        if (file.startsWith(module.c_str()))
+        {
+            return true;
+        }
+        if (longname.empty())
+        {
+            continue;
+        }
+        pfc::string8 name;
+        cv->get_component_name(name);
+        if (name.find_first(longname.c_str()) != SIZE_MAX)
+        {
+            return true;
+        }
+    }
+    return false;
 }

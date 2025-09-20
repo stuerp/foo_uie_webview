@@ -74,6 +74,8 @@
 #define IDC_FILE_PATH_EDIT                  1010
 
 #define IDC_BROWSER_FLAGS                   1012
+#define IDC_COM_MODULE                      1013
+#define IDC_COM_EXPORT                      1014
 
 #define IDC_WINDOW_SIZE                     1020
 #define IDC_WINDOW_SIZE_UNIT                1022
