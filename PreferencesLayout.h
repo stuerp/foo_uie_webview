@@ -100,14 +100,42 @@
 // EditBox
 #define X_D31   X_D17
 #define Y_D31   Y_D30 + H_D30 + IY
-#define W_D31   328
+#define W_D31   324
 #define H_D31   H_EBX
+
+//** COM Module
+
+// Label
+#define X_D32   0
+#define Y_D32   Y_D31 + H_D31 + IY
+#define W_D32   76
+#define H_D32   H_LBL
+
+// EditBox
+#define X_D33   X_D17
+#define Y_D33   Y_D32 + H_D32 + IY
+#define W_D33   160
+#define H_D33   H_EBX
+
+//** COM Export
+
+// Label
+#define X_D34   164
+#define Y_D34   Y_D31 + H_D31 + IY
+#define W_D34   76
+#define H_D34   H_LBL
+
+// EditBox
+#define X_D35   X_D17 + 164
+#define Y_D35   Y_D32 + H_D32 + IY
+#define W_D35   160
+#define H_D35   H_EBX
 
 //** Window Size
 
 // Label
 #define X_D20   0
-#define Y_D20   Y_D31 + H_D31 + IY
+#define Y_D20   Y_D35 + H_D35 + IY
 #define W_D20   76
 #define H_D20   H_LBL
 

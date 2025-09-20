@@ -71,6 +71,8 @@ void configuration_t::Reset() noexcept
     }
 
     _BrowserFlags.clear();
+    _HostObjectModule.clear();
+    _HostObjectExport.clear();
 
     _WindowSize = 100; // ms
     _WindowSizeUnit = WindowSizeUnit::Milliseconds;
@@ -94,6 +96,8 @@ configuration_t & configuration_t::operator=(const configuration_t & other)
     _UserDataFolderPath = other._UserDataFolderPath;
 
     _BrowserFlags = other._BrowserFlags;
+    _HostObjectModule = other._HostObjectModule;
+    _HostObjectExport = other._HostObjectExport;
 
     _WindowSize = other._WindowSize;
     _WindowSizeUnit = other._WindowSizeUnit;
@@ -179,6 +183,13 @@ void configuration_t::Read(stream_reader * reader, size_t size, abort_callback &
         {
             reader->read_string(UTF8String, abortHandler); _BrowserFlags = pfc::wideFromUTF8(UTF8String);
         }
+
+        // Version 10, v0.3.0.0-alphax
+        if (Version >= 10)
+        {
+            reader->read_string(UTF8String, abortHandler); _HostObjectModule = pfc::wideFromUTF8(UTF8String).c_str(); 
+            reader->read_string(UTF8String, abortHandler); _HostObjectExport = pfc::wideFromUTF8(UTF8String);
+        }
     }
     catch (exception & ex)
     {
@@ -226,6 +237,10 @@ void configuration_t::Write(stream_writer * writer, abort_callback & abortHandle
 
         // Version 9, v0.3.0.0-alpha3
         UTF8String = pfc::utf8FromWide(_BrowserFlags.c_str()); writer->write_string(UTF8String, abortHandler);
+
+        // Version 10, v0.3.0.0-alphax
+        UTF8String = pfc::utf8FromWide(_HostObjectModule.c_str()); writer->write_string(UTF8String, abortHandler);
+        UTF8String = pfc::utf8FromWide(_HostObjectExport.c_str()); writer->write_string(UTF8String, abortHandler);
     }
     catch (exception & ex)
     {

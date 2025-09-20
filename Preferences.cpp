@@ -91,7 +91,19 @@ public:
         {
             GetDlgItemTextW(IDC_BROWSER_FLAGS, Text, _countof(Text));
 
-            _Configuration._BrowserFlags= Text;
+            _Configuration._BrowserFlags = Text;
+        }
+
+        {
+            GetDlgItemTextW(IDC_COM_MODULE, Text, _countof(Text));
+
+            _Configuration._HostObjectModule = Text;
+        }
+
+        {
+            GetDlgItemTextW(IDC_COM_EXPORT, Text, _countof(Text));
+
+            _Configuration._HostObjectExport = Text;
         }
 
         {
@@ -159,6 +171,8 @@ public:
         COMMAND_HANDLER_EX(IDC_FILE_PATH_SELECT, BN_CLICKED, OnButtonClicked)
 
         COMMAND_HANDLER_EX(IDC_BROWSER_FLAGS, EN_CHANGE, OnEditChange)
+        COMMAND_HANDLER_EX(IDC_COM_MODULE, EN_CHANGE, OnEditChange)
+        COMMAND_HANDLER_EX(IDC_COM_EXPORT, EN_CHANGE, OnEditChange)
 
         COMMAND_HANDLER_EX(IDC_WINDOW_SIZE, EN_CHANGE, OnEditChange)
         COMMAND_HANDLER_EX(IDC_REACTION_ALIGNMENT, EN_CHANGE, OnEditChange)
@@ -196,6 +210,8 @@ private:
         SetDlgItemTextW(IDC_USER_DATA_FOLDER_PATH, _Configuration._UserDataFolderPath.c_str());
         SetDlgItemTextW(IDC_FILE_PATH,             _Configuration._TemplateFilePath.c_str());
         SetDlgItemTextW(IDC_BROWSER_FLAGS,         _Configuration._BrowserFlags.c_str());
+        SetDlgItemTextW(IDC_COM_MODULE,            _Configuration._HostObjectModule.c_str());
+        SetDlgItemTextW(IDC_COM_EXPORT,            _Configuration._HostObjectExport.c_str());
 
         SetDlgItemTextW(IDC_WINDOW_SIZE, pfc::wideFromUTF8(pfc::format_int(_Configuration._WindowSize)));
 
@@ -393,6 +409,16 @@ private:
         GetDlgItemTextW(IDC_BROWSER_FLAGS, Text, _countof(Text));
 
         if (_Configuration._BrowserFlags != Text)
+            return true;
+        
+        GetDlgItemTextW(IDC_COM_MODULE, Text, _countof(Text));
+
+        if (_Configuration._HostObjectModule != Text)
+            return true;
+        
+        GetDlgItemTextW(IDC_COM_EXPORT, Text, _countof(Text));
+
+        if (_Configuration._HostObjectExport != Text)
             return true;
 
         GetDlgItemTextW(IDC_WINDOW_SIZE, Text, _countof(Text));
